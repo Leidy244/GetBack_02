@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" href="admin-styles.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+	<section th:fragment="dashboard" class="content-section">
+
+		<!-- Header del dashboard -->
+		<div class="section-header">
+			<h2><i class="fas fa-tachometer-alt"></i> Panel de Control</h2>
+		</div>
+		</div>
+		<div class="stats-grid compact">
+			<!-- Categorías -->
+			<div class="stat-card compact">
+				<div class="stat-icon">
+					<i class="fas fa-tags"></i>
+				</div>
+				<div class="stat-info">
+					<h3 th:text="${totalCategorias}">0</h3>
+					<p>Categorías agregadas</p>
+					<small>Clasificación del menú</small>
+				</div>
+			</div>
+
+			<!-- Productos -->
+			<div class="stat-card compact">
+				<div class="stat-icon">
+					<i class="fas fa-cocktail"></i>
+				</div>
+				<div class="stat-info">
+					<h3 th:text="${totalProductos}">0</h3>
+					<p>Productos en el menú</p>
+					<small>Bebidas y snacks disponibles</small>
+				</div>
+			</div>
+
+			<!-- Eventos -->
+			<div class="stat-card compact">
+				<div class="stat-icon">
+					<i class="fas fa-calendar-alt"></i>
+				</div>
+				<div class="stat-info">
+					<h3 th:text="${totalEventos}">0</h3>
+					<p>Eventos programados</p>
+					<small>Próximos shows en el bar</small>
+				</div>
+			</div>
+
+			<!-- Usuarios -->
+			<div class="stat-card compact">
+				<div class="stat-icon">
+					<i class="fas fa-users"></i>
+				</div>
+				<div class="stat-info">
+					<h3 th:text="${totalUsuarios}">0</h3>
+					<p>Usuarios registrados</p>
+					<small>Clientes y administradores</small>
+				</div>
+			</div>
+		</div>
+
+		<!-- Actividad reciente -->
+		<div class="recent-activity minimal">
+			<div class="section-header minimal">
+				<h3><i class="fas fa-clock"></i> Actividad Reciente</h3>
+				<a href="#" class="view-all">Ver todo</a>
+			</div>
+			<div class="activity-list minimal">
+				<div class="activity-item minimal">
+					<div class="activity-icon minimal">
+						<i class="fas fa-plus"></i>
+					</div>
+					<div class="activity-content minimal">
+						<p>Nuevo producto <strong>Heineken</strong> agregado</p>
+						<small>Hace 2 horas</small>
+					</div>
+				</div>
+				<div class="activity-item minimal">
+					<div class="activity-icon minimal">
+						<i class="fas fa-edit"></i>
+					</div>
+					<div class="activity-content minimal">
+						<p>Categoría <strong>Bebidas calientes</strong> actualizada</p>
+						<small>Hace 5 horas</small>
+					</div>
+				</div>
+				<div class="activity-item minimal">
+					<div class="activity-icon minimal">
+						<i class="fas fa-user-plus"></i>
+					</div>
+					<div class="activity-content minimal">
+						<p>Nuevo usuario registrado</p>
+						<small>Ayer a las 14:30</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<section th:fragment="inicio-caja" class="content-section">
+    <!-- Header de la sección -->
+    <div class="section-header">
+        <h2><i class="fas fa-cash-register"></i> Panel de Caja</h2>
+    </div>
+
+    <!-- Tarjetas resumen -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${ventasHoy}">$0</h3>
+                <p>Ventas Hoy</p>
+                <small>Total de ingresos del día</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="fas fa-list"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${pedidosActivos}">0</h3>
+                <p>Pedidos Activos</p>
+                <small>Pedidos en proceso</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-warning"><i class="fas fa-undo"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${devolucionesHoy}">0</h3>
+                <p>Devoluciones Hoy</p>
+                <small>Productos devueltos</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon bg-danger"><i class="fas fa-lock"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${cajaCerrada}">0</h3>
+                <p>Cierres de Caja</p>
+                <small>Hoy realizados</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actividad reciente -->
+    <div class="recent-activity">
+        <div class="section-header">
+            <h3><i class="fas fa-clock"></i> Actividad Reciente</h3>
+        </div>
+        <div class="activity-list">
+            <div class="activity-item" th:each="actividad : ${actividadesRecientes}">
+                <div class="activity-icon"><i class="fas fa-receipt"></i></div>
+                <div class="activity-content">
+                    <p th:text="${actividad.descripcion}">Pedido #123 completado</p>
+                    <small th:text="${actividad.hora}">Hace 1 hora</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,89 @@
+<div th:fragment="products">
+	<section id="products" class="content-section">
+		<div class="section-header">
+			<h1>Gestión de Productos</h1>
+			<p>Administra los productos del menú</p>
+
+			<!-- Mensajes de éxito/error -->
+			<div th:if="${param.success}" class="alert alert-success">
+				<i class="fas fa-check-circle"></i>
+				<span th:text="${param.success}"></span>
+			</div>
+			<div th:if="${param.error}" class="alert alert-error">
+				<i class="fas fa-exclamation-circle"></i>
+				<span th:text="${param.error}"></span>
+			</div>
+		</div>
+
+		<div class="content-card">
+			<div class="card-header">
+				<h2>Lista de Productos</h2>
+				<button class="btn-primary" onclick="adminApp.openNewProduct()">
+					<i class="fas fa-plus"></i> Nuevo Producto
+				</button>
+			</div>
+			<div class="card-body">
+				<!-- AÑADIDO id="productsTable" -->
+				<table id="productsTable" class="data-table">
+					<thead>
+						<tr>
+							<th>Imagen</th>
+							<th>Producto</th>
+							<th>Categoría</th>
+							<th>Precio</th>
+							<th>Disponible</th>
+							<th>Acciones</th>
+						</tr>
+					</thead>
+					<tbody id="productsTableBody">
+						<!-- Sin productos -->
+						<tr th:if="${products == null or #lists.isEmpty(products)}">
+							<td colspan="6" class="text-center">
+								<div class="empty-section">
+									<i class="fas fa-clipboard-list fa-2x"></i>
+									<h3>No hay productos registrados</h3>
+									<p>Use "Nuevo Producto" para agregar.</p>
+								</div>
+							</td>
+						</tr>
+
+						<!-- Con productos -->
+						<tr th:each="product : ${products}" th:id="'productRow_' + ${product.id}">
+							<td>
+								<img th:if="${product.imagen}" th:src="@{'/images/' + ${product.imagen}}" alt="Imagen"
+									class="product-image-thumb" onerror="this.src='/images/default.jpg'">
+							</td>
+							<td th:text="${product.nombreProducto}"></td>
+							<td th:text="${product.categoria.nombre}"></td>
+							<td th:text="${#numbers.formatCurrency(product.precio)}"></td>
+							<td>
+								<span th:if="${product.disponible}" class="status-badge active">Sí</span>
+								<span th:unless="${product.disponible}" class="status-badge inactive">No</span>
+							</td>
+							<td>
+								<!-- Botón Editar -->
+								<button class="btn-secondary btn-sm" th:attr="onclick=|adminApp.openEditProduct(
+                                        ${product.id}, 
+                                        '${#strings.escapeJava(product.nombreProducto)}', 
+                                        '${#strings.escapeJava(product.descripcion)}', 
+                                        ${product.precio}, 
+                                        ${product.categoria.id}, 
+                                        ${product.disponible},
+                                        '${product.imagen != null ? '/images/' + product.imagen : '/images/default.jpg'}'
+                                    )|">
+									<i class="fas fa-edit"></i> Editar
+								</button>
+
+								<!-- Botón Eliminar -->
+								<button class="btn-danger btn-sm"
+									th:onclick="'adminApp.deleteProduct(' + ${product.id} + ')'">
+									<i class="fas fa-trash"></i> Eliminar
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section>
+</div>
