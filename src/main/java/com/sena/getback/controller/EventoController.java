@@ -1,8 +1,9 @@
 package com.sena.getback.controller;
 
 import com.sena.getback.model.Evento;
-import com.sena.getback.repository.EventoRepository;
+import com.sena.getback.service.EventoService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -10,45 +11,57 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/eventos")
 public class EventoController {
 
-    private final EventoRepository eventoRepository;
+    private final EventoService eventoService;
 
-    public EventoController(EventoRepository eventoRepository) {
-        this.eventoRepository = eventoRepository;
+    public EventoController(EventoService eventoService) {
+        this.eventoService = eventoService;
     }
 
+    // Listar eventos
+    @GetMapping
+    public String listarEventos(Model model) {
+        model.addAttribute("eventos", eventoService.listarEventos());
+        return "admin/fragments/events"; // tu fragmento de eventos
+    }
+
+    // Guardar nuevo evento
     @PostMapping("/guardar")
-    public String guardar(@ModelAttribute Evento evento, RedirectAttributes redirect) {
+    public String guardarEvento(@ModelAttribute Evento evento,
+                                RedirectAttributes redirectAttributes) {
         try {
-            eventoRepository.save(evento);
-            redirect.addFlashAttribute("success", "Evento guardado correctamente");
+            eventoService.guardar(evento);
+            redirectAttributes.addFlashAttribute("success", "Evento guardado correctamente ✅");
         } catch (Exception e) {
-            redirect.addFlashAttribute("error", "Error al guardar evento: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al guardar el evento ❌");
         }
-        return "redirect:/admin?activeSection=events";
+        return "redirect:/admin/eventos";
     }
 
+    // Editar evento
     @PostMapping("/editar/{id}")
-    public String editar(@PathVariable Integer id,
-                         @ModelAttribute Evento evento,
-                         RedirectAttributes redirect) {
+    public String editarEvento(@PathVariable Long id,
+                               @ModelAttribute Evento evento,
+                               RedirectAttributes redirectAttributes) {
         try {
             evento.setId(id);
-            eventoRepository.save(evento);
-            redirect.addFlashAttribute("success", "Evento actualizado correctamente");
+            eventoService.guardar(evento);
+            redirectAttributes.addFlashAttribute("success", "Evento actualizado correctamente ✏️");
         } catch (Exception e) {
-            redirect.addFlashAttribute("error", "Error al actualizar evento: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar el evento ❌");
         }
-        return "redirect:/admin?activeSection=events";
+        return "redirect:/admin/eventos";
     }
 
+    // Eliminar evento
     @GetMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable Integer id, RedirectAttributes redirect) {
+    public String eliminarEvento(@PathVariable Long id,
+                                 RedirectAttributes redirectAttributes) {
         try {
-            eventoRepository.deleteById(id);
-            redirect.addFlashAttribute("success", "Evento eliminado correctamente");
+            eventoService.eliminar(id);
+            redirectAttributes.addFlashAttribute("success", "Evento eliminado correctamente 🗑️");
         } catch (Exception e) {
-            redirect.addFlashAttribute("error", "Error al eliminar evento: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar el evento ❌");
         }
-        return "redirect:/admin?activeSection=events";
+        return "redirect:/admin/eventos";
     }
 }

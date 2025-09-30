@@ -2,7 +2,6 @@ package com.sena.getback.service;
 
 import com.sena.getback.model.Evento;
 import com.sena.getback.repository.EventoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,22 +9,29 @@ import java.util.List;
 @Service
 public class EventoService {
 
-    @Autowired
-    private EventoRepository eventoRepository;
+    private final EventoRepository eventoRepository;
 
-    public List<Evento> findAll() {
+    public EventoService(EventoRepository eventoRepository) {
+        this.eventoRepository = eventoRepository;
+    }
+
+    // Listar todos los eventos
+    public List<Evento> listarEventos() {
         return eventoRepository.findAll();
     }
 
-    public Evento findById(Integer id) {
-        return eventoRepository.findById(id).orElse(null);
-    }
-
-    public Evento save(Evento evento) {
+    // Guardar o actualizar evento
+    public Evento guardar(Evento evento) {
         return eventoRepository.save(evento);
     }
 
-    public void delete(Integer id) {
+    // Buscar evento por id
+    public Evento buscarPorId(Long id) {
+        return eventoRepository.findById(id).orElse(null);
+    }
+
+    // Eliminar evento
+    public void eliminar(Long id) {
         eventoRepository.deleteById(id);
     }
 }
