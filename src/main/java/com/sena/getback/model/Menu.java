@@ -100,5 +100,5 @@ public class Menu {
 		return "Menu [id=" + id + ", nombreProducto=" + nombreProducto + ", descripcion=" + descripcion + ", precio="
 				+ precio + ", imagen=" + imagen + ", disponible=" + disponible + "]";
 	}
-	
+
 }

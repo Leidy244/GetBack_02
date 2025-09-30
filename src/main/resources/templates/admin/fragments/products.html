@@ -17,7 +17,9 @@
 						<th>Nombre</th>
 						<th>Descripción</th>
 						<th>Precio</th>
+						<th>Categoria</th>
 						<th>Disponible</th>
+						<th>Imagen</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
@@ -26,9 +28,19 @@
 						<td th:text="${producto.nombreProducto}">Nombre</td>
 						<td th:text="${producto.descripcion}">Descripción</td>
 						<td th:text="${producto.precio}">Precio</td>
+						<td th:text="${producto.categoria.nombre}">Categoria</td>
 						<td>
 							<span th:text="${producto.disponible} ? 'Sí' : 'No'">Disponible</span>
 						</td>
+						<TD>
+							<div class="mb-3">
+								<label class="form-label">Imagen Actual</label>
+								<div>
+									<img th:src="@{${producto.imagen}}" alt="Imagen del producto" class="img-fluid"
+										style="max-height: 150px;">
+								</div>
+							</div>
+						</TD>
 						<td>
 							<button class="btn btn-warning btn-sm" data-bs-toggle="modal"
 								th:data-bs-target="'#productoModalEdit' + ${producto.id}">
@@ -67,6 +79,14 @@
 							<div class="form-check">
 								<input class="form-check-input" type="checkbox" th:field="*{disponible}">
 								<label class="form-check-label">Disponible</label>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Categoria</label>
+								<select th:field="*{categoria.id}" required>
+									<option value="" disabled selected>Selecciona una categoría</option>
+									<option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}">
+									</option>
+								</select>
 							</div>
 						</div>
 						<div class="modal-footer">
@@ -110,6 +130,15 @@
 								<div class="form-check">
 									<input class="form-check-input" type="checkbox" th:field="*{disponible}">
 									<label class="form-check-label">Disponible</label>
+								</div>
+								<div class="mb-3">
+									<label class="form-check-label">Categoria</label>
+									<select th:field="*{categoria.id}" required>
+										<option value="" disabled selected>Selecciona una categoría</option>
+										<option th:each="cat : ${categorias}" th:value="${cat.id}"
+											th:text="${cat.nombre}">
+										</option>
+									</select>
 								</div>
 							</div>
 							<div class="modal-footer">
