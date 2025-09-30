@@ -11,39 +11,43 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/categorias")
 public class CategoriaController {
 
-    private final CategoriaService categoriaService;
+	private final CategoriaService categoriaService;
 
-    public CategoriaController(CategoriaService categoriaService) {
-        this.categoriaService = categoriaService;
-    }
+	public CategoriaController(CategoriaService categoriaService) {
+		this.categoriaService = categoriaService;
+	}
 
-    // Listar categorías
-    @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("categorias", categoriaService.findAll());
-        model.addAttribute("newCategoria", new Categoria()); // para modal de nueva
-        model.addAttribute("activeSection", "categories"); 
-        return "admin";
-    }
+	/**
+	 * Listar categorías y preparar objeto para nueva
+	 */
+	@GetMapping
+	public String listar(Model model) {
+		model.addAttribute("categorias", categoriaService.findAll());
+		model.addAttribute("newCategoria", new Categoria()); // para el modal de creación
+		return "admin"; // tu template principal con secciones
+	}
 
-    // Crear o editar
-    @PostMapping("/guardar")
-    public String guardar(@ModelAttribute Categoria categoria, RedirectAttributes redirect) {
-        boolean esNueva = (categoria.getId() == null);
-        categoriaService.save(categoria);
+	/**
+	 * Guardar o actualizar categoría
+	 */
+	@PostMapping("/guardar")
+	public String guardar(@ModelAttribute Categoria categoria, RedirectAttributes redirect) {
+		boolean esNueva = (categoria.getId() == null);
+		categoriaService.save(categoria);
 
-        redirect.addFlashAttribute("success",
-                esNueva ? "Categoría creada correctamente ✅" : "Categoría actualizada correctamente ✏️");
+		redirect.addFlashAttribute("success",
+				esNueva ? "Categoría creada correctamente" : "Categoría actualizada correctamente ✏️");
 
-        return "redirect:/admin/categorias";
-    }
+		return "redirect:/admin?activeSection=categories";
+	}
 
-    // Eliminar
-    @GetMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable Integer id, RedirectAttributes redirect) {
-        categoriaService.delete(id);
-        redirect.addFlashAttribute("success", "Categoría eliminada correctamente 🗑️");
-        return "redirect:/admin/categorias";
-    }
+	/**
+	 * Eliminar categoría
+	 */
+	@GetMapping("/eliminar/{id}")
+	public String eliminar(@PathVariable Integer id, RedirectAttributes redirect) {
+		categoriaService.delete(id);
+		redirect.addFlashAttribute("success", "Categoría eliminada correctamente 🗑️");
+		return "redirect:/admin?activeSection=categories";
+	}
 }
-
