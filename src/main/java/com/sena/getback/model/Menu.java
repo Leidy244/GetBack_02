@@ -94,4 +94,11 @@ public class Menu {
 	public void setDisponible(Boolean disponible) {
 		this.disponible = disponible;
 	}
+
+	@Override
+	public String toString() {
+		return "Menu [id=" + id + ", nombreProducto=" + nombreProducto + ", descripcion=" + descripcion + ", precio="
+				+ precio + ", imagen=" + imagen + ", disponible=" + disponible + "]";
+	}
+	
 }

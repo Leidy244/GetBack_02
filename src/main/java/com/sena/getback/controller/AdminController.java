@@ -2,6 +2,8 @@ package com.sena.getback.controller;
 
 import com.sena.getback.model.*;
 import com.sena.getback.repository.*;
+import com.sena.getback.service.CategoriaService;
+import com.sena.getback.service.MenuService;
 import com.sena.getback.service.UploadFileService;
 import com.sena.getback.service.UsuarioService;
 
@@ -20,7 +22,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class AdminController {
 
+	private final MenuService menuService;
+	private final CategoriaService categoriaService;
 	private final UsuarioService usuarioService;
+
 	@Autowired
 	private UploadFileService uploadFileService;
 
@@ -30,7 +35,10 @@ public class AdminController {
 	private final UsuarioRepository usuarioRepository;
 
 	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
-			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService) {
+			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
+			MenuService menuService, CategoriaService categoriaService) {
+		this.menuService = menuService;
+		this.categoriaService = categoriaService;
 		this.categoriaRepository = categoriaRepository;
 		this.menuRepository = menuRepository;
 		this.eventoRepository = eventoRepository;
@@ -38,6 +46,7 @@ public class AdminController {
 		this.usuarioService = usuarioService;
 	}
 
+	/** PANEL PRINCIPAL */
 	@GetMapping("/admin")
 	public String panel(@RequestParam(value = "activeSection", required = false) String activeSection, Model model) {
 
@@ -54,35 +63,36 @@ public class AdminController {
 
 			// Listas para las tablas
 			model.addAttribute("categorias", categoriaRepository.findAll());
-			model.addAttribute("productos", menuRepository.findAll());
+			model.addAttribute("products", menuRepository.findAll());
 			model.addAttribute("eventos", eventoRepository.findAll());
 			model.addAttribute("usuarios", usuarioRepository.findAll());
 
 			// Objetos vacíos para formularios
-			model.addAttribute("producto", new Menu());
+			model.addAttribute("newProduct", new Menu());
 			model.addAttribute("categoria", new Categoria());
 			model.addAttribute("evento", new Evento());
-			model.addAttribute("usuario", new Usuario());
+
+			// Admin cargado
 			Usuario admin = usuarioRepository.findById(1)
 					.orElseThrow(() -> new RuntimeException("Admin no encontrado"));
-
 			model.addAttribute("usuario", admin);
 
 		} catch (Exception e) {
 			System.err.println("❌ Error cargando datos: " + e.getMessage());
 			e.printStackTrace();
 
-			// Asegurar que las listas estén vacías pero no nulas
+			// Evita nulos en las vistas
 			model.addAttribute("categorias", java.util.Collections.emptyList());
-			model.addAttribute("productos", java.util.Collections.emptyList());
+			model.addAttribute("products", java.util.Collections.emptyList());
 			model.addAttribute("eventos", java.util.Collections.emptyList());
 			model.addAttribute("usuarios", java.util.Collections.emptyList());
+			model.addAttribute("newProduct", new Menu());
 		}
 
 		return "admin/admin";
 	}
 
-	// Mostrar perfil con información del admin
+	/** PERFIL DEL ADMIN */
 	@GetMapping("/perfil")
 	public String mostrarPerfil(Model model) {
 		Usuario admin = usuarioService.obtenerAdmin().orElseThrow(() -> new RuntimeException("Admin no encontrado"));
@@ -91,13 +101,12 @@ public class AdminController {
 		return "redirect:/admin?activeSection=perfil";
 	}
 
-	// Actualizar datos del admin
 	@PostMapping("/actualizar-datos")
 	public String actualizarPerfil(@ModelAttribute("usuario") Usuario adminActualizado,
 			RedirectAttributes redirectAttrs) {
 		Usuario admin = usuarioService.obtenerAdmin().orElseThrow(() -> new RuntimeException("Admin no encontrado"));
 
-		// Solo actualiza si no viene nulo ni vacío
+		// Actualizar solo si viene valor nuevo
 		if (adminActualizado.getNombre() != null && !adminActualizado.getNombre().isEmpty()) {
 			admin.setNombre(adminActualizado.getNombre());
 		}
@@ -117,34 +126,28 @@ public class AdminController {
 			admin.setClave(adminActualizado.getClave());
 		}
 
-		// Conservar la foto si no se subió nueva
+		// Conservar foto si no se subió nueva
 		if (admin.getFoto() != null) {
 			adminActualizado.setFoto(admin.getFoto());
 		}
 
-		// Mantener ID y Rol del admin
+		// Mantener ID y Rol
 		admin.setId(admin.getId());
 		admin.setRol(admin.getRol());
 
-		// Guardar el objeto admin ya fusionado
 		usuarioService.updateUsuario(admin.getId(), admin);
 
 		redirectAttrs.addFlashAttribute("success", "Perfil actualizado correctamente");
 		return "redirect:/admin?activeSection=perfil";
 	}
 
-	// Actualizar foto
 	@PostMapping("/actualizar-foto")
 	public String actualizarFoto(@RequestParam("id") Integer id, @RequestParam("foto") MultipartFile foto) {
 		usuarioRepository.findById(id).ifPresent(admin -> {
 			try {
-				// Borrar foto anterior (si tiene)
-				uploadFileService.deleteImage(admin.getFoto());
-
-				// Guardar nueva
-				String fileName = uploadFileService.saveImages(foto, admin.getNombre());
+				uploadFileService.deleteImage(admin.getFoto()); // borrar la vieja
+				String fileName = uploadFileService.saveImages(foto, admin.getNombre()); // guardar la nueva
 				admin.setFoto(fileName);
-
 				usuarioRepository.save(admin);
 			} catch (IOException e) {
 				e.printStackTrace();
