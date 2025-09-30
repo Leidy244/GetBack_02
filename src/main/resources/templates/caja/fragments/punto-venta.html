@@ -2,13 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
     <div th:fragment="punto-venta">
-        <div class="cabecera-seccion">
-            <h1><i class="fas fa-cash-register"></i> Punto de Venta</h1>
+        <div class="section-header">
+            <h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
             <div class="acciones-cabecera">
-                <button class="boton boton-secundario boton-pequeno" id="btn-actualizar">
+                <button class="btn btn-secondary btn-sm" id="btn-actualizar">
                     <i class="fas fa-sync-alt"></i> Actualizar
                 </button>
-                <button class="boton boton-primario boton-pequeno" id="btn-nuevo-producto">
+                <button class="btn btn-primary btn-sm" id="btn-nuevo-producto">
                     <i class="fas fa-plus"></i> Nuevo Producto
                 </button>
             </div>
@@ -17,8 +17,8 @@
         <div class="contenedor-pos">
             <div class="panel-productos">
                 <div class="busqueda-productos">
-                    <input type="text" class="control-formulario" placeholder="Buscar productos..." id="buscar-productos">
-                    <button class="boton boton-primario boton-pequeno" id="btn-buscar">
+                    <input type="text" class="form-control" placeholder="Buscar productos..." id="buscar-productos">
+                    <button class="btn btn-primary btn-sm" id="btn-buscar">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -40,7 +40,7 @@
             <div class="panel-carrito">
                 <div class="cabecera-carrito">
                     <h3><i class="fas fa-shopping-cart"></i> Carrito</h3>
-                    <button class="boton-icono" id="btn-vaciar-carrito">
+                    <button class="btn btn-outline-danger btn-sm" id="btn-vaciar-carrito">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -62,21 +62,21 @@
                     </div>
                     
                     <div class="detalles-pago" id="detalles-pago">
-                        <div class="grupo-formulario">
-                            <label>Monto Recibido:</label>
-                            <input type="number" class="control-formulario" placeholder="0.00" id="monto-recibido">
+                        <div class="mb-3">
+                            <label class="form-label">Monto Recibido:</label>
+                            <input type="number" class="form-control" placeholder="0.00" id="monto-recibido">
                         </div>
-                        <div class="grupo-formulario">
-                            <label>Cambio:</label>
-                            <input type="number" class="control-formulario" placeholder="0.00" id="cambio" disabled>
+                        <div class="mb-3">
+                            <label class="form-label">Cambio:</label>
+                            <input type="number" class="form-control" placeholder="0.00" id="cambio" disabled>
                         </div>
                     </div>
                     
                     <div class="acciones-carrito">
-                        <button class="boton boton-secundario" id="btn-imprimir">
+                        <button class="btn btn-secondary" id="btn-imprimir">
                             <i class="fas fa-print"></i> Imprimir
                         </button>
-                        <button class="boton boton-primario" id="btn-finalizar-venta">
+                        <button class="btn btn-success" id="btn-finalizar-venta">
                             <i class="fas fa-check"></i> Finalizar Venta
                         </button>
                     </div>

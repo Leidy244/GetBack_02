@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Panel de cajero
-		
-	</title>
+    <title th:text="${title}">Panel de Cajero - GETBACK</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,11 +22,11 @@
     <!-- Sidebar Fragment -->
     <div th:replace="~{caja/fragments/sidebar :: sidebar}"></div>
 
-    <!-- Header (no fragmentado) -->
+    <!-- Header -->
     <header class="caja-header">
         <div class="header-container">
             <div class="logo-container">
-                <h1>PANEL CAJERO</h1>
+                <h1>PANEL CAJERO - GETBACK</h1>
             </div>
             <div class="user-actions">
                 <div class="dropdown user-dropdown">
@@ -62,67 +59,81 @@
     <!-- Main Content -->
     <main class="caja-main">
         <div class="content-area">
-            <!-- Inicio Caja -->
-            <div th:if="${activeSection == 'inicio-caja' or activeSection == null}" class="content-section">
-                <div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
-            </div>
-
-            <!-- Punto de Venta -->
-            <div th:if="${activeSection == 'punto-venta'}" class="content-section">
-                <div th:replace="~{caja/fragments/punto-venta :: punto-venta}"></div>
-            </div>
-
-            <!-- Ventas Rápidas -->
-            <div th:if="${activeSection == 'ventas-rapidas'}" class="content-section">
-                <div th:replace="~{caja/fragments/ventas-rapidas :: ventas-rapidas}"></div>
-            </div>
-
-            <!-- Pedidos Activos -->
-            <div th:if="${activeSection == 'pedidos-activos'}" class="content-section">
-                <div th:replace="~{caja/fragments/pedidos-activos :: pedidos-activos}"></div>
-            </div>
-
-            <!-- Pedidos Pendientes -->
-            <div th:if="${activeSection == 'pedidos-pendientes'}" class="content-section">
-                <div th:replace="~{caja/fragments/pedidos-pendientes :: pedidos-pendientes}"></div>
-            </div>
-
-            <!-- Pedidos Finalizados -->
-            <div th:if="${activeSection == 'pedidos-finalizados'}" class="content-section">
-                <div th:replace="~{caja/fragments/pedidos-finalizados :: pedidos-finalizados}"></div>
-            </div>
-
-            <!-- Devoluciones -->
-            <div th:if="${activeSection == 'devoluciones'}" class="content-section">
-                <div th:replace="~{caja/fragments/devoluciones :: devoluciones}"></div>
-            </div>
-
-            <!-- Reportes Diarios -->
-            <div th:if="${activeSection == 'reportes-diarios'}" class="content-section">
-                <div th:replace="~{caja/fragments/reportes-diarios :: reportes-diarios}"></div>
-            </div>
-
-            <!-- Cierre de Caja -->
-            <div th:if="${activeSection == 'cierre-caja'}" class="content-section">
-                <div th:replace="~{caja/fragments/cierre-caja :: cierre-caja}"></div>
-            </div>
-
-            <!-- Productos Populares -->
-            <div th:if="${activeSection == 'productos-populares'}" class="content-section">
-                <div th:replace="~{caja/fragments/productos-populares :: productos-populares}"></div>
-            </div>
-
-            <!-- Configuración -->
-            <div th:if="${activeSection == 'configuracion'}" class="content-section">
-                <div th:replace="~{caja/fragments/configuracion :: configuracion}"></div>
-            </div>
-
-            <!-- Turnos -->
-            <div th:if="${activeSection == 'turnos'}" class="content-section">
-                <div th:replace="~{caja/fragments/turnos :: turnos}"></div>
+            <!-- Sección Dinámica basada en activeSection -->
+            <div th:switch="${activeSection}">
+                
+                <!-- Inicio Caja (Sección por defecto) -->
+                <div th:case="'inicio-caja'" class="content-section">
+                    <div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
+                </div>
+                
+                <!-- Punto de Venta -->
+                <div th:case="'punto-venta'" class="content-section">
+                    <div th:replace="~{caja/fragments/punto-venta :: punto-venta}"></div>
+                </div>
+                
+                <!-- Ventas Rápidas -->
+                <div th:case="'ventas-rapidas'" class="content-section">
+                    <div th:replace="~{caja/fragments/ventas-rapidas :: ventas-rapidas}"></div>
+                </div>
+                
+                <!-- Pedidos Activos -->
+                <div th:case="'pedidos-activos'" class="content-section">
+                    <div th:replace="~{caja/fragments/pedidos-activos :: pedidos-activos}"></div>
+                </div>
+                
+                <!-- Pedidos Pendientes -->
+                <div th:case="'pedidos-pendientes'" class="content-section">
+                    <div th:replace="~{caja/fragments/pedidos-pendientes :: pedidos-pendientes}"></div>
+                </div>
+                
+                <!-- Pedidos Finalizados -->
+                <div th:case="'pedidos-finalizados'" class="content-section">
+                    <div th:replace="~{caja/fragments/pedidos-finalizados :: pedidos-finalizados}"></div>
+                </div>
+                
+                <!-- Devoluciones -->
+                <div th:case="'devoluciones'" class="content-section">
+                    <div th:replace="~{caja/fragments/devoluciones :: devoluciones}"></div>
+                </div>
+                
+                <!-- Reportes Diarios -->
+                <div th:case="'reportes-diarios'" class="content-section">
+                    <div th:replace="~{caja/fragments/reportes-diarios :: reportes-diarios}"></div>
+                </div>
+                
+                <!-- Cierre de Caja -->
+                <div th:case="'cierre-caja'" class="content-section">
+                    <div th:replace="~{caja/fragments/cierre-caja :: cierre-caja}"></div>
+                </div>
+                
+                <!-- Productos Populares -->
+                <div th:case="'productos-populares'" class="content-section">
+                    <div th:replace="~{caja/fragments/productos-populares :: productos-populares}"></div>
+                </div>
+                
+                <!-- Configuración -->
+                <div th:case="'configuracion'" class="content-section">
+                    <div th:replace="~{caja/fragments/configuracion :: configuracion}"></div>
+                </div>
+                
+                <!-- Turnos -->
+                <div th:case="'turnos'" class="content-section">
+                    <div th:replace="~{caja/fragments/turnos :: turnos}"></div>
+                </div>
+                
+                <!-- Sección por defecto (Inicio Caja) -->
+                <div th:case="*" class="content-section">
+                    <div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
+                </div>
             </div>
         </div>
     </main>
+
+    <!-- Botón Modo Oscuro -->
+    <button class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
 
     <!-- Modales Fragment -->
     <div th:replace="~{caja/fragments/modals :: modals}"></div>
