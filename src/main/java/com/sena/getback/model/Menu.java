@@ -1,104 +1,104 @@
 package com.sena.getback.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "menus")
+@Table(name = "menu")
 public class Menu {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	private String nombreProducto;
-	private String descripcion;
-	private Double precio;
-	private String imagen;
-	private Boolean disponible = true;
-	@ManyToOne
-	@JoinColumn(name = "categoria_id")
-	private Categoria categoria;
+    @Column(nullable = false, length = 100)
+    private String nombreProducto;
 
-	// Constructores
-	public Menu() {
-	}
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String descripcion;
 
-	public Menu(String nombreProducto, String descripcion, Double precio, String imagen, Categoria categoria) {
-		this.nombreProducto = nombreProducto;
-		this.descripcion = descripcion;
-		this.precio = precio;
-		this.imagen = imagen;
-		this.categoria = categoria;
-	}
+    @Column(nullable = false)
+    private Double precio;
 
-	// Getters y Setters
-	public Integer getId() {
-		return id;
-	}
+    @Column(nullable = false)
+    private Boolean disponible = true;
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    @Column(length = 255)
+    private String imagen;
 
-	public String getNombreProducto() {
-		return nombreProducto;
-	}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
 
-	public void setNombreProducto(String nombreProducto) {
-		this.nombreProducto = nombreProducto;
-	}
+    // 🔹 Constructor vacío (obligatorio para JPA)
+    public Menu() {
+    }
 
-	public String getDescripcion() {
-		return descripcion;
-	}
+    // 🔹 Constructor con todos los campos
+    public Menu(Long id, String nombreProducto, String descripcion, Double precio,
+                Boolean disponible, String imagen, Categoria categoria) {
+        this.id = id;
+        this.nombreProducto = nombreProducto;
+        this.descripcion = descripcion;
+        this.precio = precio;
+        this.disponible = disponible;
+        this.imagen = imagen;
+        this.categoria = categoria;
+    }
 
-	public void setDescripcion(String descripcion) {
-		this.descripcion = descripcion;
-	}
+    // 🔹 Getters y Setters
+    public Long getId() {
+        return id;
+    }
 
-	public Double getPrecio() {
-		return precio;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setPrecio(Double precio) {
-		this.precio = precio;
-	}
+    public String getNombreProducto() {
+        return nombreProducto;
+    }
 
-	public String getImagen() {
-		return imagen;
-	}
+    public void setNombreProducto(String nombreProducto) {
+        this.nombreProducto = nombreProducto;
+    }
 
-	public void setImagen(String imagen) {
-		this.imagen = imagen;
-	}
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-	public Categoria getCategoria() {
-		return categoria;
-	}
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
-	public void setCategoria(Categoria categoria) {
-		this.categoria = categoria;
-	}
+    public Double getPrecio() {
+        return precio;
+    }
 
-	// Agregar getter y setter
-	public Boolean getDisponible() {
-		return disponible;
-	}
+    public void setPrecio(Double precio) {
+        this.precio = precio;
+    }
 
-	public void setDisponible(Boolean disponible) {
-		this.disponible = disponible;
-	}
+    public Boolean getDisponible() {
+        return disponible;
+    }
 
-	@Override
-	public String toString() {
-		return "Menu [id=" + id + ", nombreProducto=" + nombreProducto + ", descripcion=" + descripcion + ", precio="
-				+ precio + ", imagen=" + imagen + ", disponible=" + disponible + "]";
-	}
+    public void setDisponible(Boolean disponible) {
+        this.disponible = disponible;
+    }
 
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
 }

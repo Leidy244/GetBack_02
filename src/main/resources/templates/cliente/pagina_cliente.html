@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Café Bar | GETBACK </title>
+    <title>Café Bar | GETBACK</title>
 
     <!-- Fuentes y librerías externas -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Exo+2:wght@300;400;500&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- CSS desde static/css -->
+    <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/pag_cliente.css}">
 </head>
 <body>
@@ -17,8 +17,7 @@
     <nav class="glass-nav">
         <div class="nav-container">
             <a href="#inicio" class="brand">
-                <!-- Logo desde static/img -->
-                <img th:src="@{/img/logo_get1.png}" alt="Get Back" class="logo">
+                <img th:src="@{/images/Logo_principal.png}" alt="Get Back" class="logo">
             </a>
             <div class="nav-links">
                 <a href="#inicio" class="nav-link active">Inicio</a>
@@ -26,12 +25,8 @@
                 <a href="#menu" class="nav-link">Menú</a>
                 <a href="#galeria" class="nav-link">Galería</a>
                 <a href="#contacto" class="nav-link">Contacto</a>
-                <!-- Botón staff login -->
-                <a th:href="@{/}" class="nav-link login-btn">Staff Login</a>
             </div>
-            <button class="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button class="menu-toggle"><i class="fas fa-bars"></i></button>
         </div>
     </nav>
 
@@ -39,24 +34,18 @@
     <header id="inicio" class="hero">
         <div class="video-background">
             <video autoplay muted loop>
-                <!-- Video desde static/vid -->
                 <source th:src="@{/vid/get.mp4}" type="video/mp4">
             </video>
             <div class="overlay"></div>
         </div>
         <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="highlight">GET BACK</span>
-                <span class="subtitle">CAFÉ BAR</span>
-            </h1>
+            <h1 class="hero-title"><span class="highlight">GET BACK</span><span class="subtitle">CAFÉ BAR</span></h1>
             <p class="hero-text">Donde el rock, el buen café, la comida y los cócteles se encuentran</p>
             <div class="hero-buttons">
                 <a href="#eventos" class="btn btn-primary">Ver Eventos</a>
             </div>
         </div>
-        <div class="scroll-down">
-            <i class="fas fa-chevron-down"></i>
-        </div>
+        <div class="scroll-down"><i class="fas fa-chevron-down"></i></div>
     </header>
 
     <!-- Sección de eventos -->
@@ -65,12 +54,10 @@
             <h2 class="section-title">Próximos <span class="highlight">Eventos</span></h2>
             <p class="section-subtitle">Vive la experiencia Get Back</p>
         </div>
-        
         <div class="events-grid">
-            <!-- Eventos dinámicos -->
             <div th:each="evento : ${eventos}" class="event-card">
-                <div class="event-image"
-                     th:style="'background-image:url(' + (${evento.imagen} != null ? ${evento.imagen} : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80') + ');'">
+                <div class="event-image" 
+                     th:style="'background-image:url(' + (${evento.imagen} != null ? @{/images/{img}(img=${evento.imagen})} : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80') + ');'">
                     <div class="event-badge">Evento</div>
                 </div>
                 <div class="event-info">
@@ -83,29 +70,46 @@
                         <div class="event-meta">
                             <span><i class="far fa-clock"></i> <span th:text="${evento.hora}">20:00</span></span>
                         </div>
-                        <p class="event-description" th:text="${evento.descripcion}">
-                            Descripción del evento.
-                        </p>
+                        <p class="event-description" th:text="${evento.descripcion}">Descripción del evento</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Mensaje si no hay eventos -->
-            <div th:if="${eventos == null or eventos.empty}" class="event-card" style="text-align: center; padding: 2rem;">
-                <i class="fas fa-calendar-times fa-3x" style="color: #6a0dad; margin-bottom: 1rem;"></i>
+
+            <div th:if="${eventos == null or eventos.empty}" class="event-card" style="text-align:center; padding:2rem;">
+                <i class="fas fa-calendar-times fa-3x" style="color:#6a0dad; margin-bottom:1rem;"></i>
                 <h3>Próximamente</h3>
                 <p>Estamos preparando eventos increíbles para ti. ¡Vuelve pronto!</p>
             </div>
         </div>
     </section>
 
-    <!-- Menú -->
+    <!-- Sección de menú/productos -->
     <section id="menu" class="section menu">
         <div class="section-header">
             <h2 class="section-title">NUESTRO <span class="highlight">MENÚ</span></h2>
             <p class="section-subtitle">Sabores que rockean</p>
         </div>
-        <!-- aquí mantienes tus tabs y contenido de menú -->
+
+        <div class="menu-grid">
+            <!-- Tarjetas de productos -->
+            <div th:each="producto : ${productos}" class="menu-card">
+                <div class="menu-image" 
+                     th:style="'background-image:url(' + (${producto.imagen} != null ? @{/images/{img}(img=${producto.imagen})} : 'https://via.placeholder.com/300') + ');'">
+                    <div class="menu-badge">Producto</div>
+                </div>
+                <div class="menu-info">
+                    <h3 class="menu-title" th:text="${producto.nombreProducto}">Nombre</h3>
+                    <p class="menu-description" th:text="${producto.descripcion}">Descripción</p>
+                    <p class="menu-price" th:text="${producto.precio} + ' $'">Precio</p>
+                </div>
+            </div>
+
+            <div th:if="${productos == null or productos.empty}" style="text-align:center; padding:2rem;">
+                <i class="fas fa-box-open fa-3x" style="color:#6a0dad; margin-bottom:1rem;"></i>
+                <h3>Próximamente</h3>
+                <p>Estamos preparando productos increíbles para ti. ¡Vuelve pronto!</p>
+            </div>
+        </div>
     </section>
 
     <!-- Galería -->
@@ -127,22 +131,10 @@
         <div class="contact-container">
             <div class="contact-info">
                 <h2 class="contact-title">Ven a <span class="highlight">Visitarnos</span></h2>
-                <div class="info-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <p>Calle 13<br>Duitama, Boyaca</p>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-phone-alt"></i>
-                    <p>+57 310256698</p>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-envelope"></i>
-                    <p>reservas@getback.com</p>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-clock"></i>
-                    <p>Lunes a Viernes: 6PM - 2AM<br>Sábado y Domingo: 5PM - 3AM</p>
-                </div>
+                <div class="info-item"><i class="fas fa-map-marker-alt"></i><p>Calle 13<br>Duitama, Boyaca</p></div>
+                <div class="info-item"><i class="fas fa-phone-alt"></i><p>+57 310256698</p></div>
+                <div class="info-item"><i class="fas fa-envelope"></i><p>reservas@getback.com</p></div>
+                <div class="info-item"><i class="fas fa-clock"></i><p>Lunes a Viernes: 6PM - 2AM<br>Sábado y Domingo: 5PM - 3AM</p></div>
                 <div class="social-links">
                     <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
@@ -157,7 +149,7 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-logo">
-                <img th:src="@{/img/logo_get1.png}" alt="Get Back" class="logo">
+                <img th:src="@{/images/Logo_principal.png}" alt="Get Back" class="logo">
                 <p>Café Bar Rock y Metal</p>
             </div>
             <div class="footer-links">

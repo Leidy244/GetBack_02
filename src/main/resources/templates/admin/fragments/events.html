@@ -2,25 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <section th:fragment="events" class="content-section">
+
+    <!-- Encabezado -->
     <div class="section-header d-flex justify-content-between align-items-center">
-        <h2><i class="fas fa-calendar"></i> Eventos</h2>
+        <h2><i class="fas fa-calendar me-2 title-icon"></i> Eventos</h2>
         <div class="d-flex gap-2">
-            <!-- Botón a página cliente -->
-            <a th:href="@{/cliente}" target="_blank" class="btn btn-success">
-                <i class="fas fa-eye"></i> Ver Página Cliente
+            <!-- Botón ver en cliente -->
+            <a th:href="@{/cliente}" target="_blank" class="btn btn-success" title="Ver en Cliente">
+                <i class="fas fa-eye"></i>
+                <span class="d-none d-lg-inline"> Ver en Cliente</span>
             </a>
             <!-- Botón nuevo evento -->
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModalNew">
-                <i class="fas fa-plus"></i> Nuevo Evento
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModalNew" title="Nuevo Evento">
+                <i class="fas fa-plus"></i>
+                <span class="d-none d-lg-inline"> Nuevo Evento</span>
             </button>
         </div>
     </div>
 
-    <!-- Alertas de feedback -->
+    <!-- Alertas -->
     <div th:if="${success}" class="alert alert-success mt-3" th:text="${success}"></div>
     <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
 
-    <!-- Mensaje si no hay eventos -->
+    <!-- Sin eventos -->
     <div th:if="${eventos == null or eventos.empty}" class="empty-section text-center my-5">
         <i class="fas fa-calendar-times fa-3x mb-3"></i>
         <h3>No hay eventos registrados</h3>
@@ -36,7 +40,8 @@
                 <th>Título</th>
                 <th>Fecha</th>
                 <th>Hora</th>
-                <th>Acciones</th>
+                <th>Imagen</th>
+                <th class="text-center">Acciones</th>
             </tr>
             </thead>
             <tbody>
@@ -46,18 +51,28 @@
                 <td th:text="${#temporals.format(evento.fecha, 'dd/MM/yyyy')}">24/09/2024</td>
                 <td th:text="${evento.hora}">20:00</td>
                 <td>
-                    <button class="btn btn-sm btn-warning d-flex align-items-center gap-1"
-                            data-bs-toggle="modal"
-                            th:attr="data-bs-target='#eventModalEdit' + ${evento.id}">
-                        <i class="fas fa-edit"></i>
-                        <span class="d-none d-md-inline">Editar</span>
-                    </button>
-                    <a th:href="@{/admin/eventos/eliminar/{id}(id=${evento.id})}"
-                       class="btn btn-sm btn-danger d-flex align-items-center gap-1"
-                       onclick="return confirm('¿Está seguro de eliminar este evento?')">
-                        <i class="fas fa-trash"></i>
-                        <span class="d-none d-md-inline">Eliminar</span>
-                    </a>
+                    <img th:src="${evento.imagen}" alt="Imagen evento"
+                         style="max-height:60px; max-width:80px;" class="rounded shadow-sm">
+                </td>
+                <td class="text-center">
+                    <div class="d-inline-flex gap-1">
+                        <!-- Editar -->
+                        <button class="btn btn-sm btn-warning"
+                                data-bs-toggle="modal"
+                                th:attr="data-bs-target='#eventModalEdit' + ${evento.id}"
+                                title="Editar">
+                            <i class="fas fa-edit"></i>
+                            <span class="d-none d-lg-inline"> Editar</span>
+                        </button>
+                        <!-- Eliminar -->
+                        <a th:href="@{/admin/eventos/eliminar/{id}(id=${evento.id})}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('¿Está seguro de eliminar este evento?')"
+                           title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                            <span class="d-none d-lg-inline"> Eliminar</span>
+                        </a>
+                    </div>
                 </td>
             </tr>
             </tbody>
@@ -67,7 +82,7 @@
     <!-- Modal Nuevo Evento -->
     <div class="modal fade" id="eventModalNew" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <form th:action="@{/admin/eventos/guardar}" method="post" class="modal-content">
+            <form th:action="@{/admin/eventos/guardar}" method="post" enctype="multipart/form-data" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Nuevo Evento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -87,8 +102,8 @@
                             <input type="time" class="form-control" name="hora" required>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label">URL de Imagen</label>
-                            <input type="url" class="form-control" name="imagen" placeholder="https://ejemplo.com/imagen.jpg">
+                            <label class="form-label">Imagen del Evento</label>
+                            <input type="file" class="form-control" name="file" accept="image/*" required>
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Descripción</label>
@@ -108,16 +123,15 @@
     <div th:each="evento : ${eventos}">
         <div class="modal fade" th:id="'eventModalEdit' + ${evento.id}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
-                <form th:action="@{/admin/eventos/editar/{id}(id=${evento.id})}" method="post" class="modal-content">
+                <form th:action="@{/admin/eventos/editar/{id}(id=${evento.id})}" method="post" enctype="multipart/form-data" class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Editar Evento</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="id" th:value="${evento.id}">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label" th:for="'titulo' + ${evento.id}">Título del Evento</label>
+                                <label class="form-label" th:for="'titulo' + ${evento.id}">Título</label>
                                 <input type="text" class="form-control"
                                        th:id="'titulo' + ${evento.id}" name="titulo"
                                        th:value="${evento.titulo}" required>
@@ -135,10 +149,15 @@
                                        th:value="${evento.hora}" required>
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label" th:for="'imagen' + ${evento.id}">URL de Imagen</label>
-                                <input type="url" class="form-control"
-                                       th:id="'imagen' + ${evento.id}" name="imagen"
-                                       th:value="${evento.imagen}" placeholder="https://ejemplo.com/imagen.jpg">
+                                <label class="form-label" th:for="'imagen' + ${evento.id}">Cambiar Imagen</label>
+                                <input type="file" class="form-control"
+                                       th:id="'imagen' + ${evento.id}" name="file" accept="image/*">
+                                <!-- Vista previa -->
+                                <small class="text-muted">Imagen actual:</small>
+                                <div>
+                                    <img th:src="${evento.imagen}" alt="Imagen evento"
+                                         style="max-height:80px; max-width:120px;" class="rounded shadow-sm mt-2">
+                                </div>
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label" th:for="'descripcion' + ${evento.id}">Descripción</label>
@@ -157,6 +176,7 @@
             </div>
         </div>
     </div>
+
 </section>
 </body>
 </html>

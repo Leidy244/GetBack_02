@@ -5,6 +5,7 @@ import com.sena.getback.repository.EventoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EventoService {
@@ -16,22 +17,24 @@ public class EventoService {
     }
 
     // Listar todos los eventos
-    public List<Evento> listarEventos() {
+    public List<Evento> findAll() {
         return eventoRepository.findAll();
     }
 
-    // Guardar o actualizar evento
-    public Evento guardar(Evento evento) {
+    // Buscar evento por ID
+    public Optional<Evento> findById(Long id) {
+        return eventoRepository.findById(id);
+    }
+
+    // Guardar o actualizar un evento
+    public Evento save(Evento evento) {
         return eventoRepository.save(evento);
     }
 
-    // Buscar evento por id
-    public Evento buscarPorId(Long id) {
-        return eventoRepository.findById(id).orElse(null);
-    }
-
-    // Eliminar evento
-    public void eliminar(Long id) {
-        eventoRepository.deleteById(id);
+    // Eliminar un evento por ID (con verificación)
+    public void deleteById(Long id) {
+        if (eventoRepository.existsById(id)) {
+            eventoRepository.deleteById(id);
+        }
     }
 }

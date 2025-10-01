@@ -2570,3 +2570,21 @@ body {
 		width: 100%;
 	}
 }
+/* --- Encabezado de sección con línea separadora --- */
+.section-header {
+  border-bottom: 1px solid #e6e6e6;   /* línea gris */
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+/* Icono morado */
+.title-icon {
+  color: #6f42c1;   /* morado Bootstrap */
+}
+
+/* Título */
+.section-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}

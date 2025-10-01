@@ -9,33 +9,35 @@ import java.util.List;
 @Service
 public class MenuService {
 
-	private final MenuRepository menuRepository;
+    private final MenuRepository menuRepository;
 
-	public MenuService(MenuRepository menuRepository) {
-		this.menuRepository = menuRepository;
-	}
+    // Inyección por constructor
+    public MenuService(MenuRepository menuRepository) {
+        this.menuRepository = menuRepository;
+    }
 
-	public List<Menu> listarTodos() {
-		return menuRepository.findAll();
-	}
+    // 🔹 Listar todos los productos
+    public List<Menu> findAll() {
+        return menuRepository.findAll();
+    }
 
-	public List<Menu> listarDisponibles() {
-		return menuRepository.findByDisponibleTrue();
-	}
+    // 🔹 Buscar producto por id (devuelve Menu o null, no Optional)
+    public Menu findById(Long id) {
+        return menuRepository.findById(id).orElse(null);
+    }
 
-	public Menu guardar(Menu menu) {
-		return menuRepository.save(menu);
-	}
+    // 🔹 Guardar o editar producto
+    public Menu save(Menu producto) {
+        return menuRepository.save(producto);
+    }
 
-	public void eliminar(Integer id) {
-		menuRepository.deleteById(id);
-	}
+    // 🔹 Eliminar producto por id
+    public void delete(Long id) {
+        menuRepository.deleteById(id);
+    }
 
-	public Menu obtenerPorId(Integer id) {
-		return menuRepository.findById(id).orElse(null);
-	}
-
-	public List<Menu> buscarPorCategoria(Integer categoriaId) {
-		return menuRepository.findByCategoriaIdAndDisponibleTrue(categoriaId);
-	}
+    // 🔹 Verificar si un producto existe por id (opcional, pero útil)
+    public boolean existsById(Long id) {
+        return menuRepository.existsById(id);
+    }
 }

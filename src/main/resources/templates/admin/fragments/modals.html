@@ -2,69 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
     <section th:fragment="modals">
-        <!-- Modal Único para Productos (Nuevo/Editar) -->
-        <div class="modal fade" id="productModal" tabindex="-1">
-            <div class="modal-dialog">
-                <form id="productForm" method="post" class="modal-content" enctype="multipart/form-data">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="productModalTitle">Nuevo Producto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="id" id="productId">
-                        
-                        <div class="mb-3">
-                            <label>Nombre</label>
-                            <input type="text" name="nombre" id="productName" class="form-control" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label>Descripción</label>
-                            <textarea name="descripcion" id="productDescription" class="form-control" rows="3"></textarea>
-                        </div>
-                        
-                        <!-- Sección de Imagen -->
-                        <div class="mb-3">
-                            <label>Imagen Actual</label>
-                            <div id="currentImageContainer" class="current-image">
-                                <img id="currentProductImage" src="" alt="Imagen actual" style="max-height: 100px; display: none;">
-                                <span id="noImageMessage" class="text-muted">Sin imagen</span>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label id="imageLabel">Imagen</label>
-                            <input type="file" name="imagen" class="form-control" 
-                                   id="productImage" accept="image/*">
-                            <small class="text-muted" id="imageHelp">Formatos permitidos: JPG, PNG, GIF, WebP (Máx. 5MB)</small>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label>Vista Previa de la Imagen</label>
-                            <div class="image-preview" id="productImagePreview">
-                                <span class="text-muted">La imagen aparecerá aquí</span>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label>Categoría</label>
-                            <select name="categoria.id" id="productCategory" class="form-select" required>
-                                <option value="">Seleccionar categoría</option>
-                                <option th:each="categoria : ${categorias}" 
-                                        th:value="${categoria.id}"
-                                        th:text="${categoria.nombre}">
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" id="productSubmitBtn">Guardar Producto</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
+       
         <!-- Categoría Nueva -->
         <div class="modal fade" id="categoryModalNew" tabindex="-1">
             <div class="modal-dialog">
