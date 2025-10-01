@@ -81,27 +81,6 @@ public class UsuarioController {
         return "redirect:/users";
     }
 
-    @GetMapping("/register")
-    public String mostrarFormularioRegistro(Model model) {
-        model.addAttribute("usuario", new Usuario());
-        return "registro"; // Cambiado: apunta a templates/registro.html
-    }
-
-    @PostMapping("/register")
-    public String registrarUsuario(@ModelAttribute("usuario") Usuario usuario, 
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            usuario.setRol("USER");    
-            usuario.setEstado("ACTIVO");
-            usuarioService.saveUser(usuario);
-            redirectAttributes.addFlashAttribute("message", "Registro exitoso. Ahora puede iniciar sesión.");
-            return "redirect:/login"; 
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
-            return "redirect:/users/register";
-        }
-    }
-
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttrs) {
         try {
@@ -111,5 +90,25 @@ public class UsuarioController {
             redirectAttrs.addFlashAttribute("error", "Error al eliminar usuario: " + e.getMessage());
         }
         return "redirect:/users";
+    }
+    @GetMapping("/registro")
+    public String mostrarFormularioRegistro(Model model) {
+        model.addAttribute("usuario", new Usuario());
+        return "login/registro"; 
+    }
+
+    @PostMapping("/registro")
+    public String registrarUsuario(@ModelAttribute("usuario") Usuario usuario,RedirectAttributes redirectAttributes) {
+        try {
+            usuario.setRol("USER");    
+            usuario.setEstado("ACTIVO");
+            usuarioService.saveUser(usuario);
+            redirectAttributes.addFlashAttribute("message", "Registro exitoso. Ahora puede iniciar sesión.");
+            return "redirect:/login"; 
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
+            return "redirect:/users/registro";
+        
+        }
     }
 }
