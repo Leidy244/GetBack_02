@@ -22,138 +22,159 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class AdminController {
 
-	private final MenuService menuService;
-	private final CategoriaService categoriaService;
-	private final UsuarioService usuarioService;
+    private final MenuService menuService;
+    private final CategoriaService categoriaService;
+    private final UsuarioService usuarioService;
 
-	@Autowired
-	private UploadFileService uploadFileService;
+    @Autowired
+    private UploadFileService uploadFileService; 
 
-	private final CategoriaRepository categoriaRepository;
-	private final MenuRepository menuRepository;
-	private final EventoRepository eventoRepository;
-	private final UsuarioRepository usuarioRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final MenuRepository menuRepository;
+    private final EventoRepository eventoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
-			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
-			MenuService menuService, CategoriaService categoriaService) {
-		this.menuService = menuService;
-		this.categoriaService = categoriaService;
-		this.categoriaRepository = categoriaRepository;
-		this.menuRepository = menuRepository;
-		this.eventoRepository = eventoRepository;
-		this.usuarioRepository = usuarioRepository;
-		this.usuarioService = usuarioService;
-	}
+    @Autowired
+    public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
+            EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
+            MenuService menuService, CategoriaService categoriaService, UploadFileService uploadFileService) {
+        this.menuService = menuService;
+        this.categoriaService = categoriaService;
+        this.categoriaRepository = categoriaRepository;
+        this.menuRepository = menuRepository;
+        this.eventoRepository = eventoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.usuarioService = usuarioService;
+        this.uploadFileService = uploadFileService;
+    }
 
-	/** PANEL PRINCIPAL */
-	@GetMapping("/admin")
-	public String panel(@RequestParam(value = "activeSection", required = false) String activeSection, Model model) {
+    /** PANEL PRINCIPAL */
+    @GetMapping("/admin")
+    public String panel(@RequestParam(value = "activeSection", required = false) String activeSection, Model model) {
 
-		String section = (activeSection != null && !activeSection.isEmpty()) ? activeSection : "dashboard";
-		model.addAttribute("activeSection", section);
-		model.addAttribute("title", "Panel de Administración - " + section.toUpperCase());
+        String section = (activeSection != null && !activeSection.isEmpty()) ? activeSection : "dashboard";
+        model.addAttribute("activeSection", section);
+        model.addAttribute("title", "Panel de Administración");
 
-		try {
-			// Estadísticas
-			model.addAttribute("totalCategorias", categoriaRepository.count());
-			model.addAttribute("totalProductos", menuRepository.count());
-			model.addAttribute("totalEventos", eventoRepository.count());
-			model.addAttribute("totalUsuarios", usuarioRepository.count());
+        try {
+            // Estadísticas
+            model.addAttribute("totalCategorias", categoriaRepository.count());
+            model.addAttribute("totalProductos", menuRepository.count());
+            model.addAttribute("totalEventos", eventoRepository.count());
+            model.addAttribute("totalUsuarios", usuarioRepository.count());
 
-			// Listas para las tablas
-			model.addAttribute("categorias", categoriaRepository.findAll());
-			model.addAttribute("products", menuRepository.findAll());
-			model.addAttribute("eventos", eventoRepository.findAll());
-			model.addAttribute("usuarios", usuarioRepository.findAll());
+            // Listas para las tablas
+            model.addAttribute("categorias", categoriaRepository.findAll());
+            model.addAttribute("products", menuRepository.findAll());
+            model.addAttribute("eventos", eventoRepository.findAll());
+            model.addAttribute("usuarios", usuarioRepository.findAll());
 
-			// Objetos vacíos para formularios
-			model.addAttribute("newProduct", new Menu());
-			model.addAttribute("categoria", new Categoria());
-			model.addAttribute("evento", new Evento());
+            // Objetos vacíos para formularios
+            model.addAttribute("newProduct", new Menu());
+            model.addAttribute("categoria", new Categoria());
+            model.addAttribute("evento", new Evento());
 
-			// Admin cargado
-			Usuario admin = usuarioRepository.findById(1)
-					.orElseThrow(() -> new RuntimeException("Admin no encontrado"));
-			model.addAttribute("usuario", admin);
+            // Admin
+            Usuario admin = usuarioService.getFirstUser()
+                    .orElse(new Usuario());
+            model.addAttribute("usuario", admin);
 
-		} catch (Exception e) {
-			System.err.println("❌ Error cargando datos: " + e.getMessage());
-			e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("❌ Error cargando datos: " + e.getMessage());
+            
+            model.addAttribute("categorias", java.util.Collections.emptyList());
+            model.addAttribute("products", java.util.Collections.emptyList());
+            model.addAttribute("eventos", java.util.Collections.emptyList());
+            model.addAttribute("usuarios", java.util.Collections.emptyList());
+            model.addAttribute("newProduct", new Menu());
+            model.addAttribute("usuario", new Usuario());
+        }
 
-			// Evita nulos en las vistas
-			model.addAttribute("categorias", java.util.Collections.emptyList());
-			model.addAttribute("products", java.util.Collections.emptyList());
-			model.addAttribute("eventos", java.util.Collections.emptyList());
-			model.addAttribute("usuarios", java.util.Collections.emptyList());
-			model.addAttribute("newProduct", new Menu());
-		}
+        return "admin"; // Ajusta según tu template
+    }
 
-		return "admin/admin";
-	}
+    /** PERFIL DEL ADMIN */
+    @GetMapping("/perfil")
+    public String mostrarPerfil(Model model) {
+        Usuario admin = usuarioService.getFirstUser().orElse(new Usuario());
+        model.addAttribute("usuario", admin);
+        model.addAttribute("activeSection", "perfil");
+        return "admin";
+    }
 
-	/** PERFIL DEL ADMIN */
-	@GetMapping("/perfil")
-	public String mostrarPerfil(Model model) {
-		Usuario admin = usuarioService.obtenerAdmin().orElseThrow(() -> new RuntimeException("Admin no encontrado"));
+    @PostMapping("/actualizar-datos")
+    public String actualizarPerfil(@ModelAttribute("usuario") Usuario adminActualizado,
+            RedirectAttributes redirectAttrs) {
+        try {
+            Usuario admin = usuarioService.getFirstUser()
+                    .orElseThrow(() -> new RuntimeException("Admin no encontrado"));
 
-		model.addAttribute("usuario", admin);
-		return "redirect:/admin?activeSection=perfil";
-	}
+            // Actualizar campos
+            if (adminActualizado.getNombre() != null && !adminActualizado.getNombre().isEmpty()) {
+                admin.setNombre(adminActualizado.getNombre());
+            }
+            if (adminActualizado.getApellido() != null && !adminActualizado.getApellido().isEmpty()) {
+                admin.setApellido(adminActualizado.getApellido());
+            }
+            if (adminActualizado.getCorreo() != null && !adminActualizado.getCorreo().isEmpty()) {
+                admin.setCorreo(adminActualizado.getCorreo());
+            }
+            if (adminActualizado.getDireccion() != null) {
+                admin.setDireccion(adminActualizado.getDireccion());
+            }
+            if (adminActualizado.getTelefono() != null) {
+                admin.setTelefono(adminActualizado.getTelefono());
+            }
+            if (adminActualizado.getClave() != null && !adminActualizado.getClave().isEmpty()) {
+                admin.setClave(adminActualizado.getClave());
+            }
 
-	@PostMapping("/actualizar-datos")
-	public String actualizarPerfil(@ModelAttribute("usuario") Usuario adminActualizado,
-			RedirectAttributes redirectAttrs) {
-		Usuario admin = usuarioService.obtenerAdmin().orElseThrow(() -> new RuntimeException("Admin no encontrado"));
+            usuarioService.updateUser(admin);
+            redirectAttrs.addFlashAttribute("success", "Perfil actualizado correctamente");
+            
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", "Error al actualizar perfil: " + e.getMessage());
+        }
+        
+        return "redirect:/admin?activeSection=perfil";
+    }
 
-		// Actualizar solo si viene valor nuevo
-		if (adminActualizado.getNombre() != null && !adminActualizado.getNombre().isEmpty()) {
-			admin.setNombre(adminActualizado.getNombre());
-		}
-		if (adminActualizado.getApellido() != null && !adminActualizado.getApellido().isEmpty()) {
-			admin.setApellido(adminActualizado.getApellido());
-		}
-		if (adminActualizado.getCorreo() != null && !adminActualizado.getCorreo().isEmpty()) {
-			admin.setCorreo(adminActualizado.getCorreo());
-		}
-		if (adminActualizado.getDireccion() != null && !adminActualizado.getDireccion().isEmpty()) {
-			admin.setDireccion(adminActualizado.getDireccion());
-		}
-		if (adminActualizado.getTelefono() != null && !adminActualizado.getTelefono().isEmpty()) {
-			admin.setTelefono(adminActualizado.getTelefono());
-		}
-		if (adminActualizado.getClave() != null && !adminActualizado.getClave().isEmpty()) {
-			admin.setClave(adminActualizado.getClave());
-		}
+    /** ACTUALIZAR FOTO  */
+    @PostMapping("/actualizar-foto")
+    public String actualizarFoto(@RequestParam("id") Long id, 
+                                @RequestParam("foto") MultipartFile foto,
+                                RedirectAttributes redirectAttrs) {
+        try {
+            // Buscar el usuario
+            Usuario admin = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-		// Conservar foto si no se subió nueva
-		if (admin.getFoto() != null) {
-			adminActualizado.setFoto(admin.getFoto());
-		}
+            // Validar que el archivo no esté vacío
+            if (foto.isEmpty()) {
+                redirectAttrs.addFlashAttribute("error", "Por favor seleccione una foto");
+                return "redirect:/admin?activeSection=perfil";
+            }
 
-		// Mantener ID y Rol
-		admin.setId(admin.getId());
-		admin.setRol(admin.getRol());
+            if (admin.getFoto() != null && !admin.getFoto().isEmpty()) {
+                try {
+                    uploadFileService.deleteImage(admin.getFoto());
+                } catch (Exception e) {
+                    System.err.println("⚠️ No se pudo borrar la foto anterior: " + e.getMessage());
+                }
+            }
 
-		usuarioService.updateUsuario(admin.getId(), admin);
+            String fileName = uploadFileService.saveImages(foto, admin.getNombre());
+            admin.setFoto(fileName);
+            usuarioRepository.save(admin);
 
-		redirectAttrs.addFlashAttribute("success", "Perfil actualizado correctamente");
-		return "redirect:/admin?activeSection=perfil";
-	}
-
-	@PostMapping("/actualizar-foto")
-	public String actualizarFoto(@RequestParam("id") Integer id, @RequestParam("foto") MultipartFile foto) {
-		usuarioRepository.findById(id).ifPresent(admin -> {
-			try {
-				uploadFileService.deleteImage(admin.getFoto()); // borrar la vieja
-				String fileName = uploadFileService.saveImages(foto, admin.getNombre()); // guardar la nueva
-				admin.setFoto(fileName);
-				usuarioRepository.save(admin);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-
-		return "redirect:/admin?activeSection=perfil";
-	}
+            redirectAttrs.addFlashAttribute("success", "Foto actualizada correctamente");
+            
+        } catch (IOException e) {
+            redirectAttrs.addFlashAttribute("error", "Error al guardar la foto: " + e.getMessage());
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", "Error al actualizar foto: " + e.getMessage());
+        }
+        
+        return "redirect:/admin?activeSection=perfil";
+    }
 }
