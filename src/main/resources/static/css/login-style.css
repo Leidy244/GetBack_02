@@ -29,25 +29,69 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #151f28;
     overflow: hidden;
+    position: relative;
+}
+
+.background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/jack-daniels-get-back\ \(1\).jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+/* Fallback en caso de que la imagen no cargue */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0f1923 0%, #152238 25%, #1c2e4a 50%, #243b55 75%, #2c5282 100%);
+    z-index: -2;
 }
 
 .login-container {
     position: relative;
-    width: 400px;
-    height: 450px;
-    background: #191919;
+    width: 420px;
+    height: 540px;
+    background: rgba(25, 25, 25, 0.85);
     border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .login-box {
     width: 100%;
-    padding: 40px;
+    padding: 35px 40px;
     position: relative;
+}
+
+/* Estilos del logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.logo {
+    max-width: 140px;
+    height: auto;
+}
+
+.input-check:checked ~ .login-box .logo {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 5px rgba(179, 47, 255, 0.5));
 }
 
 h2 {
@@ -55,7 +99,7 @@ h2 {
     color: var(--secondary-color);
     text-align: center;
     transition: .5s ease;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .input-check:checked ~ .login-box h2 {
@@ -66,7 +110,7 @@ h2 {
 .input-box {
     position: relative;
     width: 100%;
-    margin: 20px 0;
+    margin: 18px 0;
 }
 
 .input-box .input-line {
@@ -140,7 +184,7 @@ h2 {
 .remember-forgot {
     color: var(--secondary-color);
     font-size: .9em;
-    margin: -15px 0 15px;
+    margin: -10px 0 12px;
     display: flex;
     justify-content: space-between;
     transition: .5s ease;
@@ -187,7 +231,7 @@ button {
     color: #191919;
     font-weight: 500;
     transition: .5s ease;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .input-check:checked ~ .login-box button {
@@ -196,11 +240,15 @@ button {
     box-shadow: 0 0 15px #6E03AB, 0 0 25px #6E03AB;
 }
 
+button:hover {
+    transform: scale(1.02);
+}
+
 .register-link {
     color: var(--secondary-color);
     font-size: .9em;
     text-align: center;
-    margin: 25px 0 10px;
+    margin: 18px 0 8px;
     transition: .5s ease;
 }
 
@@ -243,11 +291,13 @@ button {
 .toggle {
     position: absolute;
     top: 20px;
-    right: -70px;
+    right: -80px;
     width: 60px;
     height: 120px;
-    background: #191919;
+    background: rgba(25, 25, 25, 0.9);
     border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .toggle::before {
@@ -283,7 +333,7 @@ button {
 
 .input-check {
     position: absolute;
-    right: -70px;
+    right: -80px;
     z-index: 1;
     opacity: 0;
     cursor: pointer;
@@ -352,9 +402,6 @@ button {
     border-radius: 20px;
 }
 
-
-
-
 .error-message {
     color: var(--danger-color);
     background: rgba(214, 48, 49, 0.1);
@@ -363,6 +410,7 @@ button {
     margin-bottom: 15px;
     text-align: center;
     font-size: 0.9em;
+    border: 1px solid rgba(214, 48, 49, 0.3);
 }
 
 .success-message {
@@ -373,17 +421,20 @@ button {
     margin-bottom: 15px;
     text-align: center;
     font-size: 0.9em;
+    border: 1px solid rgba(0, 184, 148, 0.3);
 }
 
 @media (max-width: 480px) {
     .login-container {
         width: 90%;
         height: auto;
+        min-height: 500px;
         padding: 20px 0;
+        margin: 20px;
     }
     
     .login-box {
-        padding: 30px 20px;
+        padding: 25px 20px;
     }
     
     .toggle {
@@ -399,4 +450,36 @@ button {
         right: 0;
         margin: 0 auto;
     }
+    
+    .logo {
+        max-width: 120px;
+    }
+    
+    h2 {
+        font-size: 1.7em;
+        margin-bottom: 20px;
+    }
+    
+    .glowing-light {
+        width: 300px;
+    }
+}
+
+/* Efectos adicionales para mejor visibilidad sobre la imagen de fondo */
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color), var(--secondary-color));
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.1;
+    transition: opacity 0.5s ease;
+}
+
+.input-check:checked ~ .login-container::before {
+    opacity: 0.2;
 }

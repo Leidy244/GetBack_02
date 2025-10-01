@@ -10,6 +10,7 @@
 </head>
 
 <body>
+	<div class="background-image"></div>
 	<div class="glowing-light"></div>
 	<div class="login-container">
 		<input type="checkbox" class="input-check" id="input-check">
@@ -22,6 +23,11 @@
 		</label>
 
 		<div class="login-box">
+			<!-- LOGO AGREGADO -->
+			<div class="logo-container">
+				<img th:src="@{/images/Logo_principal.png}" alt="Logo" class="logo">
+			</div>
+			
 			<form th:action="@{/login}" method="post">
 				<h2>Inicio Sesión</h2>
 

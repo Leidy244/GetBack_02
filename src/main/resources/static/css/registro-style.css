@@ -17,22 +17,66 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #151f28;
     overflow-x: hidden;
+    position: relative;
+}
+
+.background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/jack-daniels-get-back\ \(1\).jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+/* Fallback en caso de que la imagen no cargue */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0f1923 0%, #152238 25%, #1c2e4a 50%, #243b55 75%, #2c5282 100%);
+    z-index: -2;
 }
 
 .login-box {
     position: relative;
-    width: 800px;
-    max-width: 95%;
+    width: 700px;
+    max-width: 90%;
     height: auto;
-    padding: 30px;
-    background: #191919;
+    padding: 20px 25px;
+    background: rgba(25, 25, 25, 0.85);
     border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos del logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.logo {
+    max-width: 100px;
+    height: auto;
+}
+
+.input-check:checked ~ .logo {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 5px rgba(179, 47, 255, 0.5));
 }
 
 .glowing-light {
@@ -40,17 +84,18 @@ body {
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 500px;
-    height: 10px;
+    width: 400px;
+    height: 8px;
     background: var(--primary-color);
     border-radius: 20px;
 }
 
 h2 {
-    font-size: 2em;
+    font-size: 1.8em;
     color: var(--secondary-color);
     text-align: center;
     transition: .5s ease;
+    margin-bottom: 15px;
 }
 
 .input-check:checked ~ h2 {
@@ -61,16 +106,16 @@ h2 {
 .input-box {
     position: relative;
     width: 100%;
-    margin: 20px 0;
+    margin: 12px 0;
 }
 
 .input-box input {
     width: 100%;
-    height: 50px;
+    height: 45px;
     background: transparent;
     border: none;
     outline: none;
-    font-size: 1em;
+    font-size: 0.95em;
     color: var(--secondary-color);
     padding: 0 35px 0 5px;
     transition: .5s ease;
@@ -81,7 +126,7 @@ h2 {
     bottom: -2px;
     left: 0;
     width: 100%;
-    height: 2.5px;
+    height: 2px;
     background: var(--secondary-color);
     transition: .5s ease;
 }
@@ -91,7 +136,7 @@ h2 {
     top: 50%;
     left: 5px;
     transform: translateY(-50%);
-    font-size: 1em;
+    font-size: 0.95em;
     color: var(--secondary-color);
     pointer-events: none;
     transition: .5s ease;
@@ -100,14 +145,15 @@ h2 {
 .input-box input:focus ~ label,
 .input-box input:valid ~ label {
     top: -5px;
+    font-size: 0.8em;
 }
 
 .input-box .icon {
     position: absolute;
     right: 8px;
     color: var(--secondary-color);
-    font-size: 1.2em;
-    line-height: 57px;
+    font-size: 1.1em;
+    line-height: 50px;
     transition: .5s ease;
 }
 
@@ -137,16 +183,17 @@ h2 {
 
 button {
     width: 100%;
-    height: 45px;
+    height: 40px;
     background: var(--secondary-color);
     border: none;
     outline: none;
     border-radius: 40px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.95em;
     color: #191919;
     font-weight: 500;
     transition: .5s ease;
+    margin-top: 12px;
 }
 
 .input-check:checked ~ button {
@@ -160,9 +207,9 @@ button:hover {
 
 .register-link {
     color: var(--secondary-color);
-    font-size: .9em;
+    font-size: 0.85em;
     text-align: center;
-    margin: 25px 0 10px;
+    margin: 15px 0 8px;
     transition: .5s ease;
 }
 .register-link p a {
@@ -185,7 +232,7 @@ button:hover {
     top: -200%;
     left: 0;
     width: 100%;
-    height: 950px;
+    height: 800px;
     background: linear-gradient(to bottom, rgba(255, 255, 255, .3) -50%, rgba(255, 255, 255, 0) 90%);
     clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
     pointer-events: none;
@@ -198,12 +245,14 @@ button:hover {
 
 .toggle {
     position: absolute;
-    top: 20px;
-    right: -100px;
-    width: 60px;
-    height: 120px;
-    background: #191919;
+    top: 15px;
+    right: -90px;
+    width: 55px;
+    height: 110px;
+    background: rgba(25, 25, 25, 0.9);
     border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .toggle::before {
     content: '';
@@ -211,7 +260,7 @@ button:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 10px;
+    width: 8px;
     height: 80%;
     background: #000;
 }
@@ -221,8 +270,8 @@ button:hover {
     top: 5px;
     left: 50%;
     transform: translateX(-50%);
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     background: #333;
     border: 2px solid #191919;
     border-radius: 10px;
@@ -230,21 +279,24 @@ button:hover {
     transition: .5s ease;
 }
 .input-check:checked ~ .toggle::after {
-    top: 65px;
+    top: 60px;
 }
 .input-check {
     position: absolute;
-    right: -70px;
+    right: -65px;
     z-index: 1;
     opacity: 0;
+    height: 110px;
+    width: 55px;
+    top: 15px;
 }
 .toggle .text {
     position: absolute;
-    top: 17px;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
     color: var(--secondary-color);
-    font-size: 1em;
+    font-size: 0.9em;
     z-index: 1;
     text-transform: uppercase;
     pointer-events: none;
@@ -256,7 +308,7 @@ button:hover {
 }
 
 .input-check:checked~.toggle .text.off {
-    top: 76px;
+    top: 70px;
     opacity: 0;
 }
 
@@ -265,7 +317,7 @@ button:hover {
 }
 
 .input-check:checked~.toggle .text.on {
-    top: 76px;
+    top: 70px;
     opacity: 1;
     color: var(--primary-color);
     text-shadow: 0 0 15px #6E03AB, 0 0 30px #6E03AB, 0 0 45px #6E03AB, 0 0 60px #6E03AB;
@@ -275,7 +327,7 @@ button:hover {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px 40px;
+    gap: 12px 25px;
     width: 100%;
 }
 
@@ -285,35 +337,53 @@ button:hover {
     width: 60%;
 }
 
+.input-box input.valid {
+    border-bottom: 2px solid #00ff88;
+}
+
+.input-box input.invalid {
+    border-bottom: 2px solid red; 
+}
+
+.error-msg {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 3px;
+    display: none;
+}
+
 @media (max-width: 992px) {
     .login-box {
-        width: 95%;
-        padding: 20px;
+        width: 90%;
+        padding: 18px;
     }
     .toggle {
-        right: -80px;
+        right: -75px;
     }
 }
 @media (max-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 12px;
     }
     .form-grid .input-box:last-child {
         grid-column: span 1;
         width: 100%;
     }
     h2 {
-        font-size: 1.8em;
+        font-size: 1.6em;
     }
     .toggle {
-        right: -70px;
-        transform: scale(0.9);
+        right: -65px;
+        transform: scale(0.85);
+    }
+    .logo {
+        max-width: 90px;
     }
 }
 @media (max-width: 480px) {
     h2 {
-        font-size: 1.5em;
+        font-size: 1.4em;
     }
     .login-box {
         padding: 15px;
@@ -321,26 +391,35 @@ button:hover {
     }
     button {
         font-size: 0.9em;
-        height: 40px;
+        height: 38px;
     }
     .toggle {
-        right: -60px;
-        transform: scale(0.8);
+        right: -55px;
+        transform: scale(0.75);
+    }
+    .logo {
+        max-width: 80px;
+    }
+    .form-grid {
+        gap: 10px;
     }
 }
 
-.input-box input.valid {
-    border-bottom: 2px solid #00ff88; /
+/* Efecto de borde degradado para registro */
+.login-box::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color), var(--secondary-color));
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.1;
+    transition: opacity 0.5s ease;
 }
 
-.input-box input.invalid {
-    border-bottom: 2px solid red; 
-}
-
-
-.error-msg {
-    color: red;
-    font-size: 0.9em;
-    margin-top: 4px;
-    display: none;
+.input-check:checked ~ .login-box::before {
+    opacity: 0.2;
 }
