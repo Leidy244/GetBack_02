@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="punto-venta">
+        <div class="section-header">
+            <h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
+            <div class="acciones-cabecera">
+                <button class="btn btn-secondary btn-sm" id="btn-actualizar">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+                <button class="btn btn-primary btn-sm" id="btn-nuevo-producto">
+                    <i class="fas fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
+        </div>
+        
+        <div class="contenedor-pos">
+            <div class="panel-productos">
+                <div class="busqueda-productos">
+                    <input type="text" class="form-control" placeholder="Buscar productos..." id="buscar-productos">
+                    <button class="btn btn-primary btn-sm" id="btn-buscar">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div class="filtros-categoria">
+                    <button class="filtro-categoria activo" data-categoria="todos">Todos</button>
+                    <button class="filtro-categoria" data-categoria="comidas">Comidas</button>
+                    <button class="filtro-categoria" data-categoria="bebidas">Bebidas</button>
+                    <button class="filtro-categoria" data-categoria="postres">Postres</button>
+                    <button class="filtro-categoria" data-categoria="combos">Combos</button>
+                    <button class="filtro-categoria" data-categoria="promociones">Promociones</button>
+                </div>
+                
+                <div class="grid-productos" id="grid-productos">
+                    <!-- Los productos se cargarán dinámicamente -->
+                </div>
+            </div>
+            
+            <div class="panel-carrito">
+                <div class="cabecera-carrito">
+                    <h3><i class="fas fa-shopping-cart"></i> Carrito</h3>
+                    <button class="btn btn-outline-danger btn-sm" id="btn-vaciar-carrito">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="items-carrito" id="items-carrito">
+                    <!-- Los items del carrito se cargarán dinámicamente -->
+                </div>
+                
+                <div class="total-carrito">
+                    <span>Total:</span>
+                    <span id="total-carrito">$0.00</span>
+                </div>
+                
+                <div class="metodos-pago">
+                    <div class="pestanas-pago">
+                        <button class="pestana-pago activo" data-metodo="efectivo">Efectivo</button>
+                        <button class="pestana-pago" data-metodo="tarjeta">Tarjeta</button>
+                        <button class="pestana-pago" data-metodo="transferencia">Transferencia</button>
+                    </div>
+                    
+                    <div class="detalles-pago" id="detalles-pago">
+                        <div class="mb-3">
+                            <label class="form-label">Monto Recibido:</label>
+                            <input type="number" class="form-control" placeholder="0.00" id="monto-recibido">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cambio:</label>
+                            <input type="number" class="form-control" placeholder="0.00" id="cambio" disabled>
+                        </div>
+                    </div>
+                    
+                    <div class="acciones-carrito">
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <button class="btn btn-success" id="btn-finalizar-venta">
+                            <i class="fas fa-check"></i> Finalizar Venta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Café Bar | GETBACK</title>
+
+    <!-- Fuentes y librerías externas -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Exo+2:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/pag_cliente.css}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="glass-nav">
+        <div class="nav-container">
+            <a href="#inicio" class="brand">
+                <img th:src="@{/images/Logo_principal.png}" alt="Get Back" class="logo">
+            </a>
+            <div class="nav-links">
+                <a href="#inicio" class="nav-link active">Inicio</a>
+                <a href="#eventos" class="nav-link">Eventos</a>
+                <a href="#menu" class="nav-link">Menú</a>
+                <a href="#galeria" class="nav-link">Galería</a>
+                <a href="#contacto" class="nav-link">Contacto</a>
+            </div>
+            <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header id="inicio" class="hero">
+        <div class="video-background">
+            <video autoplay muted loop>
+                <source th:src="@{/vid/get.mp4}" type="video/mp4">
+            </video>
+            <div class="overlay"></div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title"><span class="highlight">GET BACK</span><span class="subtitle">CAFÉ BAR</span></h1>
+            <p class="hero-text">Donde el rock, el buen café, la comida y los cócteles se encuentran</p>
+            <div class="hero-buttons">
+                <a href="#eventos" class="btn btn-primary">Ver Eventos</a>
+            </div>
+        </div>
+        <div class="scroll-down"><i class="fas fa-chevron-down"></i></div>
+    </header>
+
+    <!-- Sección de eventos -->
+    <section id="eventos" class="section events">
+        <div class="section-header">
+            <h2 class="section-title">Próximos <span class="highlight">Eventos</span></h2>
+            <p class="section-subtitle">Vive la experiencia Get Back</p>
+        </div>
+        <div class="events-grid">
+            <div th:each="evento : ${eventos}" class="event-card">
+                <div class="event-image" 
+                     th:style="'background-image:url(' + (${evento.imagen} != null ? @{/images/{img}(img=${evento.imagen})} : 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80') + ');'">
+                    <div class="event-badge">Evento</div>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">
+                        <span class="day" th:text="${#temporals.format(evento.fecha, 'dd')}">15</span>
+                        <span class="month" th:text="${#temporals.format(evento.fecha, 'MMM')}">JUL</span>
+                    </div>
+                    <div class="event-details">
+                        <h3 class="event-title" th:text="${evento.titulo}">Nombre del Evento</h3>
+                        <div class="event-meta">
+                            <span><i class="far fa-clock"></i> <span th:text="${evento.hora}">20:00</span></span>
+                        </div>
+                        <p class="event-description" th:text="${evento.descripcion}">Descripción del evento</p>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${eventos == null or eventos.empty}" class="event-card" style="text-align:center; padding:2rem;">
+                <i class="fas fa-calendar-times fa-3x" style="color:#6a0dad; margin-bottom:1rem;"></i>
+                <h3>Próximamente</h3>
+                <p>Estamos preparando eventos increíbles para ti. ¡Vuelve pronto!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de menú/productos -->
+    <section id="menu" class="section menu">
+        <div class="section-header">
+            <h2 class="section-title">NUESTRO <span class="highlight">MENÚ</span></h2>
+            <p class="section-subtitle">Sabores que rockean</p>
+        </div>
+
+        <div class="menu-grid">
+            <!-- Tarjetas de productos -->
+            <div th:each="producto : ${productos}" class="menu-card">
+                <div class="menu-image" 
+                     th:style="'background-image:url(' + (${producto.imagen} != null ? @{/images/{img}(img=${producto.imagen})} : 'https://via.placeholder.com/300') + ');'">
+                    <div class="menu-badge">Producto</div>
+                </div>
+                <div class="menu-info">
+                    <h3 class="menu-title" th:text="${producto.nombreProducto}">Nombre</h3>
+                    <p class="menu-description" th:text="${producto.descripcion}">Descripción</p>
+                    <p class="menu-price" th:text="${producto.precio} + ' $'">Precio</p>
+                </div>
+            </div>
+
+            <div th:if="${productos == null or productos.empty}" style="text-align:center; padding:2rem;">
+                <i class="fas fa-box-open fa-3x" style="color:#6a0dad; margin-bottom:1rem;"></i>
+                <h3>Próximamente</h3>
+                <p>Estamos preparando productos increíbles para ti. ¡Vuelve pronto!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Galería -->
+    <section id="galeria" class="section gallery">
+        <div class="section-header">
+            <h2 class="section-title">GALERÍA <span class="highlight">GET BACK</span></h2>
+            <p class="section-subtitle">Momentos que rockean</p>
+        </div>
+        <div class="gallery-grid">
+            <div class="gallery-item" style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/1a/9c/82/85/tarima-get-back-duitama.jpg');"></div>
+            <div class="gallery-item" style="background-image: url('https://getbackcafebar.wordpress.com/wp-content/uploads/2024/05/get-back-cafe-bar-duitama-rock-y-licores-cocienrtos-lo-mejor-de-duitama-boyaca-colombia-musica-en-vivo.jpg');"></div>
+            <div class="gallery-item" style="background-image: url('https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/28/d3/02/get-back-concert.jpg?w=1200&h=1200&s=1');"></div>
+            <div class="gallery-item" style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/1b/8d/84/61/eventos-rock-get-back.jpg');"></div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="section contact">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2 class="contact-title">Ven a <span class="highlight">Visitarnos</span></h2>
+                <div class="info-item"><i class="fas fa-map-marker-alt"></i><p>Calle 13<br>Duitama, Boyaca</p></div>
+                <div class="info-item"><i class="fas fa-phone-alt"></i><p>+57 310256698</p></div>
+                <div class="info-item"><i class="fas fa-envelope"></i><p>reservas@getback.com</p></div>
+                <div class="info-item"><i class="fas fa-clock"></i><p>Lunes a Viernes: 6PM - 2AM<br>Sábado y Domingo: 5PM - 3AM</p></div>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-spotify"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img th:src="@{/images/Logo_principal.png}" alt="Get Back" class="logo">
+                <p>Café Bar Rock y Metal</p>
+            </div>
+            <div class="footer-links">
+                <h3>Explorar</h3>
+                <a href="#inicio">Inicio</a>
+                <a href="#eventos">Eventos</a>
+                <a href="#menu">Menú</a>
+                <a href="#galeria">Galería</a>
+                <a href="#contacto">Contacto</a>
+            </div>
+            <div class="footer-newsletter">
+                <h3>Newsletter</h3>
+                <p>Suscríbete para recibir información de eventos especiales</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Tu email">
+                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Get Back Café Bar. Todos los derechos reservados.</p>
+            <div class="legal-links">
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Cookies</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script -->
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

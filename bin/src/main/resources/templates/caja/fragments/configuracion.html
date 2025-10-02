@@ -1,0 +1,36 @@
+<!-- templates/caja/fragments/configuracion.html -->
+<div th:fragment="configuracion">
+	<h2>Configuración</h2>
+	<p>Opciones de configuración del panel de caja y ajustes generales.</p>
+
+	<div class="acciones-configuracion mb-3">
+		<button class="btn btn-primary">Editar Configuración</button>
+		<button class="btn btn-secondary">Restablecer Valores</button>
+	</div>
+
+	<form>
+		<div class="mb-3">
+			<label for="nombreTienda" class="form-label">Nombre de la tienda:</label>
+			<input type="text" id="nombreTienda" class="form-control" placeholder="Mi Cafetería">
+		</div>
+
+		<div class="mb-3">
+			<label for="moneda" class="form-label">Moneda:</label>
+			<select id="moneda" class="form-select">
+				<option value="COP">COP</option>
+				<option value="USD">USD</option>
+				<option value="EUR">EUR</option>
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label for="tema" class="form-label">Tema:</label>
+			<select id="tema" class="form-select">
+				<option value="claro">Claro</option>
+				<option value="oscuro">Oscuro</option>
+			</select>
+		</div>
+
+		<button type="submit" class="btn btn-success">Guardar Cambios</button>
+	</form>
+</div>

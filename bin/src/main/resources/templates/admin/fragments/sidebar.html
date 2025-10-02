@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+	<section th:fragment="sidebar" class="sidebar">
+		<div class="sidebar-header">
+			<div class="sidebar-logo">
+				<!-- Logo agregado aquí -->
+				<img th:src="@{/images/Logo_principal.png}" alt="GETBACK Logo" class="logo-image">
+				<!-- Título GETBACK agregado -->
+				<h3 class="sidebar-title">GETBACK</h3>
+				<!-- Texto "Barra de navegación" -->
+				<p class="navigation-text">Barra de navegación</p>
+			</div>
+		</div>
+
+		<nav class="nav flex-column sidebar-section">
+			<a th:href="@{/admin(activeSection = 'perfil')}"
+				th:classappend="${(activeSection == 'perfil' or activeSection == null)} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-user"></i> Perfil
+			</a>
+			<a th:href="@{/admin}"
+				th:classappend="${(activeSection == 'dashboard' or activeSection == null)} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-home"></i> Dashboard
+			</a>
+			<a th:href="@{/admin(activeSection='products')}"
+				th:classappend="${activeSection == 'products'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-box"></i> Productos
+			</a>
+			<a th:href="@{/admin(activeSection='categories')}"
+				th:classappend="${activeSection == 'categories'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-tags"></i> Categorías
+			</a>
+			<a th:href="@{/admin(activeSection='events')}"
+				th:classappend="${activeSection == 'events'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-calendar"></i> Eventos
+			</a>
+
+			<a th:href="@{/users}" class="nav-link">
+				<i class="fas fa-users"></i> Usuarios
+			</a>
+		</nav>
+
+		
+	</section>
+</body>
+
+</html>

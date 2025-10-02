@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title th:text="${title}">Panel de Administración</title>
+	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" th:href="@{/css/admin-styles.css}">
+</head>
+
+<body>
+	<div id="preloader">
+		<div class="loader"></div>
+	</div>
+
+	<!-- Sidebar -->
+	<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+	<!-- Header -->
+	<header class="admin-header">
+		<div class="header-container">
+			<div class="logo-container">
+				<a href="/" class="logo">PANEL ADMIN </a>
+			</div>
+			<div class="user-actions">
+				<div class="dropdown user-dropdown">
+					<button class="btn user-profile dropdown-toggle" type="button" id="userDropdown"
+						data-bs-toggle="dropdown" aria-expanded="false">
+						<div class="user-avatar">A</div>
+						<span>Administrador</span>
+						<i class="fas fa-chevron-down dropdown-arrow"></i>
+					</button>
+					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+						<li><a class="dropdown-item" th:href="@{/caja}">
+								<i class="fas fa-cash-register"></i> Panel Cajero
+							</a></li>
+							
+						<li><a class="dropdown-item" th:href="@{/mesero}">
+						<i class="fas fa-cash-register"></i> Mesero
+						</a></li>
+														
+							
+						<li>
+							<hr class="dropdown-divider">
+						</li>
+						<li><button class="dropdown-item logout-btn" onclick="adminApp.logout()">
+								<i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+							</button></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<!-- Main Content -->
+	<main class="admin-main">
+		<div class="content-area">
+
+			<!-- Secciones -->
+			<div th:if="${activeSection == 'perfil' or activeSection == null}" class="content-section">
+				<div th:replace="~{admin/fragments/perfil :: perfil}"></div>
+			</div>
+
+			<div th:if="${activeSection == 'dashboard' or activeSection == null}" class="content-section">
+				<div th:replace="~{admin/fragments/dashboard :: dashboard}"></div>
+			</div>
+
+			<div th:if="${activeSection == 'products'}" class="content-section">
+				<div th:replace="~{admin/fragments/products :: products}"></div>
+			</div>
+
+			<div th:if="${activeSection == 'categories'}" class="content-section">
+				<div th:replace="~{admin/fragments/categories :: categories}"></div>
+			</div>
+
+			<div th:if="${activeSection == 'events'}" class="content-section">
+				<div th:replace="~{admin/fragments/events :: events}"></div>
+			</div>
+
+			<div th:if="${activeSection == 'users'}" class="content-section">
+				<div th:replace="~{admin/fragments/users :: users}"></div>
+			</div>
+
+			
+		</div>
+	</main>
+
+	<!-- Botón Modo Oscuro -->
+	<button class="dark-mode-toggle" id="darkModeToggle">
+		<i class="fas fa-moon"></i>
+	</button>
+
+	<!-- Modales -->
+	<div th:replace="~{admin/fragments/modals :: modals}"></div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script th:src="@{/js/admin.js}"></script>
+</body>
+
+</html>

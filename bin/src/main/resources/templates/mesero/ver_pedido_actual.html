@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Resumen de Pedido | GETBACK</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" th:href="@{/css/ver_pedido_actual.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Overlay de mantenimiento en el centro */
+        .maintenance-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1AA1A3, #9c4dff);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            animation: float-overlay 3s ease-in-out infinite;
+            max-width: 500px;
+            width: 90%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .maintenance-overlay i {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .maintenance-overlay span {
+            font-size: 1.5rem;
+            line-height: 1.4;
+        }
+        
+        .maintenance-subtext {
+            font-size: 1.1rem !important;
+            font-weight: 500;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .maintenance-countdown {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1rem;
+            margin-top: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes float-overlay {
+            0% { 
+                transform: translate(-50%, -50%) translateY(0px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            }
+            50% { 
+                transform: translate(-50%, -50%) translateY(-10px);
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+            }
+            100% { 
+                transform: translate(-50%, -50%) translateY(0px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            }
+        }
+        
+        /* Fondo semitransparente detrás del overlay */
+        .maintenance-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Efecto de desenfoque para el contenido de fondo */
+        .container {
+            filter: blur(3px);
+            opacity: 0.6;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Fondo semitransparente -->
+    <div class="maintenance-backdrop"></div>
+    
+    <!-- Overlay de mantenimiento en el centro -->
+    <div class="maintenance-overlay">
+        <div>
+            <i class="fas fa-cogs"></i>
+        </div>
+        <div>
+            <span>ACTUALIZACIÓN EN CURSO</span>
+            <div class="maintenance-subtext">
+                Estamos implementando mejoras en esta sección.<br>
+                La vista estará disponible nuevamente en breve.
+            </div>
+            <div class="maintenance-countdown">
+                <i class="fas fa-clock"></i> Volveremos pronto
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <header class="header">
+            <h1><img th:src="@{/imgs/LOGO GET BACK CAFE BAR.png}" width="100" alt="Logo Get Back"> Resumen del Pedido</h1>
+            <div class="mesa-info">
+                <span class="mesa-numero">Mesa #<span th:text="${mesaId}">0</span></span>
+                <span class="estado-pedido" th:text="${pedido?.estadoPedido}">PENDIENTE</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="pedido-actual">
+                <div class="pedido-header">
+                    <h2>Detalle del Pedido</h2>
+                    <span class="fecha-pedido" th:if="${pedido?.fechaCreacion}">
+                        <i class="fas fa-calendar"></i>
+                        <span th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+                    </span>
+                </div>
+
+                <div th:if="${error}" class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span th:text="${error}"></span>
+                    <a th:href="@{/mesero/menu(mesa=${mesaId})}" class="btn-crear-pedido">
+                        <i class="fas fa-plus"></i> Crear Nuevo Pedido
+                    </a>
+                </div>
+
+                <div th:unless="${error}" class="items-list">
+                    <!-- Items del pedido desde JSON -->
+                    <div th:if="${itemsMap != null}">
+                        <div th:each="item : ${itemsMap.items}" class="item">
+                            <div class="item-info">
+                                <span class="item-cantidad" th:text="${item.cantidad} + 'x'">1x</span>
+                                <span class="item-nombre" th:text="${item.productoNombre}">Producto</span>
+                                <span class="item-precio" th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 2, 'COMMA')}">$0.00</span>
+                            </div>
+                            <div th:if="${item.comentarios != null and !item.comentarios.isEmpty()}" 
+                                 class="item-notas" th:text="${item.comentarios}">Notas</div>
+                            <div class="item-precio-unitario" th:text="'$' + ${#numbers.formatDecimal(item.precio, 1, 2, 'COMMA')} + ' c/u'">$0.00 c/u</div>
+                        </div>
+                    </div>
+
+                    <!-- Comentarios generales del pedido -->
+                    <div th:if="${pedido?.comentariosGenerales != null and !pedido.comentariosGenerales.isEmpty()}" 
+                         class="comentarios-generales">
+                        <strong><i class="fas fa-sticky-note"></i> Comentarios: </strong>
+                        <span th:text="${pedido.comentariosGenerales}"></span>
+                    </div>
+
+                    <div th:if="${itemsMap == null or itemsMap.items.empty}" class="no-items">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>No hay items en este pedido</p>
+                    </div>
+                </div>
+
+                <div th:if="${pedido != null and pedido.total != null}" class="pedido-totales">
+                    <div class="total-line">
+                        <span>Subtotal:</span>
+                        <span th:text="'$' + ${#numbers.formatDecimal(pedido.total, 1, 2, 'COMMA')}">$0.00</span>
+                    </div>
+                    <div class="total-line">
+                        <span>IGV (18%):</span>
+                        <span th:text="'$' + ${#numbers.formatDecimal(pedido.total * 0.18, 1, 2, 'COMMA')}">$0.00</span>
+                    </div>
+                    <div class="total-line total-final">
+                        <span>TOTAL:</span>
+                        <span th:text="'$' + ${#numbers.formatDecimal(pedido.total * 1.18, 1, 2, 'COMMA')}">$0.00</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <button class="btn btn-volver" onclick="volverAlMenu()">
+                <i class="fas fa-arrow-left"></i> Volver al Menú
+            </button>
+            <button class="btn btn-cancelar" onclick="cancelarPedido()" th:if="${pedido != null}">
+                <i class="fas fa-times"></i> Cancelar Pedido
+            </button>
+            <button class="btn btn-confirmar" onclick="enviarACocina()" th:if="${pedido != null}">
+                <i class="fas fa-paper-plane"></i> Enviar a Cocina
+            </button>
+        </footer>
+    </div>
+
+    <script>
+        // Efecto adicional: hacer el overlay ligeramente interactivo
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.querySelector('.maintenance-overlay');
+            
+            overlay.addEventListener('mouseenter', function() {
+                this.style.transform = 'translate(-50%, -50%) scale(1.05)';
+            });
+            
+            overlay.addEventListener('mouseleave', function() {
+                this.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

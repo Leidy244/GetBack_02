@@ -24,7 +24,7 @@ public class CategoriaController {
 	public String listar(Model model) {
 		model.addAttribute("categorias", categoriaService.findAll());
 		model.addAttribute("newCategoria", new Categoria()); // para el modal de creación
-		return "admin"; // tu template principal con secciones
+		return "admin";
 	}
 
 	/**

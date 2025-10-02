@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<div th:fragment="users" class="users">
+    <section id="users" class="content-section">
+        <div class="section-header">
+            <h1><i class="fas fa-users"></i> Gestión de Usuarios</h1>
+        </div>
+
+        <!-- Mensajes Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Formulario Editar Usuario (solo visible al editar) -->
+        <div th:if="${newUser.id != null}" class="content-card mb-4">
+            <div class="card-header">
+                <h2>
+                    <i class="fas fa-edit"></i>
+                    <span>Editar Usuario</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/users/update}" method="post" th:object="${newUser}">
+                    <input type="hidden" th:field="*{id}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" th:field="*{nombre}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido *</label>
+                            <input type="text" class="form-control" th:field="*{apellido}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Correo *</label>
+                            <input type="email" class="form-control" th:field="*{correo}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" th:field="*{clave}">
+                            <small class="text-muted">Dejar vacío para mantener contraseña</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" th:field="*{telefono}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" class="form-control" th:field="*{direccion}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" th:field="*{estado}">
+                                <option value="ACTIVO">Activo</option>
+                                <option value="INACTIVO">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" th:field="*{rol}">
+                                <option value="">Seleccionar Rol</option>
+                                <option value="ADMIN">ADMIN</option>
+                                <option value="USER">USER</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Actualizar
+                        </button>
+                        <a th:href="@{/users}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de Usuarios -->
+        <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-list"></i> Lista de Usuarios</h2>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
+                    <i class="fas fa-user-plus"></i> Nuevo Usuario
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="usuario : ${users}">
+                                <td th:text="${usuario.id}"></td>
+                                <td th:text="${usuario.nombre}"></td>
+                                <td th:text="${usuario.apellido}"></td>
+                                <td th:text="${usuario.correo}"></td>
+                                <td th:text="${usuario.telefono ?: 'N/A'}"></td>
+                                <td>
+                                    <span th:class="${usuario.estado == 'ACTIVO'} ? 'badge bg-success' : 'badge bg-danger'" 
+                                          th:text="${usuario.estado}"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- Editar -->
+                                        <a th:href="@{/users/edit/{id}(id=${usuario.id})}" class="btn btn-warning" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <!-- Cambiar estado -->
+                                        <a th:href="@{/users/toggle-status/{id}(id=${usuario.id})}" 
+                                           th:class="${usuario.estado=='ACTIVO'} ? 'btn btn-secondary' : 'btn btn-success'" 
+                                           th:title="${usuario.estado=='ACTIVO'} ? 'Desactivar' : 'Activar'">
+                                            <i th:class="${usuario.estado=='ACTIVO'} ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
+                                        </a>
+                                        <!-- Eliminar -->
+                                        <a th:href="@{/users/delete/{id}(id=${usuario.id})}" class="btn btn-danger" 
+                                           onclick="return confirm('¿Está seguro de eliminar este usuario?')" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${users == null or users.isEmpty()}">
+                                <td colspan="7" class="text-center">
+                                    <div class="empty-section">
+                                        <i class="fas fa-users fa-2x"></i>
+                                        <h3>No hay usuarios registrados</h3>
+                                        <p>Utilice el botón "Nuevo Usuario" para agregar usuarios.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal fade" id="nuevoUsuarioModal" tabindex="-1" aria-labelledby="nuevoUsuarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nuevoUsuarioModalLabel">
+                        <i class="fas fa-user-plus"></i> Nuevo Usuario
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/users/save}" method="post">
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" name="nombre" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellido *</label>
+                                <input type="text" class="form-control" name="apellido" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Correo *</label>
+                                <input type="email" class="form-control" name="correo" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contraseña *</label>
+                                <input type="password" class="form-control" name="clave" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" name="telefono">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dirección</label>
+                                <input type="text" class="form-control" name="direccion">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Estado</label>
+                                <select class="form-select" name="estado">
+                                    <option value="ACTIVO" selected>Activo</option>
+                                    <option value="INACTIVO">Inactivo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Rol *</label>
+                                <select class="form-select" name="rol" required>
+                                    <option value="">Seleccionar Rol</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="USER">USER</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
