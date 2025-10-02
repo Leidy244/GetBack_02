@@ -2588,3 +2588,128 @@ body {
   font-weight: 600;
   margin-bottom: 0;
 }
+/*==BOTON ENTRE VISTAS ==*/
+/* ===== DROPDOWN ADMINISTRADOR ===== */
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown .dropdown-menu {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0;
+    box-shadow: var(--shadow-xl);
+    min-width: 220px;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    list-style: none;
+    margin: 0;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.25s ease-in-out;
+    z-index: 1500;
+}
+
+/* Visible cuando JS agrega .show */
+.user-dropdown .dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Items */
+.user-dropdown .dropdown-item {
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.user-dropdown .dropdown-item i {
+    font-size: 1rem;
+    color: var(--primary-color);
+    transition: var(--transition);
+}
+
+/* Hover elegante */
+.user-dropdown .dropdown-item:hover {
+    background: var(--primary-gradient);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.user-dropdown .dropdown-item:hover i {
+    color: #fff;
+}
+
+.user-dropdown .dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: var(--border-color);
+}
+
+/* ===== BOTÓN CERRAR SESIÓN ===== */
+.logout-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, var(--danger-color), var(--accent-color));
+    transform: translateX(5px);
+}
+
+/* ===== BOTÓN PRINCIPAL ADMINISTRADOR ===== */
+.user-profile {
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    font-size: 0.95rem;
+}
+
+/* Flecha */
+.dropdown-arrow {
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+/* Animación cuando el menú está abierto */
+.user-profile.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Hover del botón Administrador */
+.user-profile:hover {
+    background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
