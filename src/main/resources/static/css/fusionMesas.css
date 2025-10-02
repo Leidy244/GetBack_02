@@ -497,3 +497,131 @@ nav {
         padding: 0.75rem 1rem;
     }
 }
+
+/*==BOTON ENTRE VISTAS ==*/
+/* ===== DROPDOWN ADMINISTRADOR ===== */
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown .dropdown-menu {
+    background: var(--surface);
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    min-width: 220px;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    list-style: none;   /* 🔥 quita los puntos */
+    margin: 0;
+
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.25s ease-in-out;
+    z-index: 1500;
+}
+
+/* Visible cuando JS agrega .show */
+.user-dropdown .dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Items */
+.user-dropdown .dropdown-item {
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.user-dropdown .dropdown-item i {
+    font-size: 1rem;
+    color: var(--accent);
+    transition: var(--transition);
+}
+
+/* Hover elegante */
+.user-dropdown .dropdown-item:hover {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.user-dropdown .dropdown-item:hover i {
+    color: #fff;
+}
+
+.user-dropdown .dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* ===== BOTÓN CERRAR SESIÓN ===== */
+.logout-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, var(--error), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, var(--error), var(--accent));
+    transform: translateX(5px);
+}
+
+/* ===== BOTÓN PRINCIPAL ADMINISTRADOR ===== */
+.user-profile {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.6rem;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: 0.95rem;
+}
+
+/* Flecha */
+.dropdown-arrow {
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+/* Animación cuando el menú está abierto */
+.user-profile.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Hover del botón Administrador */
+.user-profile:hover {
+    background: linear-gradient(135deg, var(--primary-light), var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+}
+

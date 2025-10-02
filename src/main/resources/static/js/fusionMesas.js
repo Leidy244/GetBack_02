@@ -151,3 +151,28 @@ document.querySelectorAll('.filter-btn-status').forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     handleFilter();
 });
+document.addEventListener("DOMContentLoaded", function () {
+    const userDropdownBtn = document.getElementById("userDropdown");
+    const dropdownMenu = document.querySelector(".user-dropdown .dropdown-menu");
+
+    // Toggle al hacer click en "Administrador"
+    userDropdownBtn.addEventListener("click", function (e) {
+        e.preventDefault();   // evita que afecte la barra
+        e.stopPropagation();  // evita cierre inmediato
+        dropdownMenu.classList.toggle("show");
+    });
+
+    // Cerrar si se hace click fuera
+    document.addEventListener("click", function (e) {
+        if (!dropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+            dropdownMenu.classList.remove("show");
+        }
+    });
+
+    // Cerrar con tecla ESC
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            dropdownMenu.classList.remove("show");
+        }
+    });
+});

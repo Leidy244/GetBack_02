@@ -138,30 +138,12 @@
         </div>
     </nav>
 
+    <!-- Botón flotante para volver a mesas -->
+    <a class="floating-back-btn" id="btn-back-to-mesas" title="Volver a Mesas" th:href="@{/mesero}">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver a Mesas</span>
+    </a>
+
     <script th:src="@{/js/fusionMesero.js}"></script>
-    
-    <!-- Script para manejar la redirección -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Esperar a que el DOM esté completamente cargado
-            const confirmButton = document.getElementById('btn-confirm-order');
-            
-            if (confirmButton) {
-                confirmButton.addEventListener('click', function() {
-                    // Obtener el ID de la mesa
-                    const mesaId = this.getAttribute('th:data-mesa') || this.getAttribute('data-mesa');
-                    
-                    // Redirigir a ver_pedido_actual con el parámetro de mesa
-                    if (mesaId) {
-                        window.location.href = '/verpedido?mesa=' + mesaId;
-                    } else {
-                        console.error('No se pudo obtener el ID de la mesa');
-                    }
-                });
-            }
-        });
-		
-		
-    </script>
 </body>
 </html>
