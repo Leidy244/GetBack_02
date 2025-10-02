@@ -15,7 +15,7 @@ import java.util.List;
 public class ClienteController {
 
     private final EventoService eventoService;
-    private final MenuService menuService; // <-- tu servicio de productos
+    private final MenuService menuService; 
 
     public ClienteController(EventoService eventoService, MenuService menuService) {
         this.eventoService = eventoService;
@@ -30,10 +30,9 @@ public class ClienteController {
         model.addAttribute("eventos", eventos);
 
         // Productos (Menú)
-        List<Menu> productos = menuService.findAll(); // <-- usar MenuService
+        List<Menu> productos = menuService.findAll(); 
         model.addAttribute("productos", productos);
 
-        // HTML ubicado en templates/cliente/
         return "cliente/pagina_cliente";
     }
 }

@@ -13,51 +13,47 @@ import java.util.Optional;
 @Controller
 public class LoginController {
 
-	//no tocar ni monda de este controller
-    @Autowired
-    private UsuarioService usuarioService;
+	// no tocar ni monda de este controller
+	@Autowired
+	private UsuarioService usuarioService;
 
-    @GetMapping("/login")
-    public String mostrarLogin(Model model) {
-        model.addAttribute("usuario", new Usuario());
-        return "login/index"; 
-    }
+	@GetMapping("/login")
+	public String mostrarLogin(Model model) {
+		model.addAttribute("usuario", new Usuario());
+		return "login/index";
+	}
 
-    @PostMapping("/login")
-    public String procesarLogin(
-            @RequestParam("correo") String correo,
-            @RequestParam("password") String password,
-            RedirectAttributes redirectAttributes,
-            Model model) {
+	@PostMapping("/login")
+	public String procesarLogin(@RequestParam("correo") String correo, @RequestParam("password") String password,
+			RedirectAttributes redirectAttributes, Model model) {
 
+		Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
 
-        Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
+		if (usuarioOpt.isPresent()) {
+			Usuario usuario = usuarioOpt.get();
 
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
+			if (usuario.getClave().equals(password)) {
+				if ("ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
+					// Login correcto
+					redirectAttributes.addFlashAttribute("message", "Bienvenido " + usuario.getNombre());
+					return "redirect:/admin";
+				} else {
+					model.addAttribute("error", "Tu cuenta está inactiva, contacta al administrador.");
+					return "login/index";
+				}
+			} else {
+				model.addAttribute("error", "Contraseña incorrecta.");
+				return "login/index";
+			}
+		} else {
+			model.addAttribute("error", "Usuario no encontrado.");
+			return "login/index";
+		}
+	}
 
-            if (usuario.getClave().equals(password)) {
-                if ("ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
-                    // ✅ Login correcto
-                    redirectAttributes.addFlashAttribute("message", "Bienvenido " + usuario.getNombre());
-                    return "redirect:/admin"; // Cambia "/admin" a tu ruta de dashboard
-                } else {
-                    model.addAttribute("error", "Tu cuenta está inactiva, contacta al administrador.");
-                    return "login/index";
-                }
-            } else {
-                model.addAttribute("error", "Contraseña incorrecta.");
-                return "login/index";
-            }
-        } else {
-            model.addAttribute("error", "Usuario no encontrado.");
-            return "login/index";
-        }
-    }
-
-    @GetMapping("/login-error")
-    public String loginError(Model model) {
-        model.addAttribute("error", "Credenciales inválidas.");
-        return "login/index";
-    }
+	@GetMapping("/login-error")
+	public String loginError(Model model) {
+		model.addAttribute("error", "Credenciales inválidas.");
+		return "login/index";
+	}
 }

@@ -17,75 +17,72 @@ import java.io.IOException;
 @RequestMapping("/admin/menu/productos")
 public class MenuController {
 
-    private final MenuService menuService;
-    private final CategoriaService categoriaService;
-    private final UploadFileService uploadFileService;
+	private final MenuService menuService;
+	private final CategoriaService categoriaService;
+	private final UploadFileService uploadFileService;
 
-    public MenuController(MenuService menuService,
-                          CategoriaService categoriaService,
-                          UploadFileService uploadFileService) {
-        this.menuService = menuService;
-        this.categoriaService = categoriaService;
-        this.uploadFileService = uploadFileService;
-    }
+	public MenuController(MenuService menuService, CategoriaService categoriaService,
+			UploadFileService uploadFileService) {
+		this.menuService = menuService;
+		this.categoriaService = categoriaService;
+		this.uploadFileService = uploadFileService;
+	}
 
-    // 🔹 Listar productos
-    @GetMapping
-    public String listarProductos(Model model) {
-        model.addAttribute("products", menuService.findAll());
-        model.addAttribute("categorias", categoriaService.findAll());
-        model.addAttribute("newProduct", new Menu());
-        model.addAttribute("activeSection", "products"); // activa sección de productos en admin.html
-        return "admin/admin";
-    }
+	// Listar productos
+	@GetMapping
+	public String listarProductos(Model model) {
+		model.addAttribute("products", menuService.findAll());
+		model.addAttribute("categorias", categoriaService.findAll());
+		model.addAttribute("newProduct", new Menu());
+		model.addAttribute("activeSection", "products"); // activa sección de productos en admin.html
+		return "admin/admin";
+	}
 
-    // 🔹 Guardar o editar producto
-    @PostMapping("/guardar")
-    public String guardarProducto(@ModelAttribute Menu producto,
-                                  @RequestParam("imagenFile") MultipartFile imagenFile,
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            if (!imagenFile.isEmpty()) {
-                // Subir nueva imagen y guardar con prefijo "/images/"
-                String nombreImagen = uploadFileService.saveImages(imagenFile, producto.getNombreProducto());
-                producto.setImagen("/images/" + nombreImagen);
-            } else if (producto.getId() != null) {
-                // Mantener imagen existente si no se sube una nueva
-                Menu existente = menuService.findById(producto.getId());
-                if (existente != null) {
-                    producto.setImagen(existente.getImagen());
-                }
-            }
+	// Guardar o editar producto
+	@PostMapping("/guardar")
+	public String guardarProducto(@ModelAttribute Menu producto, @RequestParam("imagenFile") MultipartFile imagenFile,
+			RedirectAttributes redirectAttributes) {
+		try {
+			if (!imagenFile.isEmpty()) {
+				// Subir nueva imagen y guardar con prefijo "/images/"
+				String nombreImagen = uploadFileService.saveImages(imagenFile, producto.getNombreProducto());
+				producto.setImagen("/images/" + nombreImagen);
+			} else if (producto.getId() != null) {
+				// Mantener imagen existente si no se sube una nueva
+				Menu existente = menuService.findById(producto.getId());
+				if (existente != null) {
+					producto.setImagen(existente.getImagen());
+				}
+			}
 
-            menuService.save(producto);
-            redirectAttributes.addFlashAttribute("success", "Producto guardado correctamente");
+			menuService.save(producto);
+			redirectAttributes.addFlashAttribute("success", "Producto guardado correctamente");
 
-        } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("error", "Error al guardar el producto");
-            e.printStackTrace();
-        }
+		} catch (IOException e) {
+			redirectAttributes.addFlashAttribute("error", "Error al guardar el producto");
+			e.printStackTrace();
+		}
 
-        return "redirect:/admin/menu/productos";
-    }
+		return "redirect:/admin/menu/productos";
+	}
 
-    // 🔹 Eliminar producto
-    @GetMapping("/eliminar/{id}")
-    public String eliminarProducto(@PathVariable Long id,
-                                   RedirectAttributes redirectAttributes) {
-        try {
-            Menu producto = menuService.findById(id);
-            if (producto != null) {
-                if (producto.getImagen() != null) {
-                    // Quitar prefijo "/images/" antes de eliminar físicamente
-                    String nombreArchivo = producto.getImagen().replace("/images/", "");
-                    uploadFileService.deleteImage(nombreArchivo);
-                }
-                menuService.delete(id);
-                redirectAttributes.addFlashAttribute("success", "Producto eliminado correctamente");
-            }
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
-        }
-        return "redirect:/admin/menu/productos";
-    }
+	// Eliminar producto
+	@GetMapping("/eliminar/{id}")
+	public String eliminarProducto(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+		try {
+			Menu producto = menuService.findById(id);
+			if (producto != null) {
+				if (producto.getImagen() != null) {
+					// Quitar prefijo "/images/" antes de eliminar físicamente
+					String nombreArchivo = producto.getImagen().replace("/images/", "");
+					uploadFileService.deleteImage(nombreArchivo);
+				}
+				menuService.delete(id);
+				redirectAttributes.addFlashAttribute("success", "Producto eliminado correctamente");
+			}
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
+		}
+		return "redirect:/admin/menu/productos";
+	}
 }

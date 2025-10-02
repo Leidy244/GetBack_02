@@ -9,34 +9,34 @@ import java.util.List;
 @Service
 public class MesaService {
 
-    private final MesaRepository mesaRepository;
+	private final MesaRepository mesaRepository;
 
-    public MesaService(MesaRepository mesaRepository) {
-        this.mesaRepository = mesaRepository;
-    }
+	public MesaService(MesaRepository mesaRepository) {
+		this.mesaRepository = mesaRepository;
+	}
 
-    // 🔹 Listar todas las mesas
-    public List<Mesa> findAll() {
-        return mesaRepository.findAll();
-    }
+	// Listar todas las mesas
+	public List<Mesa> findAll() {
+		return mesaRepository.findAll();
+	}
 
-    // 🔹 Buscar mesa por id
-    public Mesa findById(Integer id) {
-        return mesaRepository.findById(id).orElse(null);
-    }
+	// Buscar mesa por id
+	public Mesa findById(Integer id) {
+		return mesaRepository.findById(id).orElse(null);
+	}
 
-    // 🔹 Guardar o editar mesa
-    public Mesa save(Mesa mesa) {
-        return mesaRepository.save(mesa);
-    }
+	// Guardar o editar mesa
+	public Mesa save(Mesa mesa) {
+		return mesaRepository.save(mesa);
+	}
 
-    // 🔹 Eliminar mesa por id
-    public void delete(Integer id) {
-        mesaRepository.deleteById(id);
-    }
+	// Eliminar mesa por id
+	public void delete(Integer id) {
+		mesaRepository.deleteById(id);
+	}
 
-    // 🔹 Buscar mesas por ubicación
-    public List<Mesa> findByUbicacion(String ubicacion) {
-        return mesaRepository.findByUbicacionContainingIgnoreCase(ubicacion);
-    }
+	// Buscar mesas por ubicación
+	public List<Mesa> findByUbicacion(String ubicacion) {
+		return mesaRepository.findByUbicacionContainingIgnoreCase(ubicacion);
+	}
 }
