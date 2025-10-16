@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-	<link rel="stylesheet" href="admin-styles.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-
 <body>
 	<section th:fragment="perfil" class="content-section">
 
@@ -89,36 +84,82 @@
 
 								</div>
 							</div>
+
 							<!-- Formulario para cambiar foto -->
+
 							<div id="formFoto" style="display:none; margin-top:20px;">
 								<div class="card">
-									<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data">
+
+									<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data"
+										class="form-foto">
 										<input type="hidden" th:value="${usuario.id}" name="id" />
-										<input type="file" name="foto" accept="image/*" required />
-										<button type="submit">Actualizar Foto</button>
-										<button type="button" id="cancelFoto">Cancelar</button>
+
+										<input type="file" id="inputFoto" name="foto" accept="image/*" required
+											style="display: none;" />
+
+										<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
+										<span id="nombreArchivo" class="nombre-archivo">Ningún archivo
+											seleccionado</span>
+										<br>
+										<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
+										<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
 									</form>
 								</div>
 							</div>
-						</div>
-					</div>
-					<script>
-						//Abrir formulario 
-						document.getElementById("btnEditProfile").addEventListener("click", () => {
-							document.getElementById("formEditar").style.display = "block";
-						});
+							<script>
 
-						document.getElementById("btnChangePhoto").addEventListener("click", () => {
-							document.getElementById("formFoto").style.display = "block";
-						});
-						//Cerrar formularios 
-						document.getElementById("btnCancelEdit").addEventListener("click", () => {
-							document.getElementById("formEditar").style.display = "none";
-						});
 
-						document.getElementById("cancelFoto")?.addEventListener("click", () => {
-							document.getElementById("formFoto").style.display = "none";
-						});
-					</script>
+								// Referencias a los formularios
+								const formEditar = document.getElementById("formEditar");
+								const formFoto = document.getElementById("formFoto");
+
+								// Botones
+								const btnEditProfile = document.getElementById("btnEditProfile");
+								const btnChangePhoto = document.getElementById("btnChangePhoto");
+								const btnCancelEdit = document.getElementById("btnCancelEdit");
+								const btnCancelFoto = document.getElementById("cancelFoto");
+
+								// --- Abrir Formulario de Edición ---
+								btnEditProfile.addEventListener("click", () => {
+									// Cierra el de foto si está abierto
+									formFoto.style.display = "none";
+
+									// Alterna el de edición
+									formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
+								});
+
+								// --- Abrir Formulario de Foto ---
+								btnChangePhoto.addEventListener("click", () => {
+									// Cierra el de edición si está abierto
+									formEditar.style.display = "none";
+
+									// Alterna el de foto
+									formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
+								});
+
+								// --- Cerrar ambos ---
+								btnCancelEdit.addEventListener("click", () => {
+									formEditar.style.display = "none";
+								});
+
+								btnCancelFoto?.addEventListener("click", () => {
+									formFoto.style.display = "none";
+								});
+
+								// --- Nombre de la imagen seleccionada ---
+								document.addEventListener("DOMContentLoaded", () => {
+									const inputFoto = document.getElementById("inputFoto");
+									const nombreArchivo = document.getElementById("nombreArchivo");
+
+									if (inputFoto && nombreArchivo) {
+										inputFoto.addEventListener("change", () => {
+											const archivo = inputFoto.files[0];
+											nombreArchivo.textContent = archivo
+												? archivo.name
+												: "Ningún archivo seleccionado";
+										});
+									}
+								});
+							</script>
 
 </html>

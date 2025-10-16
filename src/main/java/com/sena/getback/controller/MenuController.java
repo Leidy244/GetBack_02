@@ -63,7 +63,7 @@ public class MenuController {
 			e.printStackTrace();
 		}
 
-		return "redirect:/admin/menu/productos";
+		return "redirect:/admin?activeSection=products";
 	}
 
 	// Eliminar producto
@@ -83,6 +83,6 @@ public class MenuController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
 		}
-		return "redirect:/admin/menu/productos";
+		return "redirect:/admin?activeSection=products";
 	}
 }

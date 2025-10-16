@@ -1,0 +1,537 @@
+
+/* ===== ESTILOS ESPECÍFICOS PARA LA SECCIÓN DE PERFIL ===== */
+.content-section {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem;
+}
+
+.section-header {
+	margin-bottom: 2.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 2px solid var(--border-color);
+}
+
+.section-header h2 {
+	color: var(--text-primary);
+	font-size: 1.75rem;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 0;
+}
+
+.section-header h2 i {
+	color: var(--primary-color);
+	font-size: 1.5rem;
+}
+
+.content-col {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+.content-card {
+	background: var(--bg-primary);
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow-md);
+	overflow: hidden;
+	transition: var(--transition);
+	border: 1px solid var(--border-color);
+}
+
+.content-card:hover {
+	box-shadow: var(--shadow-lg);
+	transform: translateY(-5px);
+}
+
+.card-header {
+	background: var(--primary-gradient);
+	padding: 1.5rem 2rem;
+	color: white;
+	font-weight: 600;
+	font-size: 1.1rem;
+}
+
+.card-body {
+	padding: 2rem;
+}
+
+.account-info {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.user-display {
+	display: flex;
+	align-items: flex-start;
+	gap: 2rem;
+	flex-wrap: wrap;
+}
+
+.avatar {
+	flex-shrink: 0;
+	position: relative;
+}
+
+.avatar img {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 4px solid var(--primary-color);
+	box-shadow: var(--shadow-md);
+	transition: var(--transition);
+}
+
+.avatar img:hover {
+	transform: scale(1.05);
+	box-shadow: var(--shadow-lg);
+}
+
+.avatar div {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	background: var(--primary-gradient);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2.5rem;
+	color: white;
+	font-weight: 700;
+	border: 4px solid var(--primary-color);
+	box-shadow: var(--shadow-md);
+}
+
+.user-details {
+	flex: 1;
+	min-width: 300px;
+}
+
+.user-details h3 {
+	font-size: 1.75rem;
+	color: var(--text-primary);
+	margin-bottom: 0.5rem;
+	font-weight: 700;
+}
+
+.notice {
+	padding: 0.5rem 0;
+	color: var(--text-secondary);
+	font-size: 1rem;
+	border-bottom: 1px solid var(--border-color);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.notice:before {
+	content: "•";
+	color: var(--primary-color);
+	font-weight: bold;
+	font-size: 1.2rem;
+}
+
+.user-details small {
+	display: block;
+	margin-top: 1rem;
+	color: var(--text-light);
+	font-style: italic;
+}
+
+.account-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	min-width: 200px;
+}
+
+#btnEditProfile,
+#btnChangePhoto {
+	padding: 0.75rem 1.5rem;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	cursor: pointer;
+	font-weight: 600;
+	transition: var(--transition);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	text-decoration: none;
+}
+
+#btnEditProfile {
+	background: var(--primary-color);
+	color: white;
+	box-shadow: var(--shadow-sm);
+}
+
+#btnEditProfile:hover {
+	background: var(--primary-dark);
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-md);
+}
+
+#btnChangePhoto {
+	background: transparent;
+	color: var(--primary-color);
+	border: 2px solid var(--primary-color);
+}
+
+#btnChangePhoto:hover {
+	background: var(--primary-color);
+	color: white;
+	transform: translateY(-2px);
+}
+
+/* Formularios de edición */
+#formEditar,
+#formFoto {
+	margin-top: 2rem;
+	animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+#formEditar .card,
+#formFoto .card {
+	background: var(--bg-secondary);
+	border-radius: var(--border-radius);
+	padding: 2rem;
+	box-shadow: var(--shadow-md);
+	border: 1px solid var(--border-color);
+}
+
+#formEditar form,
+#formFoto form {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1.5rem;
+}
+
+#formEditar label,
+#formFoto label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 600;
+	color: var(--text-primary);
+	grid-column: span 2;
+}
+
+#formEditar input,
+#formFoto input {
+	width: 100%;
+	padding: 0.875rem 1rem;
+	border: 2px solid var(--border-color);
+	border-radius: var(--border-radius-sm);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	transition: var(--transition);
+	font-size: 0.95rem;
+	grid-column: span 2;
+}
+
+#formEditar input:focus,
+#formFoto input:focus {
+	outline: none;
+	border-color: var(--primary-color);
+	box-shadow: 0 0 0 3px rgba(112, 27, 164, 0.1);
+}
+
+#formEditar button,
+#formFoto button {
+	padding: 0.875rem 1.75rem;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	cursor: pointer;
+	font-weight: 600;
+	transition: var(--transition);
+}
+
+#formEditar button[type="submit"],
+#formFoto button[type="submit"] {
+	background: var(--primary-color);
+	color: white;
+}
+
+#formEditar button[type="submit"]:hover,
+#formFoto button[type="submit"]:hover {
+	background: var(--primary-dark);
+}
+
+#btnCancelEdit,
+#cancelFoto {
+	background: transparent;
+	color: var(--text-secondary);
+	border: 2px solid var(--border-color);
+}
+
+#btnCancelEdit:hover,
+#cancelFoto:hover {
+	background: var(--border-color);
+	color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+	.user-display {
+		flex-direction: column;
+		text-align: center;
+	}
+
+	.avatar {
+		align-self: center;
+	}
+
+	.account-actions {
+		flex-direction: row;
+		justify-content: center;
+		width: 100%;
+	}
+
+	#formEditar form,
+	#formFoto form {
+		grid-template-columns: 1fr;
+	}
+
+	#formEditar label,
+	#formFoto label,
+	#formEditar input,
+	#formFoto input {
+		grid-column: span 1;
+	}
+}
+
+@media (max-width: 576px) {
+	.content-section {
+		padding: 1rem;
+	}
+
+	.card-body {
+		padding: 1.5rem;
+	}
+
+	.account-actions {
+		flex-direction: column;
+	}
+
+	#btnEditProfile,
+	#btnChangePhoto {
+		width: 100%;
+	}
+}
+
+/* --- Encabezado de sección con línea separadora --- */
+.section-header {
+	border-bottom: 1px solid #e6e6e6;
+	/* línea gris */
+	padding-bottom: 12px;
+	margin-bottom: 18px;
+}
+
+/* Icono morado */
+.title-icon {
+	color: #6f42c1;
+	/* morado Bootstrap */
+}
+
+/* Título */
+.section-title {
+	font-size: 1.35rem;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/*==BOTON ENTRE VISTAS ==*/
+/* ===== DROPDOWN ADMINISTRADOR ===== */
+.user-dropdown {
+	position: relative;
+}
+
+.user-dropdown .dropdown-menu {
+	background: var(--bg-primary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+	padding: 0.5rem 0;
+	box-shadow: var(--shadow-xl);
+	min-width: 220px;
+	position: absolute;
+	right: 0;
+	top: 100%;
+	list-style: none;
+	margin: 0;
+	display: none;
+	opacity: 0;
+	transform: translateY(-10px);
+	transition: all 0.25s ease-in-out;
+	z-index: 1500;
+}
+
+/* Visible cuando JS agrega .show */
+.user-dropdown .dropdown-menu.show {
+	display: block;
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* Items */
+.user-dropdown .dropdown-item {
+	color: var(--text-primary);
+	padding: 0.8rem 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	border-radius: var(--border-radius-sm);
+	font-size: 0.95rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition: var(--transition);
+}
+
+.user-dropdown .dropdown-item i {
+	font-size: 1rem;
+	color: var(--primary-color);
+	transition: var(--transition);
+}
+
+/* Hover elegante */
+.user-dropdown .dropdown-item:hover {
+	background: var(--primary-gradient);
+	color: #fff;
+	transform: translateX(5px);
+}
+
+.user-dropdown .dropdown-item:hover i {
+	color: #fff;
+}
+
+.user-dropdown .dropdown-divider {
+	margin: 0.5rem 0;
+	border-color: var(--border-color);
+}
+
+/* ===== BOTÓN CERRAR SESIÓN ===== */
+.logout-btn {
+	width: 100%;
+	padding: 0.8rem 1rem;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
+	color: white;
+	font-weight: 600;
+	text-align: left;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	transition: var(--transition);
+}
+
+.logout-btn:hover {
+	background: linear-gradient(135deg, var(--danger-color), var(--accent-color));
+	transform: translateX(5px);
+}
+
+/* ===== BOTÓN PRINCIPAL ADMINISTRADOR ===== */
+.user-profile {
+	background: var(--primary-gradient);
+	color: white;
+	font-weight: 600;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	padding: 0.6rem 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	transition: var(--transition);
+	box-shadow: var(--shadow-md);
+	font-size: 0.95rem;
+}
+
+/* Flecha */
+.dropdown-arrow {
+	margin-left: auto;
+	font-size: 0.8rem;
+	transition: transform 0.3s ease;
+}
+
+/* Animación cuando el menú está abierto */
+.user-profile.active .dropdown-arrow {
+	transform: rotate(180deg);
+}
+
+/* Hover del botón Administrador */
+.user-profile:hover {
+	background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-lg);
+}
+
+.btnArchivo {
+	background-color: #5a2ea6;
+	color: #fff;
+	padding: 8px 16px;
+	border-radius: 8px;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 14px;
+	transition: 0.3s;
+	border: none;
+}
+
+.btnArchivo:hover {
+	background-color: #7a49d6;
+}
+
+.nombre-archivo {
+	margin-left: 10px;
+	color: #bbb;
+	font-size: 13px;
+	font-style: italic;
+}
+
+.btnGuardarFoto {
+	background-color: #7a49d6;
+	color: white;
+	padding: 8px 16px;
+	border-radius: 8px;
+	border: none;
+	cursor: pointer;
+	transition: 0.3s;
+}
+
+.btnGuardarFoto:hover {
+	background-color: #9a67ea;
+}
+
+.btnCancelarFoto {
+	background-color: transparent;
+	color: #bbb;
+	border: 1px solid #555;
+	border-radius: 8px;
+	padding: 8px 16px;
+	margin-left: 10px;
+	cursor: pointer;
+	transition: 0.3s;
+}
+
+.btnCancelarFoto:hover {
+	color: white;
+	border-color: #7a49d6;
+}
