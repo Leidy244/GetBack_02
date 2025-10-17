@@ -47,6 +47,7 @@
 								class="img-thumbnail" style="max-height: 80px;">
 						</td>
 						<td class="text-center">
+							
 							<!-- Botón Editar -->
 							<button class="btn btn-warning btn-sm" data-bs-toggle="modal"
 								th:data-bs-target="'#productoModalEdit' + ${producto.id}">
@@ -99,6 +100,7 @@
 								</option>
 							</select>
 						</div>
+						
 						<div class="mb-3">
 							<label class="form-label">Imagen</label>
 							<input type="file" class="form-control" name="imagenFile" accept="image/*">

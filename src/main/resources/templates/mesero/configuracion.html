@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Configuración Mesero | GETBACK</title>
+	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" th:href="@{/css/fusionMesas.css}">
+	<link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
+
+</head>
+
+<body>
+	<!-- Contenedor principal de botones de navegación -->
+	<header>
+		<div class="container">
+			<nav class="nav-btn-wrapper" aria-label="Menú de configuración del mesero">
+				<div class="logo-desktop">
+					<a>
+						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+					</a>
+				</div>
+
+				<a th:href="@{/mesero}" class="nav-btn">
+					<i class="fa-solid fa-utensils"></i>
+					<span>Tomar Pedido</span>
+				</a>
+				<a th:href="@{/perfil}" class="nav-btn">
+					<i class="fas fa-user"></i>
+					<span>Perfil</span>
+				</a>
+
+				<a th:href="@{/estadisticas}" class="nav-btn">
+					<i class="fas fa-chart-bar"></i>
+					<span>Estadísticas</span>
+				</a>
+
+
+				<a th:href="@{/historial}" class="nav-btn">
+					<i class="fas fa-history"></i>
+					<span>Historial</span>
+				</a>
+				<a th:href="@{/configuracionMesero}" class="nav-btn">
+					<i class="fa-solid fa-gear"></i>
+					<span>Configuración</span>
+				</a>
+
+				<a th:href="@{/login}" class="nav-btn">
+					<i class="fa-solid fa-arrow-right-from-bracket"></i>
+					<span>Cerrar sessión</span>
+				</a>
+			</nav>
+		</div>
+	</header>
+
+	<!-- Información del usuario -->
+	<div class="content-col">
+		<div class="content-card">
+			<div class="card-header">
+			</div>
+
+			<div class="card-body">
+				<div class="account-info">
+					<div class="user-display">
+						<div class="avatar" id="avatar">
+						</div>
+					</div>
+
+					<div class="user-details">
+
+						<h3 id="adminName">Mesero(a)</h3>
+						<div class="notice">Guerrero</div>
+						<div class="notice" id="adminEmail">
+							admin@getback.com
+						</div>
+						<div class="notice">Dirección aquí</div>
+						<div class="notice" id="adminPhone">+57 300 000
+							0000
+						</div>
+						<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+					</div>
+
+					<div class="account-actions">
+						<button type="button" id="btnEditProfile" class="dropdown-item"><i class="fas fa-user-edit"></i>
+							Editar Perfil
+						</button>
+						<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
+					</div>
+					<!----------Formulario para editar info-->
+					<div id="formEditar" style="display:none; margin-top:20px;">
+						<div class="card">
+
+							<form method="post">
+								<input type="hidden" />
+
+								<label>Nombres:</label>
+								<input type="text" />
+
+								<label>Apellidos:</label>
+								<input type="text" />
+
+								<label>Correo:</label>
+								<input type="email" />
+
+								<label>Dirección:</label>
+								<input type="text" />
+
+								<label>Teléfono:</label>
+								<input type="text" />
+
+								<label>Clave:</label>
+								<input type="password" />
+
+								<button type="submit">Guardar cambios</button>
+								<button type="button" id="btnCancelEdit">Cancelar</button>
+							</form>
+
+						</div>
+					</div>
+
+					<!-- Formulario para cambiar foto -->
+
+					<div id="formFoto" style="display:none; margin-top:20px;">
+						<div class="card">
+
+							<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data"
+								class="form-foto">
+								<input type="hidden" name="id" />
+
+								<input type="file" id="inputFoto" name="foto" accept="image/*" required
+									style="display: none;" />
+
+								<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
+								<span id="nombreArchivo" class="nombre-archivo">Ningún archivo
+									seleccionado</span>
+								<br>
+								<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
+								<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
+							</form>
+						</div>
+					</div>
+
+</body>
+<script>
+	// Referencias a los formularios
+	const formEditar = document.getElementById("formEditar");
+	const formFoto = document.getElementById("formFoto");
+
+	// Botones
+	const btnEditProfile = document.getElementById("btnEditProfile");
+	const btnChangePhoto = document.getElementById("btnChangePhoto");
+	const btnCancelEdit = document.getElementById("btnCancelEdit");
+	const btnCancelFoto = document.getElementById("cancelFoto");
+
+	// Función para mostrar/ocultar formularios
+	function toggleForm(formToShow, formToHide) {
+		if (formToHide.style.display === "block") {
+			formToHide.style.display = "none";
+		}
+		formToShow.style.display = formToShow.style.display === "block" ? "none" : "block";
+	}
+
+	// --- Abrir Formulario de Edición ---
+	btnEditProfile.addEventListener("click", () => {
+		toggleForm(formEditar, formFoto);
+	});
+
+	// --- Abrir Formulario de Foto ---
+	btnChangePhoto.addEventListener("click", () => {
+		toggleForm(formFoto, formEditar);
+	});
+
+	// --- Cerrar formularios ---
+	btnCancelEdit.addEventListener("click", () => {
+		formEditar.style.display = "none";
+	});
+
+	btnCancelFoto?.addEventListener("click", () => {
+		formFoto.style.display = "none";
+	});
+
+	// --- Nombre de la imagen seleccionada ---
+	document.addEventListener("DOMContentLoaded", () => {
+		const inputFoto = document.getElementById("inputFoto");
+		const nombreArchivo = document.getElementById("nombreArchivo");
+
+		if (inputFoto && nombreArchivo) {
+			inputFoto.addEventListener("change", () => {
+				const archivo = inputFoto.files[0];
+				nombreArchivo.textContent = archivo
+					? archivo.name
+					: "Ningún archivo seleccionado";
+			});
+		}
+
+		// Cerrar formularios al hacer clic fuera de ellos
+		document.addEventListener("click", (e) => {
+			if (!formEditar.contains(e.target) && !btnEditProfile.contains(e.target) && formEditar.style.display === "block") {
+				formEditar.style.display = "none";
+			}
+			if (!formFoto.contains(e.target) && !btnChangePhoto.contains(e.target) && formFoto.style.display === "block") {
+				formFoto.style.display = "none";
+			}
+		});
+	});
+
+	// Validación básica del formulario
+	const form = document.querySelector('form[method="post"]');
+	if (form) {
+		form.addEventListener('submit', (e) => {
+			const inputs = form.querySelectorAll('input[required]');
+			let isValid = true;
+
+			inputs.forEach(input => {
+				if (!input.value.trim()) {
+					isValid = false;
+					input.style.borderColor = 'var(--danger-color)';
+				} else {
+					input.style.borderColor = '';
+				}
+			});
+
+			if (!isValid) {
+				e.preventDefault();
+				alert('Por favor, complete todos los campos requeridos.');
+			}
+		});
+	}
+</script>
+
+</html>

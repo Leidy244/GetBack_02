@@ -103,4 +103,10 @@ public class MeseroController {
 		// Lógica de procesamiento del JSON
 		return result;
 	}
+
+	// redirige a la vista configuracion
+	@GetMapping("/configuracion")
+	public String mostrarConfiguracion() {
+		return "/mesero/configuracion";
+	}
 }
