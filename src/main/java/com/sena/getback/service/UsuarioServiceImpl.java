@@ -111,7 +111,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	}
 
 	public List<Usuario> findByRol(String rol) {
-		return usuarioRepository.findByRol(rol);
+		return usuarioRepository.findByRol_Nombre(rol);
 	}
 
 	public List<Usuario> findByEstado(String estado) {
@@ -123,7 +123,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	}
 
 	public long countByRol(String rol) {
-		return usuarioRepository.countByRol(rol);
+		return usuarioRepository.countByRol_Nombre(rol);
 	}
 
 	@Override

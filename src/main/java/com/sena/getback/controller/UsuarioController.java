@@ -1,5 +1,6 @@
 package com.sena.getback.controller;
 
+import com.sena.getback.model.Rol;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.repository.RolRepository;
 import com.sena.getback.service.UsuarioService;
@@ -101,15 +102,24 @@ public class UsuarioController {
 	@PostMapping("/registro")
 	public String registrarUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
 		try {
-			usuario.setRol("USER");
+			// Buscar el rol "MESERO", o crearlo si no existe
+			Rol rolMesero = rolRepository.findByNombre("MESERO").orElseGet(() -> {
+				Rol nuevoRol = new Rol("MESERO");
+				return rolRepository.save(nuevoRol);
+			});
+
+			usuario.setRol(rolMesero);
 			usuario.setEstado("ACTIVO");
+
 			usuarioService.saveUser(usuario);
+
 			redirectAttributes.addFlashAttribute("message", "Registro exitoso. Ahora puede iniciar sesión.");
 			return "redirect:/login";
+
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
-			return "redirect:/users/registro";
-
+			return "login/index";
 		}
 	}
+
 }

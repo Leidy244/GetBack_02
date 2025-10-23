@@ -1,8 +1,13 @@
 package com.sena.getback.controller;
 
 import com.sena.getback.service.MenuService;
+import com.sena.getback.model.Usuario;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
+import com.sena.getback.service.UsuarioService;
+
+import jakarta.servlet.http.HttpSession;
+
 import com.sena.getback.service.MesaService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,13 +25,15 @@ public class MeseroController {
 	private final CategoriaService categoriaService;
 	private final PedidoService pedidoService;
 	private final MesaService mesaService;
+	private final UsuarioService usuarioService;
 
 	public MeseroController(MenuService menuService, CategoriaService categoriaService, PedidoService pedidoService,
-			MesaService mesaService) {
+			MesaService mesaService, UsuarioService usuarioService) {
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
 		this.pedidoService = pedidoService;
 		this.mesaService = mesaService;
+		this.usuarioService = usuarioService;
 	}
 
 	@GetMapping("/mesero")
@@ -109,4 +116,18 @@ public class MeseroController {
 	public String mostrarConfiguracion() {
 		return "/mesero/configuracion";
 	}
+
+	@GetMapping("/PerfilMesero")
+	public String perfilMesero(HttpSession session, Model model) {
+		Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+
+		if (usuario == null) {
+			// Si no hay sesión, redirige al login
+			return "redirect:/login";
+		}
+
+		model.addAttribute("usuario", usuario);
+		return "/mesero/configuracion"; 
+	}
+
 }

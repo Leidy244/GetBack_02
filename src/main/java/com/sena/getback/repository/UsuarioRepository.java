@@ -9,12 +9,19 @@ import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    Optional<Usuario> findByCorreo(String correo);
-    List<Usuario> findByEstado(String estado);
-    List<Usuario> findByRol(String rol);
-    boolean existsByCorreo(String correo);
-    List<Usuario> findByEstadoOrderByNombreAsc(String estado);
-    List<Usuario> findByNombre(String nombre);
-    long countByEstado(String estado);
-    long countByRol(String rol);
+	Optional<Usuario> findByCorreo(String correo);
+
+	List<Usuario> findByEstado(String estado);
+
+	List<Usuario> findByRol_Nombre(String nombre);
+
+	boolean existsByCorreo(String correo);
+
+	List<Usuario> findByEstadoOrderByNombreAsc(String estado);
+
+	List<Usuario> findByNombre(String nombre);
+
+	long countByEstado(String estado);
+
+	long countByRol_Nombre(String nombre);
 }

@@ -32,7 +32,7 @@ public class Estado {
     @OneToMany(mappedBy = "estado", fetch = FetchType.LAZY)
     private List<Mesa> mesas;
 
-    @OneToMany(mappedBy = "estado", fetch = FetchType.LAZY) // ← NUEVA RELACIÓN
+    @OneToMany(mappedBy = "estado", fetch = FetchType.LAZY)
     private List<Factura> facturas;
 
     public Estado() {}

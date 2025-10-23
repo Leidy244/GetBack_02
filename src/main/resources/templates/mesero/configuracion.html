@@ -27,7 +27,7 @@
 					<i class="fa-solid fa-utensils"></i>
 					<span>Tomar Pedido</span>
 				</a>
-				<a th:href="@{/perfil}" class="nav-btn">
+				<a th:href="@{/PerfilMesero}" class="nav-btn">
 					<i class="fas fa-user"></i>
 					<span>Perfil</span>
 				</a>
@@ -56,178 +56,96 @@
 	</header>
 
 	<!-- Información del usuario -->
-	<div class="content-col">
-		<div class="content-card">
-			<div class="card-header">
-			</div>
+	<section id="usuario">
+		<div class="content-col">
+			<div class="content-card">
+				<div class="card-header">
+				</div>
 
-			<div class="card-body">
-				<div class="account-info">
-					<div class="user-display">
-						<div class="avatar" id="avatar">
+				<div class="card-body">
+					<div class="account-info">
+						<div class="user-display">
+							<div class="avatar" id="avatar">
+							</div>
 						</div>
-					</div>
 
-					<div class="user-details">
+						<div class="user-details"
+							th:if="${usuario != null and usuario.roles != null and usuario.roles.id == 2}">
 
-						<h3 id="adminName">Mesero(a)</h3>
-						<div class="notice">Guerrero</div>
-						<div class="notice" id="adminEmail">
-							admin@getback.com
+							<h3 id="meseroName" th:text="${usuario.nombre}">Mesero(a)</h3>
+							<div class="notice" th:text="${usuario.apellido}">Guerrero</div>
+							<div class="notice" id="Email" th:text="${usuario.correo}">admin@getback.com</div>
+							<div class="notice" th:text="${usuario.direccion}">Dirección aquí</div>
+							<div class="notice" id="Phone" th:text="${usuario.telefono}">+57 300 000 0000</div>
+							<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
 						</div>
-						<div class="notice">Dirección aquí</div>
-						<div class="notice" id="adminPhone">+57 300 000
-							0000
+
+
+						<div class="account-actions">
+							<button type="button" id="btnEditProfile" class="dropdown-item"><i
+									class="fas fa-user-edit"></i>
+								Editar Perfil
+							</button>
+							<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
 						</div>
-						<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
-					</div>
+	</section>
+	<!----------Formulario para editar info-->
+	<div id="formEditar" style="display:none; margin-top:20px;">
+		<div class="card">
 
-					<div class="account-actions">
-						<button type="button" id="btnEditProfile" class="dropdown-item"><i class="fas fa-user-edit"></i>
-							Editar Perfil
-						</button>
-						<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
-					</div>
-					<!----------Formulario para editar info-->
-					<div id="formEditar" style="display:none; margin-top:20px;">
-						<div class="card">
+			<form method="post">
+				<input type="hidden" />
 
-							<form method="post">
-								<input type="hidden" />
+				<label>Nombres:</label>
+				<input type="text" />
 
-								<label>Nombres:</label>
-								<input type="text" />
+				<label>Apellidos:</label>
+				<input type="text" />
 
-								<label>Apellidos:</label>
-								<input type="text" />
+				<label>Correo:</label>
+				<input type="email" />
 
-								<label>Correo:</label>
-								<input type="email" />
+				<label>Dirección:</label>
+				<input type="text" />
 
-								<label>Dirección:</label>
-								<input type="text" />
+				<label>Teléfono:</label>
+				<input type="text" />
 
-								<label>Teléfono:</label>
-								<input type="text" />
+				<label>Clave:</label>
+				<input type="password" />
 
-								<label>Clave:</label>
-								<input type="password" />
+				<button type="submit">Guardar cambios</button>
+				<button type="button" id="btnCancelEdit">Cancelar</button>
+			</form>
 
-								<button type="submit">Guardar cambios</button>
-								<button type="button" id="btnCancelEdit">Cancelar</button>
-							</form>
+		</div>
+	</div>
 
-						</div>
-					</div>
+	<!-- Formulario para cambiar foto -->
 
-					<!-- Formulario para cambiar foto -->
+	<div id="formFoto" style="display:none; margin-top:20px;">
+		<div class="card">
 
-					<div id="formFoto" style="display:none; margin-top:20px;">
-						<div class="card">
+			<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data" class="form-foto">
+				<input type="hidden" name="id" />
 
-							<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data"
-								class="form-foto">
-								<input type="hidden" name="id" />
+				<input type="file" id="inputFoto" name="foto" accept="image/*" required style="display: none;" />
 
-								<input type="file" id="inputFoto" name="foto" accept="image/*" required
-									style="display: none;" />
-
-								<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
-								<span id="nombreArchivo" class="nombre-archivo">Ningún archivo
-									seleccionado</span>
-								<br>
-								<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
-								<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
-							</form>
-						</div>
-					</div>
+				<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
+				<span id="nombreArchivo" class="nombre-archivo">Ningún archivo
+					seleccionado</span>
+				<br>
+				<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
+				<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
+			</form>
+		</div>
+	</div>
+	<!-- Botón Modo Oscuro -->
+	<button class="dark-mode-toggle" id="darkModeToggle">
+		<i class="fas fa-moon"></i>
+	</button>
 
 </body>
-<script>
-	// Referencias a los formularios
-	const formEditar = document.getElementById("formEditar");
-	const formFoto = document.getElementById("formFoto");
-
-	// Botones
-	const btnEditProfile = document.getElementById("btnEditProfile");
-	const btnChangePhoto = document.getElementById("btnChangePhoto");
-	const btnCancelEdit = document.getElementById("btnCancelEdit");
-	const btnCancelFoto = document.getElementById("cancelFoto");
-
-	// Función para mostrar/ocultar formularios
-	function toggleForm(formToShow, formToHide) {
-		if (formToHide.style.display === "block") {
-			formToHide.style.display = "none";
-		}
-		formToShow.style.display = formToShow.style.display === "block" ? "none" : "block";
-	}
-
-	// --- Abrir Formulario de Edición ---
-	btnEditProfile.addEventListener("click", () => {
-		toggleForm(formEditar, formFoto);
-	});
-
-	// --- Abrir Formulario de Foto ---
-	btnChangePhoto.addEventListener("click", () => {
-		toggleForm(formFoto, formEditar);
-	});
-
-	// --- Cerrar formularios ---
-	btnCancelEdit.addEventListener("click", () => {
-		formEditar.style.display = "none";
-	});
-
-	btnCancelFoto?.addEventListener("click", () => {
-		formFoto.style.display = "none";
-	});
-
-	// --- Nombre de la imagen seleccionada ---
-	document.addEventListener("DOMContentLoaded", () => {
-		const inputFoto = document.getElementById("inputFoto");
-		const nombreArchivo = document.getElementById("nombreArchivo");
-
-		if (inputFoto && nombreArchivo) {
-			inputFoto.addEventListener("change", () => {
-				const archivo = inputFoto.files[0];
-				nombreArchivo.textContent = archivo
-					? archivo.name
-					: "Ningún archivo seleccionado";
-			});
-		}
-
-		// Cerrar formularios al hacer clic fuera de ellos
-		document.addEventListener("click", (e) => {
-			if (!formEditar.contains(e.target) && !btnEditProfile.contains(e.target) && formEditar.style.display === "block") {
-				formEditar.style.display = "none";
-			}
-			if (!formFoto.contains(e.target) && !btnChangePhoto.contains(e.target) && formFoto.style.display === "block") {
-				formFoto.style.display = "none";
-			}
-		});
-	});
-
-	// Validación básica del formulario
-	const form = document.querySelector('form[method="post"]');
-	if (form) {
-		form.addEventListener('submit', (e) => {
-			const inputs = form.querySelectorAll('input[required]');
-			let isValid = true;
-
-			inputs.forEach(input => {
-				if (!input.value.trim()) {
-					isValid = false;
-					input.style.borderColor = 'var(--danger-color)';
-				} else {
-					input.style.borderColor = '';
-				}
-			});
-
-			if (!isValid) {
-				e.preventDefault();
-				alert('Por favor, complete todos los campos requeridos.');
-			}
-		});
-	}
-</script>
+<script th:src="@{/js/ConfigMesero.js}"></script>
 
 </html>

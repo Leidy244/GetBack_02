@@ -2,6 +2,9 @@ package com.sena.getback.controller;
 
 import com.sena.getback.model.Usuario;
 import com.sena.getback.service.UsuarioService;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +28,7 @@ public class LoginController {
 
 	@PostMapping("/login")
 	public String procesarLogin(@RequestParam("correo") String correo, @RequestParam("password") String password,
-			RedirectAttributes redirectAttributes, Model model) {
+			RedirectAttributes redirectAttributes, Model model, HttpSession session) {
 
 		Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
 
@@ -34,17 +37,32 @@ public class LoginController {
 
 			if (usuario.getClave().equals(password)) {
 				if ("ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
-					// Login correcto
+
+					// Guardar el usuario logueado en la sesión
+					session.setAttribute("usuarioLogueado", usuario);
+
+					// Mostrar mensaje de bienvenida
 					redirectAttributes.addFlashAttribute("message", "Bienvenido " + usuario.getNombre());
-					return "redirect:/admin";
+
+					// Redirigir según el rol
+					if ("ADMIN".equalsIgnoreCase(usuario.getRol().getNombre())) {
+						return "redirect:/admin";
+					} else if ("MESERO".equalsIgnoreCase(usuario.getRol().getNombre())) {
+						return "redirect:/configuracion";
+					} else {
+						return "redirect:/";
+					}
+
 				} else {
 					model.addAttribute("error", "Tu cuenta está inactiva, contacta al administrador.");
 					return "login/index";
 				}
+
 			} else {
 				model.addAttribute("error", "Contraseña incorrecta.");
 				return "login/index";
 			}
+
 		} else {
 			model.addAttribute("error", "Usuario no encontrado.");
 			return "login/index";
