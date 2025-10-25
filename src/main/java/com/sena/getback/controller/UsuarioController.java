@@ -4,6 +4,9 @@ import com.sena.getback.model.Rol;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.repository.RolRepository;
 import com.sena.getback.service.UsuarioService;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -120,6 +123,19 @@ public class UsuarioController {
 			redirectAttributes.addFlashAttribute("error", "Error en el registro: " + e.getMessage());
 			return "login/index";
 		}
+	}
+
+	@GetMapping("/perfil")
+	public String mostrarPerfilUsuario(HttpSession session, Model model, RedirectAttributes redirectAttrs) {
+		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+
+		if (usuarioLogueado == null) {
+			redirectAttrs.addFlashAttribute("error", "Debe iniciar sesión para acceder a su perfil.");
+			return "redirect:/login";
+		}
+
+		model.addAttribute("usuario", usuarioLogueado);
+		return "/mesero/configuracion";
 	}
 
 }

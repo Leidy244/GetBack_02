@@ -70,7 +70,7 @@
 						</div>
 
 						<div class="user-details"
-							th:if="${usuario != null and usuario.roles != null and usuario.roles.id == 2}">
+							th:if="${usuario != null and usuario.roles != null and usuario.roles.id == 3}">
 
 							<h3 id="meseroName" th:text="${usuario.nombre}">Mesero(a)</h3>
 							<div class="notice" th:text="${usuario.apellido}">Guerrero</div>
@@ -80,7 +80,6 @@
 							<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
 						</div>
 
-
 						<div class="account-actions">
 							<button type="button" id="btnEditProfile" class="dropdown-item"><i
 									class="fas fa-user-edit"></i>
@@ -89,6 +88,8 @@
 							<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
 						</div>
 	</section>
+
+
 	<!----------Formulario para editar info-->
 	<div id="formEditar" style="display:none; margin-top:20px;">
 		<div class="card">

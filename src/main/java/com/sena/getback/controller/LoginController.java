@@ -45,12 +45,18 @@ public class LoginController {
 					redirectAttributes.addFlashAttribute("message", "Bienvenido " + usuario.getNombre());
 
 					// Redirigir según el rol
-					if ("ADMIN".equalsIgnoreCase(usuario.getRol().getNombre())) {
-						return "redirect:/admin";
-					} else if ("MESERO".equalsIgnoreCase(usuario.getRol().getNombre())) {
-						return "redirect:/configuracion";
+					// Redirigir según el rol
+					if (usuario.getRol() != null && usuario.getRol().getNombre() != null) {
+						if ("ADMIN".equalsIgnoreCase(usuario.getRol().getNombre())) {
+							return "redirect:/admin";
+						} else if ("MESERO".equalsIgnoreCase(usuario.getRol().getNombre())) {
+							return "redirect:/configuracion";
+						} else {
+							return "redirect:/";
+						}
 					} else {
-						return "redirect:/";
+						model.addAttribute("error", "El usuario no tiene un rol asignado, contacta al administrador.");
+						return "login/index";
 					}
 
 				} else {
