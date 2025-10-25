@@ -4,149 +4,118 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Configuración Mesero | GETBACK</title>
-	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<link rel="stylesheet" th:href="@{/css/fusionMesas.css}">
-	<link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
-
+	<title>Perfil del Mesero</title>
+	<link rel="stylesheet" th:href="@{/css/perfil.css}">
 </head>
 
 <body>
-	<!-- Contenedor principal de botones de navegación -->
-	<header>
-		<div class="container">
-			<nav class="nav-btn-wrapper" aria-label="Menú de configuración del mesero">
-				<div class="logo-desktop">
-					<a>
-						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
-					</a>
-				</div>
-
-				<a th:href="@{/mesero}" class="nav-btn">
-					<i class="fa-solid fa-utensils"></i>
-					<span>Tomar Pedido</span>
-				</a>
-				<a th:href="@{/PerfilMesero}" class="nav-btn">
-					<i class="fas fa-user"></i>
-					<span>Perfil</span>
-				</a>
-
-				<a th:href="@{/estadisticas}" class="nav-btn">
-					<i class="fas fa-chart-bar"></i>
-					<span>Estadísticas</span>
-				</a>
-
-
-				<a th:href="@{/historial}" class="nav-btn">
-					<i class="fas fa-history"></i>
-					<span>Historial</span>
-				</a>
-				<a th:href="@{/configuracionMesero}" class="nav-btn">
-					<i class="fa-solid fa-gear"></i>
-					<span>Configuración</span>
-				</a>
-
-				<a th:href="@{/login}" class="nav-btn">
-					<i class="fa-solid fa-arrow-right-from-bracket"></i>
-					<span>Cerrar sessión</span>
-				</a>
-			</nav>
-		</div>
+	<header class="header">
+		<h2>🧑‍🍳 Perfil del Mesero</h2>
 	</header>
 
-	<!-- Información del usuario -->
-	<section id="usuario">
-		<div class="content-col">
-			<div class="content-card">
-				<div class="card-header">
+	<main class="perfil-container">
+		<section class="perfil-card">
+
+			<div class="user-details">
+				<h3 th:text="${session.usuarioLogueado.nombre}"></h3>
+				<p th:text="${session.usuarioLogueado.correo}"></p>
+				<p th:text="${session.usuarioLogueado.telefono}"></p>
+				<p th:text="${session.usuarioLogueado.direccion}"></p>
+				<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+			</div>
+			<div class="account-actions">
+				<button type="button" id="btnEditProfile" class="dropdown-item"><i class="fas fa-user-edit"></i> Editar
+					Perfil
+				</button>
+				<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
+			</div>
+			<!--------Formulario editar informacion-->
+			<div id="formEditar" style="display:none; margin-top:20px;">
+				<div class="card">
+
+					<form th:action="@{/actualizar-datos}" th:object="${session.usuarioLogueado}" method="post">
+						<input type="hidden" th:field="*{id}" />
+
+						<label>Nombres:</label>
+						<input type="text" th:field="*{nombre}" />
+
+						<label>Apellidos:</label>
+						<input type="text" th:field="*{apellido}" />
+
+						<label>Correo:</label>
+						<input type="email" th:field="*{correo}" />
+
+						<label>Dirección:</label>
+						<input type="text" th:field="*{direccion}" />
+
+						<label>Teléfono:</label>
+						<input type="text" th:field="*{telefono}" />
+
+						<label>Clave:</label>
+						<input type="password" th:field="*{clave}" />
+
+						<button type="submit">Guardar cambios</button>
+						<button type="button" id="btnCancelEdit">Cancelar</button>
+					</form>
+
 				</div>
+			</div>
 
-				<div class="card-body">
-					<div class="account-info">
-						<div class="user-display">
-							<div class="avatar" id="avatar">
-							</div>
-						</div>
-
-						<div class="user-details"
-							th:if="${usuario != null and usuario.roles != null and usuario.roles.id == 3}">
-
-							<h3 id="meseroName" th:text="${usuario.nombre}">Mesero(a)</h3>
-							<div class="notice" th:text="${usuario.apellido}">Guerrero</div>
-							<div class="notice" id="Email" th:text="${usuario.correo}">admin@getback.com</div>
-							<div class="notice" th:text="${usuario.direccion}">Dirección aquí</div>
-							<div class="notice" id="Phone" th:text="${usuario.telefono}">+57 300 000 0000</div>
-							<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
-						</div>
-
-						<div class="account-actions">
-							<button type="button" id="btnEditProfile" class="dropdown-item"><i
-									class="fas fa-user-edit"></i>
-								Editar Perfil
-							</button>
-							<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
-						</div>
-	</section>
-
-
-	<!----------Formulario para editar info-->
-	<div id="formEditar" style="display:none; margin-top:20px;">
-		<div class="card">
-
-			<form method="post">
-				<input type="hidden" />
-
-				<label>Nombres:</label>
-				<input type="text" />
-
-				<label>Apellidos:</label>
-				<input type="text" />
-
-				<label>Correo:</label>
-				<input type="email" />
-
-				<label>Dirección:</label>
-				<input type="text" />
-
-				<label>Teléfono:</label>
-				<input type="text" />
-
-				<label>Clave:</label>
-				<input type="password" />
-
-				<button type="submit">Guardar cambios</button>
-				<button type="button" id="btnCancelEdit">Cancelar</button>
-			</form>
-
-		</div>
-	</div>
-
-	<!-- Formulario para cambiar foto -->
-
-	<div id="formFoto" style="display:none; margin-top:20px;">
-		<div class="card">
-
-			<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data" class="form-foto">
-				<input type="hidden" name="id" />
-
-				<input type="file" id="inputFoto" name="foto" accept="image/*" required style="display: none;" />
-
-				<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
-				<span id="nombreArchivo" class="nombre-archivo">Ningún archivo
-					seleccionado</span>
-				<br>
-				<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
-				<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
-			</form>
-		</div>
-	</div>
-	<!-- Botón Modo Oscuro -->
-	<button class="dark-mode-toggle" id="darkModeToggle">
-		<i class="fas fa-moon"></i>
-	</button>
-
+		</section>
+	</main>
 </body>
-<script th:src="@{/js/ConfigMesero.js}"></script>
+<script>
+	// Referencias a los formularios
+	const formEditar = document.getElementById("formEditar");
+	const formFoto = document.getElementById("formFoto");
+
+	// Botones
+	const btnEditProfile = document.getElementById("btnEditProfile");
+	const btnChangePhoto = document.getElementById("btnChangePhoto");
+	const btnCancelEdit = document.getElementById("btnCancelEdit");
+	const btnCancelFoto = document.getElementById("cancelFoto");
+
+	// --- Abrir Formulario de Edición ---
+	btnEditProfile.addEventListener("click", () => {
+		// Cierra el de foto si está abierto
+		formFoto.style.display = "none";
+
+		// Alterna el de edición
+		formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
+	});
+
+	// --- Abrir Formulario de Foto ---
+	btnChangePhoto.addEventListener("click", () => {
+		// Cierra el de edición si está abierto
+		formEditar.style.display = "none";
+
+		// Alterna el de foto
+		formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
+	});
+
+	// --- Cerrar ambos ---
+	btnCancelEdit.addEventListener("click", () => {
+		formEditar.style.display = "none";
+	});
+
+	btnCancelFoto?.addEventListener("click", () => {
+		formFoto.style.display = "none";
+	});
+
+	// --- Nombre de la imagen seleccionada ---
+	document.addEventListener("DOMContentLoaded", () => {
+		const inputFoto = document.getElementById("inputFoto");
+		const nombreArchivo = document.getElementById("nombreArchivo");
+
+		if (inputFoto && nombreArchivo) {
+			inputFoto.addEventListener("change", () => {
+				const archivo = inputFoto.files[0];
+				nombreArchivo.textContent = archivo
+					? archivo.name
+					: "Ningún archivo seleccionado";
+			});
+		}
+	});
+</script>
 
 </html>

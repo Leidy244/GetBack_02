@@ -45,7 +45,6 @@ public class LoginController {
 					redirectAttributes.addFlashAttribute("message", "Bienvenido " + usuario.getNombre());
 
 					// Redirigir según el rol
-					// Redirigir según el rol
 					if (usuario.getRol() != null && usuario.getRol().getNombre() != null) {
 						if ("ADMIN".equalsIgnoreCase(usuario.getRol().getNombre())) {
 							return "redirect:/admin";

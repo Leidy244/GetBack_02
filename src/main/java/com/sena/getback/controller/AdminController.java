@@ -7,6 +7,8 @@ import com.sena.getback.service.MenuService;
 import com.sena.getback.service.UploadFileService;
 import com.sena.getback.service.UsuarioService;
 
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,33 +104,42 @@ public class AdminController {
 	}
 
 	@PostMapping("/actualizar-datos")
-	public String actualizarPerfil(@ModelAttribute("usuario") Usuario adminActualizado,
+	public String actualizarPerfil(@ModelAttribute Usuario adminActualizado, HttpSession session,
 			RedirectAttributes redirectAttrs) {
 		try {
-			Usuario admin = usuarioService.getFirstUser()
-					.orElseThrow(() -> new RuntimeException("Admin no encontrado"));
+			// Obtener el usuario logueado desde la sesión
+			Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+			if (usuarioLogueado == null) {
+				redirectAttrs.addFlashAttribute("error", "Sesión expirada. Por favor inicia sesión de nuevo.");
+				return "redirect:/login";
+			}
 
-			// Actualizar campos
+			// Actualizar los campos que vienen del formulario
 			if (adminActualizado.getNombre() != null && !adminActualizado.getNombre().isEmpty()) {
-				admin.setNombre(adminActualizado.getNombre());
+				usuarioLogueado.setNombre(adminActualizado.getNombre());
 			}
 			if (adminActualizado.getApellido() != null && !adminActualizado.getApellido().isEmpty()) {
-				admin.setApellido(adminActualizado.getApellido());
+				usuarioLogueado.setApellido(adminActualizado.getApellido());
 			}
 			if (adminActualizado.getCorreo() != null && !adminActualizado.getCorreo().isEmpty()) {
-				admin.setCorreo(adminActualizado.getCorreo());
+				usuarioLogueado.setCorreo(adminActualizado.getCorreo());
 			}
 			if (adminActualizado.getDireccion() != null) {
-				admin.setDireccion(adminActualizado.getDireccion());
+				usuarioLogueado.setDireccion(adminActualizado.getDireccion());
 			}
 			if (adminActualizado.getTelefono() != null) {
-				admin.setTelefono(adminActualizado.getTelefono());
+				usuarioLogueado.setTelefono(adminActualizado.getTelefono());
 			}
 			if (adminActualizado.getClave() != null && !adminActualizado.getClave().isEmpty()) {
-				admin.setClave(adminActualizado.getClave());
+				usuarioLogueado.setClave(adminActualizado.getClave());
 			}
 
-			usuarioService.updateUser(admin);
+			// Guardar cambios en la BD
+			usuarioService.updateUser(usuarioLogueado);
+
+			// Actualizar la sesión con el usuario modificado
+			session.setAttribute("usuarioLogueado", usuarioLogueado);
+
 			redirectAttrs.addFlashAttribute("success", "Perfil actualizado correctamente");
 
 		} catch (Exception e) {

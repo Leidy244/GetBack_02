@@ -138,4 +138,72 @@ public class UsuarioController {
 		return "/mesero/configuracion";
 	}
 
+	@GetMapping("/perfil-admin")
+	public String mostrarPerfilAdmin(HttpSession session, Model model, RedirectAttributes redirectAttrs) {
+		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+
+		if (usuarioLogueado == null) {
+			redirectAttrs.addFlashAttribute("error", "Debe iniciar sesión para acceder a su perfil.");
+			return "redirect:/login";
+		}
+
+		// Solo mostrar si es ADMIN
+		if (!"ADMIN".equalsIgnoreCase(usuarioLogueado.getRol().getNombre())) {
+			redirectAttrs.addFlashAttribute("error", "No tiene permisos para acceder a esta página.");
+			return "redirect:/";
+		}
+
+		model.addAttribute("usuario", usuarioLogueado);
+		return "admin/perfilAdmin"; // tu vista del perfil admin
+	}
+
+	@GetMapping("/perfil-mesero")
+	public String mostrarPerfilMesero(HttpSession session, Model model, RedirectAttributes redirectAttrs) {
+		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+
+		if (usuarioLogueado == null) {
+			redirectAttrs.addFlashAttribute("error", "Debe iniciar sesión para acceder a su perfil.");
+			return "redirect:/login";
+		}
+
+		// Solo mostrar si es MESERO
+		if (!"MESERO".equalsIgnoreCase(usuarioLogueado.getRol().getNombre())) {
+			redirectAttrs.addFlashAttribute("error", "No tiene permisos para acceder a esta página.");
+			return "redirect:/";
+		}
+
+		model.addAttribute("usuario", usuarioLogueado);
+		return "mesero/perfilMesero"; // tu vista del perfil mesero
+	}
+
+	@PostMapping("/actualizar-datos")
+	public String actualizarDatos(@ModelAttribute Usuario usuario, HttpSession session,
+			RedirectAttributes redirectAttrs) {
+		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+
+		if (usuarioLogueado == null) {
+			redirectAttrs.addFlashAttribute("error", "Debe iniciar sesión.");
+			return "redirect:/login";
+		}
+
+		// Solo puede actualizar su propio perfil
+		usuario.setId(usuarioLogueado.getId());
+		usuario.setRol(usuarioLogueado.getRol());
+		usuario.setEstado(usuarioLogueado.getEstado());
+
+		usuarioService.updateUser(usuario);
+
+		// Actualiza también el objeto en sesión
+		session.setAttribute("usuarioLogueado", usuario);
+
+		redirectAttrs.addFlashAttribute("success", "Perfil actualizado correctamente.");
+
+		// Redirigir según el rol
+		if ("ADMIN".equalsIgnoreCase(usuario.getRol().getNombre())) {
+			return "redirect:/users/perfil-admin";
+		} else {
+			return "redirect:/users/perfil-mesero";
+		}
+	}
+
 }
