@@ -1,83 +1,129 @@
 package com.sena.getback.model;
 
-import java.util.List;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "mesas")
 public class Mesa {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	@Column(nullable = false)
-	private Integer capacidad;
+    // ❌ Quitar unique = true para permitir duplicados por ubicación
+    @Column(name = "numero", nullable = false, length = 50)
+    private String numero;
 
-	@Column(length = 100)
-	private String ubicacion;
+    @Column(name = "capacidad", nullable = false)
+    private Integer capacidad;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "estado_id", nullable = false)
-	private Estado estado;
+    @Column(name = "estado", nullable = false, length = 20)
+    private String estado = "DISPONIBLE"; // DISPONIBLE u OCUPADA
 
-	@OneToMany(mappedBy = "mesa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Pedido> pedidos;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ubicacion_id")
+    private Location ubicacion;
 
-	// Constructores
-	public Mesa() {
-	}
+    @Column(name = "descripcion", length = 255)
+    private String descripcion;
 
-	public Mesa(Integer id, Integer capacidad, String ubicacion, Estado estado) {
-		this.id = id;
-		this.capacidad = capacidad;
-		this.ubicacion = ubicacion;
-		this.estado = estado;
-	}
+    // ───────────────────────────────
+    // Constructores
+    // ───────────────────────────────
+    public Mesa() {}
 
-	// Getters y Setters
-	public Integer getId() {
-		return id;
-	}
+    public Mesa(Integer id, String numero, Integer capacidad, String estado, Location ubicacion, String descripcion) {
+        this.id = id;
+        this.numero = numero;
+        this.capacidad = capacidad;
+        this.estado = estado;
+        this.ubicacion = ubicacion;
+        this.descripcion = descripcion;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    // ───────────────────────────────
+    // Métodos de negocio
+    // ───────────────────────────────
+    public boolean estaDisponible() {
+        return "DISPONIBLE".equalsIgnoreCase(this.estado);
+    }
 
-	public Integer getCapacidad() {
-		return capacidad;
-	}
+    public boolean estaOcupada() {
+        return "OCUPADA".equalsIgnoreCase(this.estado);
+    }
 
-	public void setCapacidad(Integer capacidad) {
-		this.capacidad = capacidad;
-	}
+    public void ocupar() {
+        this.estado = "OCUPADA";
+    }
 
-	public String getUbicacion() {
-		return ubicacion;
-	}
+    public void liberar() {
+        this.estado = "DISPONIBLE";
+    }
 
-	public void setUbicacion(String ubicacion) {
-		this.ubicacion = ubicacion;
-	}
+    // ───────────────────────────────
+    // Getters & Setters
+    // ───────────────────────────────
+    public Integer getId() {
+        return id;
+    }
 
-	public Estado getEstado() {
-		return estado;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public void setEstado(Estado estado) {
-		this.estado = estado;
-	}
+    public String getNumero() {
+        return numero;
+    }
 
-	public List<Pedido> getPedidos() {
-		return pedidos;
-	}
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
 
-	public void setPedidos(List<Pedido> pedidos) {
-		this.pedidos = pedidos;
-	}
+    public Integer getCapacidad() {
+        return capacidad;
+    }
 
-	@Override
-	public String toString() {
-		return "Mesa [id=" + id + ", capacidad=" + capacidad + "]";
-	}
+    public void setCapacidad(Integer capacidad) {
+        this.capacidad = capacidad;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public Location getUbicacion() {
+        return ubicacion;
+    }
+
+    public void setUbicacion(Location ubicacion) {
+        this.ubicacion = ubicacion;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getUbicacionNombre() {
+        return ubicacion != null ? ubicacion.getNombre() : "Sin ubicación";
+    }
+
+    @Override
+    public String toString() {
+        return "Mesa{" +
+                "id=" + id +
+                ", numero='" + numero + '\'' +
+                ", capacidad=" + capacidad +
+                ", estado='" + estado + '\'' +
+                ", ubicacion=" + (ubicacion != null ? ubicacion.getNombre() : "null") +
+                ", descripcion='" + descripcion + '\'' +
+                '}';
+    }
 }

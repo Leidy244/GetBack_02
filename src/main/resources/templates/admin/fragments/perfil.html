@@ -1,165 +1,229 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <body>
-	<section th:fragment="perfil" class="content-section">
+<section th:fragment="perfil" class="content-section">
 
-		<!-- Header del perfil -->
-		<div class="section-header">
-			<h2><i class="fas fa-user-circle"></i> Mi Perfil</h2>
-		</div>
+    <!-- Encabezado -->
+    <div class="section-header d-flex align-items-center mb-4 border-bottom pb-2">
+        <i class="fas fa-user-circle fa-2x me-2 text-primary"></i>
+        <h2 class="mb-0 fs-4 fw-bold text-dark">Mi Perfil</h2>
+    </div>
 
-		<!-- Información del usuario -->
-		<div class="content-col">
-			<div class="content-card">
-				<div class="card-header">
-				</div>
-				<div class="card-body">
-					<div class="account-info">
-						<div class="user-display">
-							<div class="avatar" id="avatar">
-								<!-- Foto Perfil -->
-								<img th:if="${usuario.foto != null}" th:src="@{'/images/' + ${usuario.foto}}
-							" alt="Foto de perfil" style="width:100px;height:100px;border-radius:50%;object-fit:cover;" />
+    <!-- Tarjeta de perfil -->
+    <div class="card perfil-card shadow-lg border-0 rounded-4 mx-auto p-4" style="max-width: 720px;">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
 
-								<!-- Iniciales -->
-								<div th:if="${usuario.foto == null}"
-									style="width:100px;height:100px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;font-size:36px;">
-									<span th:if="${usuario.nombre != null and usuario.apellido != null}"
-										th:text="${#strings.substring(usuario.nombre,0,1) + #strings.substring(usuario.apellido,0,1)}">
-										AP
-									</span>
-									<span th:if="${usuario.nombre == null or usuario.apellido == null}">AP</span>
-								</div>
-							</div>
+            <!-- Avatar -->
+            <div class="text-center">
+                <img th:if="${usuario.foto != null}"
+                     th:src="@{'/images/' + ${usuario.foto}}"
+                     alt="Foto de perfil"
+                     class="rounded-circle shadow-sm perfil-avatar">
+                <div th:if="${usuario.foto == null}"
+                     class="rounded-circle shadow-sm d-flex align-items-center justify-content-center perfil-avatar-placeholder">
+                    <span th:if="${usuario.nombre != null and usuario.apellido != null}"
+                          th:text="${#strings.substring(usuario.nombre,0,1) + #strings.substring(usuario.apellido,0,1)}">AP</span>
+                    <span th:if="${usuario.nombre == null or usuario.apellido == null}">AP</span>
+                </div>
+            </div>
 
-							<div class="user-details">
+            <!-- Datos -->
+            <div class="flex-grow-1">
+                <h4 class="fw-semibold mb-1 perfil-nombre" th:text="${usuario.nombre + ' ' + usuario.apellido}">Admin Principal</h4>
+                <div class="text-muted mb-2 perfil-texto">
+                    <i class="fas fa-envelope me-2 text-primary"></i>
+                    <span th:text="${usuario.correo}">admin@getback.com</span>
+                </div>
+                <div class="text-muted mb-1 perfil-texto">
+                    <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                    <span th:text="${usuario.direccion}">Dirección aquí</span>
+                </div>
+                <div class="text-muted mb-2 perfil-texto">
+                    <i class="fas fa-phone me-2 text-success"></i>
+                    <span th:text="${usuario.telefono}">+57 300 000 0000</span>
+                </div>
+                <small class="text-secondary perfil-texto">
+                    <i class="fas fa-clock me-1"></i> Último acceso: <span id="ultimo-acceso">Hoy</span>
+                </small>
+            </div>
 
-								<h3 id="adminName" th:text="${usuario.nombre}">Admin Principal</h3>
-								<div class="notice" th:text="${usuario.apellido}">Guerrero</div>
-								<div class="notice" id="adminEmail" th:text="${usuario.correo}">
-									admin@getback.com
-								</div>
-								<div class="notice" th:text="${usuario.direccion}">Dirección aquí</div>
-								<div class="notice" id="adminPhone" th:text="${usuario.telefono}">+57 300 000
-									0000
-								</div>
-								<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
-							</div>
+            <!-- Botones -->
+            <div class="d-flex flex-column gap-2">
+                <button type="button" id="btnEditProfile" class="btn btn-outline-primary btn-sm rounded-pill">
+                    <i class="fas fa-user-edit me-1"></i> Editar Perfil
+                </button>
+                <button type="button" id="btnChangePhoto" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="fas fa-camera me-1"></i> Cambiar Foto
+                </button>
+            </div>
+        </div>
 
-							<div class="account-actions">
-								<button type="button" id="btnEditProfile" class="dropdown-item"><i
-										class="fas fa-user-edit"></i> Editar Perfil
-								</button>
-								<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
-							</div>
-							<!----------Formulario para editar info-->
-							<div id="formEditar" style="display:none; margin-top:20px;">
-								<div class="card">
+        <!-- Formulario editar perfil -->
+        <div id="formEditar" style="display:none;" class="mt-4">
+            <form th:action="@{/admin/actualizar-datos}" th:object="${usuario}" method="post"
+                  class="p-3 rounded border perfil-form">
+                <input type="hidden" th:field="*{id}"/>
 
-									<form th:action="@{/actualizar-datos}" th:object="${usuario}" method="post">
-										<input type="hidden" th:field="*{id}" />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Nombres</label>
+                        <input type="text" class="form-control form-control-sm" th:field="*{nombre}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Apellidos</label>
+                        <input type="text" class="form-control form-control-sm" th:field="*{apellido}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Correo</label>
+                        <input type="email" class="form-control form-control-sm" th:field="*{correo}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Dirección</label>
+                        <input type="text" class="form-control form-control-sm" th:field="*{direccion}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Teléfono</label>
+                        <input type="text" class="form-control form-control-sm" th:field="*{telefono}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Clave</label>
+                        <input type="password" class="form-control form-control-sm" th:field="*{clave}">
+                    </div>
+                </div>
 
-										<label>Nombres:</label>
-										<input type="text" th:field="*{nombre}" />
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary btn-sm rounded-pill">
+                        <i class="fas fa-save me-1"></i> Guardar
+                    </button>
+                    <button type="button" id="btnCancelEdit" class="btn btn-secondary btn-sm rounded-pill">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
 
-										<label>Apellidos:</label>
-										<input type="text" th:field="*{apellido}" />
+        <!-- Formulario cambiar foto -->
+        <div id="formFoto" style="display:none;" class="mt-4">
+            <form th:action="@{/admin/actualizar-foto}" method="post" enctype="multipart/form-data"
+                  class="p-3 rounded border perfil-form">
+                <input type="hidden" th:value="${usuario.id}" name="id"/>
 
-										<label>Correo:</label>
-										<input type="email" th:field="*{correo}" />
+                <div class="mb-2">
+                    <label for="inputFoto" class="form-label small fw-semibold">Seleccionar nueva imagen</label>
+                    <input type="file" id="inputFoto" name="foto" accept="image/*"
+                           class="form-control form-control-sm" required>
+                </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary btn-sm rounded-pill">
+                        <i class="fas fa-check me-1"></i> Actualizar
+                    </button>
+                    <button type="button" id="cancelFoto" class="btn btn-secondary btn-sm rounded-pill">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-										<label>Dirección:</label>
-										<input type="text" th:field="*{direccion}" />
+    <!-- Script -->
+    <script>
+        const formEditar = document.getElementById("formEditar");
+        const formFoto = document.getElementById("formFoto");
+        const btnEditProfile = document.getElementById("btnEditProfile");
+        const btnChangePhoto = document.getElementById("btnChangePhoto");
+        const btnCancelEdit = document.getElementById("btnCancelEdit");
+        const btnCancelFoto = document.getElementById("cancelFoto");
 
-										<label>Teléfono:</label>
-										<input type="text" th:field="*{telefono}" />
+        btnEditProfile.addEventListener("click", () => {
+            formFoto.style.display = "none";
+            formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
+        });
+        btnChangePhoto.addEventListener("click", () => {
+            formEditar.style.display = "none";
+            formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
+        });
+        btnCancelEdit.addEventListener("click", () => formEditar.style.display = "none");
+        btnCancelFoto?.addEventListener("click", () => formFoto.style.display = "none");
+    </script>
 
-										<label>Clave:</label>
-										<input type="password" th:field="*{clave}" />
+    <style>
+        /* 🌞 Modo claro */
+        .perfil-card {
+            background: #fff;
+            color: #212529;
+            transition: all 0.3s ease;
+        }
 
-										<button type="submit">Guardar cambios</button>
-										<button type="button" id="btnCancelEdit">Cancelar</button>
-									</form>
+        .perfil-avatar {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 3px solid #e0e0e0;
+        }
 
-								</div>
-							</div>
+        .perfil-avatar-placeholder {
+            width: 120px;
+            height: 120px;
+            background: #dee2e6;
+            font-size: 40px;
+            color: #495057;
+        }
 
-							<!-- Formulario para cambiar foto -->
+        .perfil-form {
+            background: #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
 
-							<div id="formFoto" style="display:none; margin-top:20px;">
-								<div class="card">
+        /* 🌙 Modo oscuro */
+        body.dark-mode .perfil-card {
+            background: #1f1f1f !important;
+            color: #e0e0e0 !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+        }
 
-									<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data"
-										class="form-foto">
-										<input type="hidden" th:value="${usuario.id}" name="id" />
+        body.dark-mode .perfil-nombre {
+            color: #fff !important;
+        }
 
-										<input type="file" id="inputFoto" name="foto" accept="image/*" required
-											style="display: none;" />
+        body.dark-mode .perfil-texto {
+            color: #aaa !important;
+        }
 
-										<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
-										<span id="nombreArchivo" class="nombre-archivo">Ningún archivo
-											seleccionado</span>
-										<br>
-										<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
-										<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
-									</form>
-								</div>
-							</div>
-							<script>
+        body.dark-mode .perfil-avatar {
+            border-color: #444;
+        }
 
+        body.dark-mode .perfil-avatar-placeholder {
+            background: #333;
+            color: #bbb;
+        }
 
-								// Referencias a los formularios
-								const formEditar = document.getElementById("formEditar");
-								const formFoto = document.getElementById("formFoto");
+        body.dark-mode .perfil-form {
+            background: #2b2b2b !important;
+            border-color: #444 !important;
+        }
 
-								// Botones
-								const btnEditProfile = document.getElementById("btnEditProfile");
-								const btnChangePhoto = document.getElementById("btnChangePhoto");
-								const btnCancelEdit = document.getElementById("btnCancelEdit");
-								const btnCancelFoto = document.getElementById("cancelFoto");
+        body.dark-mode .form-control {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
 
-								// --- Abrir Formulario de Edición ---
-								btnEditProfile.addEventListener("click", () => {
-									// Cierra el de foto si está abierto
-									formFoto.style.display = "none";
+        body.dark-mode .form-control:focus {
+            background-color: #444;
+            border-color: #0d6efd;
+            color: #fff;
+        }
 
-									// Alterna el de edición
-									formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
-								});
+        body.dark-mode label {
+            color: #ccc;
+        }
 
-								// --- Abrir Formulario de Foto ---
-								btnChangePhoto.addEventListener("click", () => {
-									// Cierra el de edición si está abierto
-									formEditar.style.display = "none";
+        body.dark-mode small.text-secondary {
+            color: #999 !important;
+        }
+    </style>
 
-									// Alterna el de foto
-									formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
-								});
-
-								// --- Cerrar ambos ---
-								btnCancelEdit.addEventListener("click", () => {
-									formEditar.style.display = "none";
-								});
-
-								btnCancelFoto?.addEventListener("click", () => {
-									formFoto.style.display = "none";
-								});
-
-								// --- Nombre de la imagen seleccionada ---
-								document.addEventListener("DOMContentLoaded", () => {
-									const inputFoto = document.getElementById("inputFoto");
-									const nombreArchivo = document.getElementById("nombreArchivo");
-
-									if (inputFoto && nombreArchivo) {
-										inputFoto.addEventListener("change", () => {
-											const archivo = inputFoto.files[0];
-											nombreArchivo.textContent = archivo
-												? archivo.name
-												: "Ningún archivo seleccionado";
-										});
-									}
-								});
-							</script>
-
+</section>
+</body>
 </html>

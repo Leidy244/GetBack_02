@@ -13,8 +13,9 @@
 		<div class="section-header">
 			<h2><i class="fas fa-tachometer-alt"></i> Panel de Control</h2>
 		</div>
-		</div>
+
 		<div class="stats-grid compact">
+			<!-- Fila 1 -->
 			<!-- Categorías -->
 			<div class="stat-card compact">
 				<div class="stat-icon">
@@ -51,6 +52,7 @@
 				</div>
 			</div>
 
+			<!-- Fila 2 -->
 			<!-- Usuarios -->
 			<div class="stat-card compact">
 				<div class="stat-icon">
@@ -60,6 +62,30 @@
 					<h3 th:text="${totalUsuarios}">0</h3>
 					<p>Usuarios registrados</p>
 					<small>Clientes y administradores</small>
+				</div>
+			</div>
+
+			<!-- Ubicacion de mesas -->
+			<div class="stat-card compact">
+				<div class="stat-icon">
+					<i class="fas fa-map-marker-alt"></i>
+				</div>
+				<div class="stat-info">
+					<h3 th:text="${totalUbicaciones}">0</h3>
+					<p>Ubicaciones disponibles</p>
+					<small>Zonas del establecimiento</small>
+				</div>
+			</div>
+
+			<!-- mesas -->
+			<div class="stat-card compact">
+				<div class="stat-icon">
+					<i class="fas fa-chair"></i>
+				</div>
+				<div class="stat-info">
+					<h3 th:text="${totalMesas}">0</h3>
+					<p>Mesas registradas</p>
+					<small>Mesas disponibles</small>
 				</div>
 			</div>
 		</div>
