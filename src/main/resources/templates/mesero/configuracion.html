@@ -5,64 +5,104 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Perfil del Mesero</title>
-	<link rel="stylesheet" th:href="@{/css/perfil.css}">
+	<link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
 </head>
 
 <body>
 	<header class="header">
-		<h2>🧑‍🍳 Perfil del Mesero</h2>
+		<h2> Perfil del Mesero</h2>
 	</header>
 
-	<main class="perfil-container">
-		<section class="perfil-card">
+	<!-- Información -->
+	<div class="content-col">
+		<div class="content-card">
+			<div class="card-body">
+				<div class="account-info">
+					<div class="user-display">
+						<!-- FOTO -->
+						<div class="avatar" id="avatar">
+							<img th:if="${session.usuarioLogueado.foto != null}"
+								th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
+							<div th:if="${session.usuarioLogueado.foto == null}" class="avatar-placeholder">
+								<span th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + 
+											#strings.substring(session.usuarioLogueado.apellido,0,1)}">AD</span>
+							</div>
+						</div>
 
-			<div class="user-details">
-				<h3 th:text="${session.usuarioLogueado.nombre}"></h3>
-				<p th:text="${session.usuarioLogueado.correo}"></p>
-				<p th:text="${session.usuarioLogueado.telefono}"></p>
-				<p th:text="${session.usuarioLogueado.direccion}"></p>
-				<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
-			</div>
-			<div class="account-actions">
-				<button type="button" id="btnEditProfile" class="dropdown-item"><i class="fas fa-user-edit"></i> Editar
-					Perfil
-				</button>
-				<button class="btn ghost" id="btnChangePhoto">Cambiar foto</button>
-			</div>
-			<!--------Formulario editar informacion-->
-			<div id="formEditar" style="display:none; margin-top:20px;">
-				<div class="card">
+						<!-- DATOS -->
+						<div class="user-details">
+							<h3 th:text="${session.usuarioLogueado.nombre + ' ' + session.usuarioLogueado.apellido}">
+							</h3>
+							<p th:text="${session.usuarioLogueado.correo}"></p>
+							<p th:text="${session.usuarioLogueado.telefono}"></p>
+							<p th:text="${session.usuarioLogueado.direccion}"></p>
+							<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+						</div>
 
-					<form th:action="@{/actualizar-datos}" th:object="${session.usuarioLogueado}" method="post">
-						<input type="hidden" th:field="*{id}" />
+						<!-- BOTONES -->
+						<div class="account-actions" style="display:flex; gap:10px; margin-left:auto;">
+							<button type="button" id="btnEditProfile" class="dropdown-item">
+								<i class="fas fa-user-edit"></i> Editar Perfil
+							</button>
+							<button type="button" id="btnChangePhoto" class="dropdown-item">
+								<i class="fas fa-camera"></i> Cambiar Foto
+							</button>
+						</div>
+					</div>
+
+					<!-- FORMULARIO EDITAR -->
+					<form id="formEditar" th:action="@{/actualizar-datos-mesero}" method="post" style="display:none;">
+						<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
 
 						<label>Nombres:</label>
-						<input type="text" th:field="*{nombre}" />
+						<input type="text" name="nombre" th:value="${session.usuarioLogueado.nombre}" />
 
 						<label>Apellidos:</label>
-						<input type="text" th:field="*{apellido}" />
+						<input type="text" name="apellido" th:value="${session.usuarioLogueado.apellido}" />
 
 						<label>Correo:</label>
-						<input type="email" th:field="*{correo}" />
+						<input type="email" name="correo" th:value="${session.usuarioLogueado.correo}" />
 
 						<label>Dirección:</label>
-						<input type="text" th:field="*{direccion}" />
+						<input type="text" name="direccion" th:value="${session.usuarioLogueado.direccion}" />
 
 						<label>Teléfono:</label>
-						<input type="text" th:field="*{telefono}" />
+						<input type="text" name="telefono" th:value="${session.usuarioLogueado.telefono}" />
 
 						<label>Clave:</label>
-						<input type="password" th:field="*{clave}" />
+						<input type="password" name="clave" th:value="${session.usuarioLogueado.clave}" />
 
-						<button type="submit">Guardar cambios</button>
-						<button type="button" id="btnCancelEdit">Cancelar</button>
+						<div style="margin-top:10px; display:flex; gap:10px;">
+							<button type="submit" class="btn">Guardar cambios</button>
+							<button type="button" id="btnCancelEdit" class="btn ghost">Cancelar</button>
+						</div>
 					</form>
 
+
+					<!-- FORMULARIO FOTO -->
+					<div id="formFoto" style="display:none; margin-top:20px;">
+						<div class="card">
+							<form th:action="@{/actualizar-foto-mesero}" method="post" enctype="multipart/form-data">
+								<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
+
+								<input type="file" id="inputFoto" name="foto" accept="image/*" required
+									style="display:none;" />
+
+								<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
+								<span id="nombreArchivo" class="nombre-archivo">Ningún archivo seleccionado</span>
+								<br>
+								<div style="margin-top:10px; display:flex; gap:10px;">
+									<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
+									<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
+								</div>
+							</form>
+						</div>
+					</div>
 				</div>
 			</div>
+		</div>
+	</div>
 
-		</section>
-	</main>
 </body>
 <script>
 	// Referencias a los formularios
