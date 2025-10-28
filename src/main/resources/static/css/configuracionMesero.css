@@ -1,284 +1,262 @@
-/* Variables de color para modo claro y oscuro */
+/* ===== VARIABLES CSS (de tu paleta) ===== */
 :root {
-	--color-bg: #f8f8ff;
-	--color-card: #ffffff;
-	--color-primary: #6b4ce6;
-	--color-secondary: #547aff;
-	--color-accent: #a98bff;
-	--color-text: #2d2d2d;
-	--color-subtext: #555;
-	--color-border: #e1e1e1;
-	--color-btn-hover: #7e5df0;
-	--shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	--primary-color: #701BA4;
+	--primary-light: #8d3bc5;
+	--primary-dark: #4d1373;
+	--secondary-color: #1AA1A3;
+	--accent-color: #FF6B6B;
+
+	--primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+	--sidebar-gradient: linear-gradient(135deg, #22d3ee, #6E03AB);
+
+	--text-primary: #2D3748;
+	--text-secondary: #718096;
+	--text-light: #A0AEC0;
+
+	--bg-primary: #FFFFFF;
+	--bg-secondary: #F7FAFC;
+	--bg-tertiary: #EDF2F7;
+
+	--success-color: #48BB78;
+	--warning-color: #ED8936;
+	--danger-color: #F56565;
+	--info-color: #4299E1;
+
+	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+	--border-radius: 12px;
+	--transition: all 0.3s ease;
 }
 
-/* Modo oscuro */
-.dark-mode,
-[data-theme="dark"] {
-	--color-bg: #141414;
-	--color-card: #1f1f2e;
-	--color-primary: #9f82ff;
-	--color-secondary: #6fa3ff;
-	--color-accent: #c5afff;
-	--color-text: #f0f0f0;
-	--color-subtext: #b0b0b0;
-	--color-border: #333;
-	--color-btn-hover: #b497ff;
-	--shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-}
-
-/* --- BOTÓN MODO CLARO/OSCURO ANIMADO --- */
-.dark-mode-toggle {
-	position: fixed;
-	bottom: 25px;
-	right: 25px;
-	width: 52px;
-	height: 52px;
-	border-radius: 50%;
-	background: var(--color-primary);
-	color: #fff;
-	border: none;
-	font-size: 1.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: var(--shadow);
-	cursor: pointer;
-	transition: transform 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
-	z-index: 1000;
-}
-
-/* efecto hover */
-.dark-mode-toggle:hover {
-	transform: scale(1.1) rotate(10deg);
-	box-shadow: 0 0 20px var(--color-accent);
-}
-
-/* animación de giro al cambiar de modo */
-.rotate {
-	animation: spin 0.6s ease;
-}
-
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-
-/* Estilo general */
-body {
-	background-color: var(--color-bg);
-	color: var(--color-text);
-	font-family: "Poppins", sans-serif;
+/* ===== RESETEO BÁSICO ===== */
+* {
 	margin: 0;
-	transition: background-color 0.3s, color 0.3s;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: "Poppins", sans-serif;
 }
 
-/* Header */
-header {
-	background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-	box-shadow: var(--shadow);
-	padding: 0.8rem 1rem;
-	color: #fff;
-}
-
-.nav-btn-wrapper {
+body {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	justify-content: space-around;
-	flex-wrap: wrap;
-	gap: 0.5rem;
+	min-height: 100vh;
+	padding: 40px 20px;
 }
 
-.nav-btn {
-	display: flex;
-	align-items: center;
-	gap: 0.4rem;
-	color: #fff;
-	text-decoration: none;
-	font-weight: 500;
-	background: rgba(255, 255, 255, 0.1);
-	padding: 0.5rem 0.8rem;
-	border-radius: 10px;
-	transition: background 0.3s, transform 0.2s;
-}
-
-.nav-btn:hover {
-	background: rgba(255, 255, 255, 0.3);
-	transform: scale(1.05);
-}
-
-/* Tarjeta de usuario */
-.content-card {
-	background-color: var(--color-card);
-	box-shadow: var(--shadow);
-	border-radius: 20px;
-	padding: 2rem;
-	max-width: 700px;
-	margin: 2rem auto;
+/* ===== HEADER ===== */
+.header {
+	width: 100%;
+	max-width: 900px;
 	text-align: center;
-	transition: background-color 0.3s;
+	padding: 20px 0;
+	background: var(--primary-gradient);
+	color: white;
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow-md);
+	margin-bottom: 30px;
+}
+
+.header h2 {
+	font-size: 1.8rem;
+	font-weight: 600;
+}
+
+/* ===== TARJETA PRINCIPAL ===== */
+.content-col {
+	width: 100%;
+	max-width: 900px;
+}
+
+.content-card {
+	background: var(--bg-primary);
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow-md);
+	padding: 25px 30px;
+	transition: var(--transition);
+}
+
+.content-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: var(--primary-dark);
+	margin-bottom: 15px;
+}
+
+/* ===== INFO DE USUARIO ===== */
+.account-info {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.user-display {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	flex-wrap: wrap;
 }
 
 .avatar {
-	width: 110px;
-	height: 110px;
+	width: 120px;
+	height: 120px;
 	border-radius: 50%;
-	background: var(--color-accent);
-	margin: 0 auto 1rem;
-	box-shadow: var(--shadow);
+	overflow: hidden;
+	box-shadow: var(--shadow-md);
+	border: 3px solid var(--secondary-color);
+	flex-shrink: 0;
 }
 
+.avatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.avatar-placeholder {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: var(--primary-gradient);
+	color: white;
+	font-size: 2rem;
+	font-weight: bold;
+}
+
+/* ===== DATOS ===== */
 .user-details h3 {
-	font-size: 1.5rem;
-	color: var(--color-primary);
-	margin-bottom: 0.3rem;
+	font-size: 1.3rem;
+	color: var(--text-primary);
 }
 
-.notice {
-	color: var(--color-subtext);
-	font-size: 0.9rem;
-	margin-bottom: 0.2rem;
+.user-details p {
+	color: var(--text-secondary);
+	margin-bottom: 4px;
 }
 
-/* Botones */
-button,
-.btn {
-	background: var(--color-primary);
-	color: #fff;
+.user-details small {
+	color: var(--text-light);
+}
+
+/* ===== BOTONES ===== */
+.account-actions button {
+	background: var(--primary-color);
+	color: white;
 	border: none;
-	border-radius: 12px;
-	padding: 0.6rem 1.2rem;
+	padding: 10px 16px;
+	border-radius: var(--border-radius);
 	cursor: pointer;
-	font-size: 0.95rem;
-	font-weight: 500;
-	transition: background 0.3s, transform 0.2s;
+	font-size: 0.9rem;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	transition: var(--transition);
+	box-shadow: var(--shadow-md);
 }
 
-button:hover,
-.btn:hover {
-	background: var(--color-btn-hover);
-	transform: translateY(-2px);
+.account-actions button:hover {
+	background: var(--primary-light);
+	transform: scale(1.05);
 }
 
-button.ghost {
-	background: transparent;
-	border: 2px solid var(--color-primary);
-	color: var(--color-primary);
+.dropdown-item i {
+	font-size: 1rem;
 }
 
-button.ghost:hover {
-	background: var(--color-primary);
-	color: #fff;
-}
-
-/* Formularios */
-#formEditar,
-#formFoto {
-	display: none;
-	max-width: 600px;
-	margin: 2rem auto;
-	animation: fadeIn 0.4s ease;
-}
-
-#formEditar.active,
-#formFoto.active {
-	display: block;
-}
-
+/* ===== FORMULARIOS ===== */
 form {
-	background-color: var(--color-card);
-	box-shadow: var(--shadow);
-	border-radius: 16px;
-	padding: 1.8rem;
 	display: flex;
 	flex-direction: column;
-	gap: 0.9rem;
-	transition: background-color 0.3s;
+	gap: 10px;
+	background: var(--bg-tertiary);
+	padding: 20px;
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow-md);
+	animation: fadeIn 0.4s ease;
 }
 
 label {
 	font-weight: 600;
-	color: var(--color-primary);
-	text-align: left;
+	color: var(--text-primary);
 }
 
-input {
-	padding: 0.7rem;
-	border: 1.5px solid var(--color-border);
-	border-radius: 10px;
-	background: var(--color-bg);
-	color: var(--color-text);
-	font-size: 0.95rem;
-	transition: border 0.3s, background-color 0.3s;
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="file"] {
+	padding: 10px;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+	outline: none;
+	transition: var(--transition);
 }
 
 input:focus {
-	outline: none;
-	border-color: var(--color-accent);
-	background-color: rgba(170, 170, 255, 0.05);
+	border-color: var(--secondary-color);
+	box-shadow: 0 0 0 2px rgba(26, 161, 163, 0.2);
 }
 
-/* Botones específicos del formulario */
-.btnArchivo {
-	display: inline-block;
-	background: var(--color-secondary);
-	color: #fff;
+/* ===== BOTONES DE FORMULARIO ===== */
+.btn,
+.btnGuardarFoto {
+	background: var(--secondary-color);
+	color: white;
 	border: none;
-	border-radius: 12px;
-	padding: 0.6rem 1rem;
+	padding: 10px 14px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
-	transition: background 0.3s;
+	font-weight: 500;
+	transition: var(--transition);
+}
+
+.btn:hover,
+.btnGuardarFoto:hover {
+	background: var(--primary-dark);
+}
+
+.btn.ghost,
+.btnCancelarFoto {
+	background: transparent;
+	border: 2px solid var(--accent-color);
+	color: var(--accent-color);
+}
+
+.btn.ghost:hover,
+.btnCancelarFoto:hover {
+	background: var(--accent-color);
+	color: white;
+}
+
+/* ===== BOTÓN ARCHIVO ===== */
+.btnArchivo {
+	background: var(--primary-color);
+	color: white;
+	padding: 8px 12px;
+	border-radius: var(--border-radius-sm);
+	cursor: pointer;
+	transition: var(--transition);
+	display: inline-block;
 }
 
 .btnArchivo:hover {
-	background: var(--color-btn-hover);
+	background: var(--primary-light);
 }
 
-.btnGuardarFoto {
-	background: var(--color-primary);
+.nombre-archivo {
+	color: var(--text-secondary);
+	margin-left: 10px;
+	font-size: 0.9rem;
 }
 
-.btnCancelarFoto,
-#btnCancelEdit {
-	background: transparent;
-	border: 2px solid var(--color-accent);
-	color: var(--color-accent);
-}
-
-.btnCancelarFoto:hover,
-#btnCancelEdit:hover {
-	background: var(--color-accent);
-	color: #fff;
-}
-
-
-.dark-mode-toggle {
-	position: fixed;
-	bottom: 25px;
-	right: 25px;
-	width: 52px;
-	height: 52px;
-	border-radius: 50%;
-	background: var(--color-primary);
-	color: #fff;
-	border: none;
-	font-size: 1.3rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: var(--shadow);
-	cursor: pointer;
-	transition: transform 0.3s, background 0.3s;
-}
-
-
-/* Animación al abrir los formularios */
+/* ===== ANIMACIONES ===== */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -291,41 +269,20 @@ input:focus {
 	}
 }
 
-/* Responsive */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-	.content-card {
-		margin: 1rem;
-		padding: 1.5rem;
-	}
-
-	form {
-		padding: 1.2rem;
-	}
-
-	.nav-btn-wrapper {
+	.user-display {
 		flex-direction: column;
+		align-items: center;
+		text-align: center;
 	}
 
-	.nav-btn span {
-		display: none;
+	.account-actions {
+		justify-content: center;
 	}
 
-	.nav-btn i {
-		font-size: 1.3rem;
-	}
-}
-
-@media (max-width: 480px) {
-	.content-card {
-		padding: 1rem;
-	}
-
-	input {
-		font-size: 0.85rem;
-	}
-
-	button {
-		font-size: 0.85rem;
-		padding: 0.5rem 1rem;
+	.avatar {
+		width: 100px;
+		height: 100px;
 	}
 }
