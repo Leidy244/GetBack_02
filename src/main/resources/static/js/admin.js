@@ -519,3 +519,65 @@ document.addEventListener("DOMContentLoaded", () => adminApp.init());
 window.adminApp = adminApp;
 
 
+   document.addEventListener('DOMContentLoaded', function () {
+
+     // ---- Rellenar modal editar ----
+     const editarModal = document.getElementById('editarUsuarioModal');
+     if (editarModal) {
+       editarModal.addEventListener('show.bs.modal', function (event) {
+         // El botón que disparó el modal
+         const button = event.relatedTarget;
+         if (!button) return;
+
+         // Extraer atributos data-*
+         const id = button.getAttribute('data-user-id') || '';
+         const nombre = button.getAttribute('data-user-nombre') || '';
+         const apellido = button.getAttribute('data-user-apellido') || '';
+         const correo = button.getAttribute('data-user-correo') || '';
+         const telefono = button.getAttribute('data-user-telefono') || '';
+         const direccion = button.getAttribute('data-user-direccion') || '';
+         const estado = button.getAttribute('data-user-estado') || 'ACTIVO';
+         const rolId = button.getAttribute('data-user-rol') || '';
+
+         // Setear inputs dentro del modal
+         document.getElementById('edit-user-id').value = id;
+         document.getElementById('edit-user-nombre').value = nombre;
+         document.getElementById('edit-user-apellido').value = apellido;
+         document.getElementById('edit-user-correo').value = correo;
+         document.getElementById('edit-user-telefono').value = telefono;
+         document.getElementById('edit-user-direccion').value = direccion;
+         document.getElementById('edit-user-estado').value = estado;
+
+         // Seleccionar rol en el select (si existe)
+         const rolSelect = document.getElementById('edit-user-rol');
+         if (rolSelect) {
+           rolSelect.value = rolId;
+         }
+       });
+     }
+
+     // ---- Rellenar modal eliminar ----
+     const deleteModal = document.getElementById('confirmDeleteUserModal');
+     if (deleteModal) {
+       deleteModal.addEventListener('show.bs.modal', function (event) {
+         const button = event.relatedTarget;
+         if (!button) return;
+
+         const id = button.getAttribute('data-user-id') || '';
+         const name = button.getAttribute('data-user-nombre') || 'Usuario';
+
+         // Mostrar nombre en modal
+         const nameSpan = document.getElementById('delete-user-name');
+         if (nameSpan) nameSpan.textContent = name;
+
+         // Ajustar link de confirmación
+         const confirmLink = document.getElementById('confirm-delete-link');
+         if (confirmLink) {
+           // Ajusta esta URL si tu endpoint es /admin/users/delete/{id} en lugar de /users/delete/{id}
+           confirmLink.setAttribute('href', /*[[*/ /* th:remove="tag" */ '' + '/users/delete/' + id);
+         }
+       });
+     }
+
+   });
+ 
