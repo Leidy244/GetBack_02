@@ -1,288 +1,466 @@
-/* ===== VARIABLES CSS (de tu paleta) ===== */
+/* === VARIABLES === */
 :root {
-	--primary-color: #701BA4;
-	--primary-light: #8d3bc5;
-	--primary-dark: #4d1373;
-	--secondary-color: #1AA1A3;
-	--accent-color: #FF6B6B;
-
-	--primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-	--sidebar-gradient: linear-gradient(135deg, #22d3ee, #6E03AB);
-
-	--text-primary: #2D3748;
-	--text-secondary: #718096;
-	--text-light: #A0AEC0;
-
-	--bg-primary: #FFFFFF;
-	--bg-secondary: #F7FAFC;
-	--bg-tertiary: #EDF2F7;
-
-	--success-color: #48BB78;
-	--warning-color: #ED8936;
-	--danger-color: #F56565;
-	--info-color: #4299E1;
-
-	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-	--border-radius: 12px;
-	--transition: all 0.3s ease;
+  --morado: #701BA4;
+  --turquesa: #1AA1A3;
+  --rosado: #FF6B6B;
+  --fondo-claro: #F5F5FA;
+  --fondo-card: rgba(255, 255, 255, 0.75);
+  --texto: #2D2D2D;
+  --texto-secundario: #6F6F6F;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --radius: 18px;
+  --transicion: all 0.3s ease;
+  --gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
 }
 
-/* ===== RESETEO BÁSICO ===== */
+/* === MODO OSCURO FUNCIONAL === */
+[data-theme="dark"] {
+  --morado: #8d3bc5;
+  --turquesa: #22d3ee;
+  --rosado: #FF6B6B;
+  --fondo-claro: #1A1A1A;
+  --fondo-card: rgba(255, 255, 255, 0.08);
+  --texto: #FFFFFF;
+  --texto-secundario: #B0B0B0;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
+/* === ESTILOS MODO OSCURO === */
+[data-theme="dark"] body {
+  background: var(--fondo-claro);
+  color: var(--texto);
+}
+
+[data-theme="dark"] .content-card {
+  background: var(--fondo-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--sombra);
+}
+
+[data-theme="dark"] .user-details h3 {
+  color: var(--morado);
+}
+
+[data-theme="dark"] .user-details p {
+  color: var(--texto-secundario);
+}
+
+[data-theme="dark"] form {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] form label {
+  color: var(--texto);
+}
+
+[data-theme="dark"] form input {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--texto);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="dark"] form input:focus {
+  border-color: var(--morado);
+  box-shadow: 0 0 8px rgba(141, 59, 197, 0.3);
+}
+
+[data-theme="dark"] form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .btn.ghost {
+  border: 1.5px solid var(--morado);
+  color: var(--morado);
+}
+
+[data-theme="dark"] .btn.ghost:hover {
+  background: var(--morado);
+  color: white;
+}
+
+[data-theme="dark"] .btnCancelarFoto {
+  border: 1.5px solid var(--turquesa);
+  color: var(--turquesa);
+}
+
+[data-theme="dark"] .btnCancelarFoto:hover {
+  background: var(--turquesa);
+  color: white;
+}
+
+/* === BOTÓN MODO OSCURO === */
+.dark-mode-toggle {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: var(--morado);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(171, 140, 255, 0.7);
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.dark-mode-toggle {
+  animation: popIn 0.4s ease;
+}
+
+[data-theme="dark"] .dark-mode-toggle {
+  background: var(--turquesa);
+}
+
+/* === LOGO === */
+.logo-desktop img {
+  width: auto;
+  height: 80px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+/* === RESET === */
 * {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
 body {
-	background: var(--bg-secondary);
-	color: var(--text-primary);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	min-height: 100vh;
-	padding: 40px 20px;
+  background: var(--fondo-claro);
+  color: var(--texto);
+  transition: var(--transicion);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* ===== HEADER ===== */
+/* === HEADER === */
 .header {
-	width: 100%;
-	max-width: 900px;
-	text-align: center;
-	padding: 20px 0;
-	background: var(--primary-gradient);
-	color: white;
-	border-radius: var(--border-radius);
-	box-shadow: var(--shadow-md);
-	margin-bottom: 30px;
+  background: var(--gradiente);
+  color: white;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-shadow: var(--sombra);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 }
 
 .header h2 {
-	font-size: 1.8rem;
-	font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 600;
 }
 
-/* ===== TARJETA PRINCIPAL ===== */
+.logo-desktop img:hover {
+  transform: scale(1.05);
+}
+
+/* === NAV === */
+.nav-btn-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-btn {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transicion);
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* === BOTÓN HAMBURGUESA === */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.hamburger span {
+  background: white;
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+  transition: var(--transicion);
+}
+
+.nav-btn-wrapper.active {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100px;
+  right: 0;
+  background: var(--gradiente);
+  width: 100%;
+  padding: 1.2rem 0;
+  gap: 0.8rem;
+  text-align: center;
+}
+
+/* === CONTENIDO PRINCIPAL === */
 .content-col {
-	width: 100%;
-	max-width: 900px;
+  margin-top: 140px;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
 }
 
 .content-card {
-	background: var(--bg-primary);
-	border-radius: var(--border-radius);
-	box-shadow: var(--shadow-md);
-	padding: 25px 30px;
-	transition: var(--transition);
+  width: 100%;
+  max-width: 900px;
+  background: var(--fondo-card);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+  box-shadow: var(--sombra);
+  padding: 3rem;
+  transition: var(--transicion);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .content-card:hover {
-	transform: translateY(-4px);
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
 }
 
-.card-header {
-	font-size: 1.1rem;
-	font-weight: 600;
-	color: var(--primary-dark);
-	margin-bottom: 15px;
-}
-
-/* ===== INFO DE USUARIO ===== */
-.account-info {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
-}
-
+/* === PERFIL === */
 .user-display {
-	display: flex;
-	align-items: center;
-	gap: 20px;
-	flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .avatar {
-	width: 120px;
-	height: 120px;
-	border-radius: 50%;
-	overflow: hidden;
-	box-shadow: var(--shadow-md);
-	border: 3px solid var(--secondary-color);
-	flex-shrink: 0;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--morado);
+  box-shadow: var(--sombra);
 }
 
 .avatar img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .avatar-placeholder {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background: var(--primary-gradient);
-	color: white;
-	font-size: 2rem;
-	font-weight: bold;
+  width: 100%;
+  height: 100%;
+  background: var(--gradiente);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: white;
 }
 
-/* ===== DATOS ===== */
+.user-details {
+  flex: 1;
+  min-width: 250px;
+}
+
 .user-details h3 {
-	font-size: 1.3rem;
-	color: var(--text-primary);
+  color: var(--morado);
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
 }
 
 .user-details p {
-	color: var(--text-secondary);
-	margin-bottom: 4px;
+  color: var(--texto-secundario);
+  margin-bottom: 0.3rem;
 }
 
-.user-details small {
-	color: var(--text-light);
+/* === BOTONES DE ACCIÓN === */
+.account-actions .dropdown-item {
+  background: var(--gradiente);
+  border: none;
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transicion);
+  font-weight: 500;
 }
 
-/* ===== BOTONES ===== */
-.account-actions button {
-	background: var(--primary-color);
-	color: white;
-	border: none;
-	padding: 10px 16px;
-	border-radius: var(--border-radius);
-	cursor: pointer;
-	font-size: 0.9rem;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	transition: var(--transition);
-	box-shadow: var(--shadow-md);
+.account-actions .dropdown-item:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
 }
 
-.account-actions button:hover {
-	background: var(--primary-light);
-	transform: scale(1.05);
-}
-
-.dropdown-item i {
-	font-size: 1rem;
-}
-
-/* ===== FORMULARIOS ===== */
+/* === FORMULARIOS === */
 form {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	background: var(--bg-tertiary);
-	padding: 20px;
-	border-radius: var(--border-radius);
-	box-shadow: var(--shadow-md);
-	animation: fadeIn 0.4s ease;
+  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: var(--transicion);
 }
 
-label {
-	font-weight: 600;
-	color: var(--text-primary);
+form label {
+  font-weight: 500;
+  color: var(--texto);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="file"] {
-	padding: 10px;
-	border: 1px solid var(--border-color);
-	border-radius: var(--border-radius);
-	outline: none;
-	transition: var(--transition);
+form input {
+  padding: 0.9rem 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: var(--radius);
+  outline: none;
+  transition: var(--transicion);
+  background: rgba(255, 255, 255, 0.9);
 }
 
-input:focus {
-	border-color: var(--secondary-color);
-	box-shadow: 0 0 0 2px rgba(26, 161, 163, 0.2);
+form input:focus {
+  border-color: var(--morado);
+  box-shadow: 0 0 8px rgba(112, 27, 164, 0.3);
 }
 
-/* ===== BOTONES DE FORMULARIO ===== */
+/* === BOTONES FORMULARIOS === */
 .btn,
-.btnGuardarFoto {
-	background: var(--secondary-color);
-	color: white;
-	border: none;
-	padding: 10px 14px;
-	border-radius: var(--border-radius-sm);
-	cursor: pointer;
-	font-weight: 500;
-	transition: var(--transition);
+.btnGuardarFoto,
+.btnCancelarFoto,
+.btnArchivo,
+.btn.ghost {
+  border: none;
+  cursor: pointer;
+  padding: 0.9rem 1.4rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  transition: var(--transicion);
 }
 
-.btn:hover,
-.btnGuardarFoto:hover {
-	background: var(--primary-dark);
+.btn {
+  background: var(--gradiente);
+  color: white;
 }
 
-.btn.ghost,
-.btnCancelarFoto {
-	background: transparent;
-	border: 2px solid var(--accent-color);
-	color: var(--accent-color);
+.btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
-.btn.ghost:hover,
-.btnCancelarFoto:hover {
-	background: var(--accent-color);
-	color: white;
+.btn.ghost {
+  background: transparent;
+  border: 1.5px solid var(--morado);
+  color: var(--morado);
 }
 
-/* ===== BOTÓN ARCHIVO ===== */
+.btn.ghost:hover {
+  background: var(--morado);
+  color: white;
+}
+
 .btnArchivo {
-	background: var(--primary-color);
-	color: white;
-	padding: 8px 12px;
-	border-radius: var(--border-radius-sm);
-	cursor: pointer;
-	transition: var(--transition);
-	display: inline-block;
+  background: var(--turquesa);
+  color: white;
+  display: inline-block;
+  text-align: center;
 }
 
 .btnArchivo:hover {
-	background: var(--primary-light);
+  background: #138586;
 }
 
-.nombre-archivo {
-	color: var(--text-secondary);
-	margin-left: 10px;
-	font-size: 0.9rem;
+.btnGuardarFoto {
+  background: var(--morado);
+  color: white;
 }
 
-/* ===== ANIMACIONES ===== */
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(-10px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+.btnGuardarFoto:hover {
+  background: #591683;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-	.user-display {
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-	}
+.btnCancelarFoto {
+  background: transparent;
+  border: 1.5px solid var(--turquesa);
+  color: var(--turquesa);
+}
 
-	.account-actions {
-		justify-content: center;
-	}
+.btnCancelarFoto:hover {
+  background: var(--turquesa);
+  color: white;
+}
 
-	.avatar {
-		width: 100px;
-		height: 100px;
-	}
+/* === RESPONSIVE === */
+@media (max-width: 1000px) {
+  .nav-btn-wrapper {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .content-card {
+    padding: 2rem;
+  }
+
+  .user-display {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .account-actions {
+    justify-content: center;
+  }
+  
+  .dark-mode-toggle {
+    width: 50px;
+    height: 50px;
+    bottom: 20px;
+    right: 20px;
+    font-size: 1.1rem;
+  }
 }

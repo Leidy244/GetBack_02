@@ -1,10 +1,15 @@
 package com.sena.getback.controller;
 
-import com.sena.getback.model.*;
-import com.sena.getback.repository.*;
+import com.sena.getback.model.Categoria;
+import com.sena.getback.model.Evento;
+import com.sena.getback.model.Menu;
+import com.sena.getback.model.Usuario;
+import com.sena.getback.repository.CategoriaRepository;
+import com.sena.getback.repository.EventoRepository;
+import com.sena.getback.repository.MenuRepository;
+import com.sena.getback.repository.UsuarioRepository;
 import com.sena.getback.service.UsuarioService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +25,6 @@ public class AdminController {
 	private final EventoRepository eventoRepository;
 	private final UsuarioRepository usuarioRepository;
 
-	@Autowired
 	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
 			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService) {
 		this.categoriaRepository = categoriaRepository;

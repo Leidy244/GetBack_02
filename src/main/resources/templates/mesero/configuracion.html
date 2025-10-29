@@ -6,11 +6,55 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Perfil del Mesero</title>
 	<link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
 	<header class="header">
+		<div class="logo-desktop">
+			<a th:href="@{/configuracion}">
+				<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+			</a>
+		</div>
 		<h2> Perfil del Mesero</h2>
+		<!-- Contenedor principal de botones de navegación -->
+		<div class="container">
+			<nav class="nav-btn-wrapper" aria-label="Menú de configuración del mesero">
+
+				<a th:href="@{/mesero}" class="nav-btn">
+					<i class="fa-solid fa-utensils"></i>
+					<span>Tomar Pedido</span>
+				</a>
+				<a th:href="@{/PerfilMesero}" class="nav-btn">
+					<i class="fas fa-user"></i>
+					<span>Perfil</span>
+				</a>
+
+				<a th:href="@{/estadisticas}" class="nav-btn">
+					<i class="fas fa-chart-bar"></i>
+					<span>Estadísticas</span>
+				</a>
+
+
+				<a th:href="@{/historial}" class="nav-btn">
+					<i class="fas fa-history"></i>
+					<span>Historial</span>
+				</a>
+				<a th:href="@{/configuracionMesero}" class="nav-btn">
+					<i class="fa-solid fa-gear"></i>
+					<span>Configuración</span>
+				</a>
+
+				<a th:href="@{/login}" class="nav-btn">
+					<i class="fa-solid fa-arrow-right-from-bracket"></i>
+					<span>Cerrar sessión</span>
+				</a>
+			</nav>
+		</div>
+
+
+
+
 	</header>
 
 	<!-- Información -->
@@ -102,60 +146,15 @@
 			</div>
 		</div>
 	</div>
+	<!-- Botón Modo Oscuro -->
+	<button class="dark-mode-toggle" id="darkModeToggle">
+		<i class="fas fa-moon"></i>
+	</button>
 
 </body>
-<script>
-	// Referencias a los formularios
-	const formEditar = document.getElementById("formEditar");
-	const formFoto = document.getElementById("formFoto");
 
-	// Botones
-	const btnEditProfile = document.getElementById("btnEditProfile");
-	const btnChangePhoto = document.getElementById("btnChangePhoto");
-	const btnCancelEdit = document.getElementById("btnCancelEdit");
-	const btnCancelFoto = document.getElementById("cancelFoto");
+<script th:src="@{/js/ConfigMesero.js}" defer>
 
-	// --- Abrir Formulario de Edición ---
-	btnEditProfile.addEventListener("click", () => {
-		// Cierra el de foto si está abierto
-		formFoto.style.display = "none";
-
-		// Alterna el de edición
-		formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
-	});
-
-	// --- Abrir Formulario de Foto ---
-	btnChangePhoto.addEventListener("click", () => {
-		// Cierra el de edición si está abierto
-		formEditar.style.display = "none";
-
-		// Alterna el de foto
-		formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
-	});
-
-	// --- Cerrar ambos ---
-	btnCancelEdit.addEventListener("click", () => {
-		formEditar.style.display = "none";
-	});
-
-	btnCancelFoto?.addEventListener("click", () => {
-		formFoto.style.display = "none";
-	});
-
-	// --- Nombre de la imagen seleccionada ---
-	document.addEventListener("DOMContentLoaded", () => {
-		const inputFoto = document.getElementById("inputFoto");
-		const nombreArchivo = document.getElementById("nombreArchivo");
-
-		if (inputFoto && nombreArchivo) {
-			inputFoto.addEventListener("change", () => {
-				const archivo = inputFoto.files[0];
-				nombreArchivo.textContent = archivo
-					? archivo.name
-					: "Ningún archivo seleccionado";
-			});
-		}
-	});
 </script>
 
 </html>
