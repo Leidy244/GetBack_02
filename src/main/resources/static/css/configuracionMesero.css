@@ -1,331 +1,466 @@
-/* Variables de color para modo claro y oscuro */
+/* === VARIABLES === */
 :root {
-	--color-bg: #f8f8ff;
-	--color-card: #ffffff;
-	--color-primary: #6b4ce6;
-	--color-secondary: #547aff;
-	--color-accent: #a98bff;
-	--color-text: #2d2d2d;
-	--color-subtext: #555;
-	--color-border: #e1e1e1;
-	--color-btn-hover: #7e5df0;
-	--shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --morado: #701BA4;
+  --turquesa: #1AA1A3;
+  --rosado: #FF6B6B;
+  --fondo-claro: #F5F5FA;
+  --fondo-card: rgba(255, 255, 255, 0.75);
+  --texto: #2D2D2D;
+  --texto-secundario: #6F6F6F;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --radius: 18px;
+  --transicion: all 0.3s ease;
+  --gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
 }
 
-/* Modo oscuro */
-.dark-mode,
+/* === MODO OSCURO FUNCIONAL === */
 [data-theme="dark"] {
-	--color-bg: #141414;
-	--color-card: #1f1f2e;
-	--color-primary: #9f82ff;
-	--color-secondary: #6fa3ff;
-	--color-accent: #c5afff;
-	--color-text: #f0f0f0;
-	--color-subtext: #b0b0b0;
-	--color-border: #333;
-	--color-btn-hover: #b497ff;
-	--shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --morado: #8d3bc5;
+  --turquesa: #22d3ee;
+  --rosado: #FF6B6B;
+  --fondo-claro: #1A1A1A;
+  --fondo-card: rgba(255, 255, 255, 0.08);
+  --texto: #FFFFFF;
+  --texto-secundario: #B0B0B0;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
 }
 
-/* --- BOTÓN MODO CLARO/OSCURO ANIMADO --- */
+/* === ESTILOS MODO OSCURO === */
+[data-theme="dark"] body {
+  background: var(--fondo-claro);
+  color: var(--texto);
+}
+
+[data-theme="dark"] .content-card {
+  background: var(--fondo-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--sombra);
+}
+
+[data-theme="dark"] .user-details h3 {
+  color: var(--morado);
+}
+
+[data-theme="dark"] .user-details p {
+  color: var(--texto-secundario);
+}
+
+[data-theme="dark"] form {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] form label {
+  color: var(--texto);
+}
+
+[data-theme="dark"] form input {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--texto);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="dark"] form input:focus {
+  border-color: var(--morado);
+  box-shadow: 0 0 8px rgba(141, 59, 197, 0.3);
+}
+
+[data-theme="dark"] form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .btn.ghost {
+  border: 1.5px solid var(--morado);
+  color: var(--morado);
+}
+
+[data-theme="dark"] .btn.ghost:hover {
+  background: var(--morado);
+  color: white;
+}
+
+[data-theme="dark"] .btnCancelarFoto {
+  border: 1.5px solid var(--turquesa);
+  color: var(--turquesa);
+}
+
+[data-theme="dark"] .btnCancelarFoto:hover {
+  background: var(--turquesa);
+  color: white;
+}
+
+/* === BOTÓN MODO OSCURO === */
 .dark-mode-toggle {
-	position: fixed;
-	bottom: 25px;
-	right: 25px;
-	width: 52px;
-	height: 52px;
-	border-radius: 50%;
-	background: var(--color-primary);
-	color: #fff;
-	border: none;
-	font-size: 1.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: var(--shadow);
-	cursor: pointer;
-	transition: transform 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
-	z-index: 1000;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: var(--morado);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* efecto hover */
 .dark-mode-toggle:hover {
-	transform: scale(1.1) rotate(10deg);
-	box-shadow: 0 0 20px var(--color-accent);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(171, 140, 255, 0.7);
 }
 
-/* animación de giro al cambiar de modo */
-.rotate {
-	animation: spin 0.6s ease;
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-
-	to {
-		transform: rotate(360deg);
-	}
+.dark-mode-toggle {
+  animation: popIn 0.4s ease;
 }
 
+[data-theme="dark"] .dark-mode-toggle {
+  background: var(--turquesa);
+}
 
-/* Estilo general */
+/* === LOGO === */
+.logo-desktop img {
+  width: auto;
+  height: 80px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+/* === RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
 body {
-	background-color: var(--color-bg);
-	color: var(--color-text);
-	font-family: "Poppins", sans-serif;
-	margin: 0;
-	transition: background-color 0.3s, color 0.3s;
+  background: var(--fondo-claro);
+  color: var(--texto);
+  transition: var(--transicion);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Header */
-header {
-	background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-	box-shadow: var(--shadow);
-	padding: 0.8rem 1rem;
-	color: #fff;
+/* === HEADER === */
+.header {
+  background: var(--gradiente);
+  color: white;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-shadow: var(--sombra);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 }
 
+.header h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.logo-desktop img:hover {
+  transform: scale(1.05);
+}
+
+/* === NAV === */
 .nav-btn-wrapper {
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-	flex-wrap: wrap;
-	gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .nav-btn {
-	display: flex;
-	align-items: center;
-	gap: 0.4rem;
-	color: #fff;
-	text-decoration: none;
-	font-weight: 500;
-	background: rgba(255, 255, 255, 0.1);
-	padding: 0.5rem 0.8rem;
-	border-radius: 10px;
-	transition: background 0.3s, transform 0.2s;
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transicion);
 }
 
 .nav-btn:hover {
-	background: rgba(255, 255, 255, 0.3);
-	transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
-/* Tarjeta de usuario */
+/* === BOTÓN HAMBURGUESA === */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.hamburger span {
+  background: white;
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+  transition: var(--transicion);
+}
+
+.nav-btn-wrapper.active {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100px;
+  right: 0;
+  background: var(--gradiente);
+  width: 100%;
+  padding: 1.2rem 0;
+  gap: 0.8rem;
+  text-align: center;
+}
+
+/* === CONTENIDO PRINCIPAL === */
+.content-col {
+  margin-top: 140px;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
 .content-card {
-	background-color: var(--color-card);
-	box-shadow: var(--shadow);
-	border-radius: 20px;
-	padding: 2rem;
-	max-width: 700px;
-	margin: 2rem auto;
-	text-align: center;
-	transition: background-color 0.3s;
+  width: 100%;
+  max-width: 900px;
+  background: var(--fondo-card);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+  box-shadow: var(--sombra);
+  padding: 3rem;
+  transition: var(--transicion);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.content-card:hover {
+  transform: translateY(-5px);
+}
+
+/* === PERFIL === */
+.user-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .avatar {
-	width: 110px;
-	height: 110px;
-	border-radius: 50%;
-	background: var(--color-accent);
-	margin: 0 auto 1rem;
-	box-shadow: var(--shadow);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--morado);
+  box-shadow: var(--sombra);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--gradiente);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: white;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 250px;
 }
 
 .user-details h3 {
-	font-size: 1.5rem;
-	color: var(--color-primary);
-	margin-bottom: 0.3rem;
+  color: var(--morado);
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
 }
 
-.notice {
-	color: var(--color-subtext);
-	font-size: 0.9rem;
-	margin-bottom: 0.2rem;
+.user-details p {
+  color: var(--texto-secundario);
+  margin-bottom: 0.3rem;
 }
 
-/* Botones */
-button,
-.btn {
-	background: var(--color-primary);
-	color: #fff;
-	border: none;
-	border-radius: 12px;
-	padding: 0.6rem 1.2rem;
-	cursor: pointer;
-	font-size: 0.95rem;
-	font-weight: 500;
-	transition: background 0.3s, transform 0.2s;
+/* === BOTONES DE ACCIÓN === */
+.account-actions .dropdown-item {
+  background: var(--gradiente);
+  border: none;
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transicion);
+  font-weight: 500;
 }
 
-button:hover,
-.btn:hover {
-	background: var(--color-btn-hover);
-	transform: translateY(-2px);
+.account-actions .dropdown-item:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
 }
 
-button.ghost {
-	background: transparent;
-	border: 2px solid var(--color-primary);
-	color: var(--color-primary);
-}
-
-button.ghost:hover {
-	background: var(--color-primary);
-	color: #fff;
-}
-
-/* Formularios */
-#formEditar,
-#formFoto {
-	display: none;
-	max-width: 600px;
-	margin: 2rem auto;
-	animation: fadeIn 0.4s ease;
-}
-
-#formEditar.active,
-#formFoto.active {
-	display: block;
-}
-
+/* === FORMULARIOS === */
 form {
-	background-color: var(--color-card);
-	box-shadow: var(--shadow);
-	border-radius: 16px;
-	padding: 1.8rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.9rem;
-	transition: background-color 0.3s;
+  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: var(--transicion);
 }
 
-label {
-	font-weight: 600;
-	color: var(--color-primary);
-	text-align: left;
+form label {
+  font-weight: 500;
+  color: var(--texto);
 }
 
-input {
-	padding: 0.7rem;
-	border: 1.5px solid var(--color-border);
-	border-radius: 10px;
-	background: var(--color-bg);
-	color: var(--color-text);
-	font-size: 0.95rem;
-	transition: border 0.3s, background-color 0.3s;
+form input {
+  padding: 0.9rem 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: var(--radius);
+  outline: none;
+  transition: var(--transicion);
+  background: rgba(255, 255, 255, 0.9);
 }
 
-input:focus {
-	outline: none;
-	border-color: var(--color-accent);
-	background-color: rgba(170, 170, 255, 0.05);
+form input:focus {
+  border-color: var(--morado);
+  box-shadow: 0 0 8px rgba(112, 27, 164, 0.3);
 }
 
-/* Botones específicos del formulario */
+/* === BOTONES FORMULARIOS === */
+.btn,
+.btnGuardarFoto,
+.btnCancelarFoto,
+.btnArchivo,
+.btn.ghost {
+  border: none;
+  cursor: pointer;
+  padding: 0.9rem 1.4rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  transition: var(--transicion);
+}
+
+.btn {
+  background: var(--gradiente);
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1.5px solid var(--morado);
+  color: var(--morado);
+}
+
+.btn.ghost:hover {
+  background: var(--morado);
+  color: white;
+}
+
 .btnArchivo {
-	display: inline-block;
-	background: var(--color-secondary);
-	color: #fff;
-	border: none;
-	border-radius: 12px;
-	padding: 0.6rem 1rem;
-	cursor: pointer;
-	transition: background 0.3s;
+  background: var(--turquesa);
+  color: white;
+  display: inline-block;
+  text-align: center;
 }
 
 .btnArchivo:hover {
-	background: var(--color-btn-hover);
+  background: #138586;
 }
 
 .btnGuardarFoto {
-	background: var(--color-primary);
+  background: var(--morado);
+  color: white;
 }
 
-.btnCancelarFoto,
-#btnCancelEdit {
-	background: transparent;
-	border: 2px solid var(--color-accent);
-	color: var(--color-accent);
+.btnGuardarFoto:hover {
+  background: #591683;
 }
 
-.btnCancelarFoto:hover,
-#btnCancelEdit:hover {
-	background: var(--color-accent);
-	color: #fff;
+.btnCancelarFoto {
+  background: transparent;
+  border: 1.5px solid var(--turquesa);
+  color: var(--turquesa);
 }
 
-
-.dark-mode-toggle {
-	position: fixed;
-	bottom: 25px;
-	right: 25px;
-	width: 52px;
-	height: 52px;
-	border-radius: 50%;
-	background: var(--color-primary);
-	color: #fff;
-	border: none;
-	font-size: 1.3rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: var(--shadow);
-	cursor: pointer;
-	transition: transform 0.3s, background 0.3s;
+.btnCancelarFoto:hover {
+  background: var(--turquesa);
+  color: white;
 }
 
+/* === RESPONSIVE === */
+@media (max-width: 1000px) {
+  .nav-btn-wrapper {
+    display: none;
+  }
 
-/* Animación al abrir los formularios */
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(-10px);
-	}
+  .hamburger {
+    display: flex;
+  }
 
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
+  .content-card {
+    padding: 2rem;
+  }
 
-/* Responsive */
-@media (max-width: 768px) {
-	.content-card {
-		margin: 1rem;
-		padding: 1.5rem;
-	}
+  .user-display {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 
-	form {
-		padding: 1.2rem;
-	}
+  .avatar {
+    width: 120px;
+    height: 120px;
+  }
 
-	.nav-btn-wrapper {
-		flex-direction: column;
-	}
-
-	.nav-btn span {
-		display: none;
-	}
-
-	.nav-btn i {
-		font-size: 1.3rem;
-	}
-}
-
-@media (max-width: 480px) {
-	.content-card {
-		padding: 1rem;
-	}
-
-	input {
-		font-size: 0.85rem;
-	}
-
-	button {
-		font-size: 0.85rem;
-		padding: 0.5rem 1rem;
-	}
+  .account-actions {
+    justify-content: center;
+  }
+  
+  .dark-mode-toggle {
+    width: 50px;
+    height: 50px;
+    bottom: 20px;
+    right: 20px;
+    font-size: 1.1rem;
+  }
 }

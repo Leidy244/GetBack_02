@@ -4,14 +4,15 @@ import com.sena.getback.service.MenuService;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
-import com.sena.getback.service.UsuarioService;
 
 import jakarta.servlet.http.HttpSession;
 
 import com.sena.getback.service.MesaService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -25,15 +26,14 @@ public class MeseroController {
 	private final CategoriaService categoriaService;
 	private final PedidoService pedidoService;
 	private final MesaService mesaService;
-	private final UsuarioService usuarioService;
 
 	public MeseroController(MenuService menuService, CategoriaService categoriaService, PedidoService pedidoService,
-			MesaService mesaService, UsuarioService usuarioService) {
+			MesaService mesaService) {
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
 		this.pedidoService = pedidoService;
 		this.mesaService = mesaService;
-		this.usuarioService = usuarioService;
+
 	}
 
 	@GetMapping("/mesero")
@@ -127,7 +127,7 @@ public class MeseroController {
 		}
 
 		model.addAttribute("usuario", usuario);
-		return "/mesero/configuracion"; 
+		return "/configuracion";
 	}
 
 }

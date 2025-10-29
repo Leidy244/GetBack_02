@@ -179,7 +179,6 @@
     <div class="modal fade" id="editarUsuarioModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <!-- Nota: aquí usamos campos con "name" que tu backend espera. Ajusta action si tu endpoint difiere -->
           <form id="formEditarUsuario" th:action="@{/users/update}" method="post">
             <input type="hidden" name="id" id="edit-user-id">
             <div class="modal-header">

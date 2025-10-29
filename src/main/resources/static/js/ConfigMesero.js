@@ -83,26 +83,41 @@ if (form) {
 	});
 }
 
-// --- Activar/desactivar modo oscuro ---
-const toggle = document.getElementById('darkModeToggle');
-const icon = toggle.querySelector('i');
 
-// Verifica si el usuario ya tenía modo oscuro activado
-if (localStorage.getItem('theme') === 'dark') {
-	document.documentElement.setAttribute('data-theme', 'dark');
-	icon.classList.replace('fa-moon', 'fa-sun');
-}
-
-// Al hacer clic en el botón
-toggle.addEventListener('click', () => {
-	const currentTheme = document.documentElement.getAttribute('data-theme');
-	if (currentTheme === 'dark') {
-		document.documentElement.removeAttribute('data-theme');
-		icon.classList.replace('fa-sun', 'fa-moon');
-		localStorage.setItem('theme', 'light');
-	} else {
-		document.documentElement.setAttribute('data-theme', 'dark');
-		icon.classList.replace('fa-moon', 'fa-sun');
-		localStorage.setItem('theme', 'dark');
-	}
+// JavaScript para el modo oscuro - DEBE ir en tu HTML
+document.addEventListener('DOMContentLoaded', function() {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const htmlElement = document.documentElement;
+    
+    // Verificar preferencia guardada
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    htmlElement.setAttribute('data-theme', savedTheme);
+    updateToggleIcon(savedTheme);
+    
+    // Evento para cambiar modo
+    darkModeToggle.addEventListener('click', function() {
+        const currentTheme = htmlElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        htmlElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateToggleIcon(newTheme);
+        
+        // Efecto de animación
+        this.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            this.style.transform = 'scale(1)';
+        }, 150);
+    });
+    
+    function updateToggleIcon(theme) {
+        const icon = darkModeToggle.querySelector('i');
+        if (theme === 'dark') {
+            icon.className = 'fas fa-sun';
+            darkModeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+        } else {
+            icon.className = 'fas fa-moon';
+            darkModeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+        }
+    }
 });
