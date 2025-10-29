@@ -1,21 +1,16 @@
 package com.sena.getback.controller;
 
-import com.sena.getback.model.Categoria;
-import com.sena.getback.model.Evento;
-import com.sena.getback.model.Menu;
-import com.sena.getback.model.Usuario;
-import com.sena.getback.repository.CategoriaRepository;
-import com.sena.getback.repository.EventoRepository;
-import com.sena.getback.repository.MenuRepository;
-import com.sena.getback.repository.UsuarioRepository;
-import com.sena.getback.service.UsuarioService;
+import com.sena.getback.model.*;
+import com.sena.getback.repository.*;
+import com.sena.getback.service.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequestMapping("/admin")
 public class AdminController {
 
 	private final UsuarioService usuarioService;
@@ -24,19 +19,28 @@ public class AdminController {
 	private final MenuRepository menuRepository;
 	private final EventoRepository eventoRepository;
 	private final UsuarioRepository usuarioRepository;
+	private final LocationRepository locationRepository;
+	private final MesaRepository mesaRepository;
+	private final RolRepository rolRepository;
 
+	@Autowired
 	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
-			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService) {
+			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
+			LocationService locationService, LocationRepository locationRepository, MesaRepository mesaRepository,
+			RolRepository rolRepository) {
+
+		this.usuarioService = usuarioService;
 		this.categoriaRepository = categoriaRepository;
 		this.menuRepository = menuRepository;
 		this.eventoRepository = eventoRepository;
 		this.usuarioRepository = usuarioRepository;
-		this.usuarioService = usuarioService;
-
+		this.locationRepository = locationRepository;
+		this.mesaRepository = mesaRepository;
+		this.rolRepository = rolRepository;
 	}
 
-	/** PANEL PRINCIPAL */
-	@GetMapping("/admin")
+	/** ==================== PANEL PRINCIPAL ==================== **/
+	@GetMapping
 	public String panel(@RequestParam(value = "activeSection", required = false) String activeSection, Model model) {
 
 		String section = (activeSection != null && !activeSection.isEmpty()) ? activeSection : "dashboard";
@@ -44,39 +48,80 @@ public class AdminController {
 		model.addAttribute("title", "Panel de Administración");
 
 		try {
-			// Estadísticas
-			model.addAttribute("totalCategorias", categoriaRepository.count());
-			model.addAttribute("totalProductos", menuRepository.count());
-			model.addAttribute("totalEventos", eventoRepository.count());
-			model.addAttribute("totalUsuarios", usuarioRepository.count());
+			// DASHBOARD
+			if ("dashboard".equals(section)) {
+				model.addAttribute("totalCategorias", categoriaRepository.count());
+				model.addAttribute("totalProductos", menuRepository.count());
+				model.addAttribute("totalEventos", eventoRepository.count());
+				model.addAttribute("totalUsuarios", usuarioRepository.count());
+				model.addAttribute("totalUbicaciones", locationRepository.count());
+				model.addAttribute("totalMesas", mesaRepository.count());
+			}
 
-			// Listas para las tablas
-			model.addAttribute("categorias", categoriaRepository.findAll());
-			model.addAttribute("products", menuRepository.findAll());
-			model.addAttribute("eventos", eventoRepository.findAll());
-			model.addAttribute("usuarios", usuarioRepository.findAll());
+			// LOCATIONS
+			if ("locations".equals(section)) {
+				model.addAttribute("locations", locationRepository.findAll());
+				model.addAttribute("totalUbicaciones", locationRepository.count());
+				model.addAttribute("location",
+						model.containsAttribute("location") ? model.getAttribute("location") : new Location());
+			}
 
-			// Objetos vacíos para formularios
-			model.addAttribute("newProduct", new Menu());
-			model.addAttribute("categoria", new Categoria());
-			model.addAttribute("evento", new Evento());
+			// MESAS
+			if ("mesas".equals(section)) {
+				model.addAttribute("mesas", mesaRepository.findAll());
+				model.addAttribute("totalMesas", mesaRepository.count());
+				model.addAttribute("ubicaciones", locationRepository.findAll());
+				model.addAttribute("mesa", model.containsAttribute("mesa") ? model.getAttribute("mesa") : new Mesa());
+			}
 
-			// Admin
+			// PRODUCTOS
+			if ("products".equals(section)) {
+				model.addAttribute("products", menuRepository.findAll());
+				model.addAttribute("newProduct", new Menu());
+				model.addAttribute("categorias", categoriaRepository.findAll());
+			}
+
+			// CATEGORÍAS
+			if ("categories".equals(section)) {
+				model.addAttribute("categorias", categoriaRepository.findAll());
+				model.addAttribute("categoria", new Categoria());
+			}
+
+			// EVENTOS
+			if ("events".equals(section)) {
+				model.addAttribute("eventos", eventoRepository.findAll());
+				model.addAttribute("evento", new Evento());
+			}
+
+			// USUARIOS
+			if ("users".equals(section)) {
+				model.addAttribute("users", usuarioService.findAllUsers());
+				model.addAttribute("newUser", new Usuario());
+				model.addAttribute("roles", rolRepository.findAll());
+			}
+
+			// PERFIL ADMIN
 			Usuario admin = usuarioService.getFirstUser().orElse(new Usuario());
 			model.addAttribute("usuario", admin);
 
 		} catch (Exception e) {
 			System.err.println("❌ Error cargando datos: " + e.getMessage());
-
 			model.addAttribute("categorias", java.util.Collections.emptyList());
 			model.addAttribute("products", java.util.Collections.emptyList());
 			model.addAttribute("eventos", java.util.Collections.emptyList());
-			model.addAttribute("usuarios", java.util.Collections.emptyList());
+			model.addAttribute("users", java.util.Collections.emptyList());
+			model.addAttribute("locations", java.util.Collections.emptyList());
+			model.addAttribute("mesas", java.util.Collections.emptyList());
+			model.addAttribute("roles", java.util.Collections.emptyList());
+
 			model.addAttribute("newProduct", new Menu());
+			model.addAttribute("categoria", new Categoria());
+			model.addAttribute("evento", new Evento());
+			model.addAttribute("location", new Location());
+			model.addAttribute("mesa", new Mesa());
 			model.addAttribute("usuario", new Usuario());
 		}
 
 		return "admin";
 	}
-
 }
