@@ -2,11 +2,11 @@
    VARIABLES GLOBALES - CAJA
 =========================== */
 :root {
-    /* Colores principales - Manteniendo rojo y azul */
+    /* Colores principales */
     --primary-color: #E53E3E;
     --primary-light: #F56565;
     --primary-dark: #C53030;
-    --secondary-color: #3182CE;
+    --secondary-color: #7D29B3;
     --accent-color: #FF6B6B;
 
     /* Gradientes */
@@ -51,7 +51,7 @@
     --container-max-width: 1200px;
 }
 
-/* ===== MODO OSCURO PARA PANEL CAJA ===== */
+/* ===== MODO OSCURO ===== */
 [data-theme="dark"] {
     --bg-primary: #1E1E2F;
     --bg-secondary: #2C2C3E;
@@ -62,23 +62,20 @@
     --border-color: #4A5568;
 
     /* Gradientes oscuros */
-    --sidebar-gradient: linear-gradient(135deg, #E53E3E, #3182CE);
-    --primary-gradient: linear-gradient(135deg, #E53E3E, #3182CE);
+    --sidebar-gradient: linear-gradient(135deg, #A82A2A, #401070);
+    --primary-gradient: linear-gradient(135deg, #A82A2A, #401070);
 }
 
-/* Fondo y textos en modo oscuro */
 [data-theme="dark"] body.caja-theme {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
 }
 
-/* Header en modo oscuro */
 [data-theme="dark"] .caja-header {
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Sidebar en modo oscuro */
 [data-theme="dark"] .caja-sidebar {
     background: var(--sidebar-gradient);
     color: var(--text-primary);
@@ -98,7 +95,6 @@
     color: #fff;
 }
 
-/* Tarjetas en modo oscuro */
 [data-theme="dark"] .stat-card,
 [data-theme="dark"] .recent-activity,
 [data-theme="dark"] .table-container,
@@ -125,7 +121,6 @@
     color: var(--text-secondary);
 }
 
-/* Tablas en modo oscuro */
 [data-theme="dark"] .table th {
     background: var(--primary-dark);
     color: #fff;
@@ -142,18 +137,57 @@
     background: var(--bg-tertiary);
 }
 
-/* Formularios en modo oscuro */
 [data-theme="dark"] .form-control,
 [data-theme="dark"] .form-select {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	color: var(--text-white);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: var(--text-light);
 }
 
 [data-theme="dark"] .form-control:focus,
 [data-theme="dark"] .form-select:focus {
     border-color: var(--primary-light);
     box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+	color: var(--text-white);
+}
+
+[data-theme="dark"] .filtro-categoria {
+    color: var(--text-white);
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .filtro-categoria.activo,
+[data-theme="dark"] .filtro-categoria:hover {
+    background: var(--primary-color);
+    color: var(--text-white);
+    border-color: var(--primary-color);
+}
+
+/* ===== BOTONES PESTAÑA PAGO EN MODO OSCURO ===== */
+[data-theme="dark"] .pestana-pago {
+    color: var(--text-white);
+    background: transparent;
+}
+
+[data-theme="dark"] .pestana-pago.active,
+[data-theme="dark"] .pestana-pago:hover {
+    color: var(--text-white);
+    border-bottom-color: var(--primary-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .pestana-pago:not(.active) {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .pestana-pago:not(.active):hover {
+    color: var(--text-white);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 /* ===== BOTÓN MODO OSCURO FLOTANTE ===== */
@@ -186,7 +220,6 @@
     transform: scale(0.95) translateY(0);
 }
 
-/* Efecto de pulso */
 .dark-mode-toggle::after {
     content: '';
     position: absolute;
@@ -215,7 +248,6 @@
     }
 }
 
-/* Estilo específico para modo oscuro */
 [data-theme="dark"] .dark-mode-toggle {
     background: linear-gradient(135deg, #FFD700, #FFA500);
     color: #333;
@@ -258,7 +290,7 @@ body.caja-theme {
 }
 
 /* ==========================
-   SIDEBAR - CORREGIDO
+   SIDEBAR
 =========================== */
 .caja-sidebar {
     position: fixed;
@@ -309,7 +341,6 @@ body.caja-theme {
     margin: 0;
 }
 
-/* Navegación del sidebar */
 .sidebar-section {
     flex: 1;
     padding: 1rem;
@@ -348,7 +379,6 @@ body.caja-theme {
     text-align: center;
 }
 
-/* Divisores del sidebar */
 .sidebar-section-divider {
     padding: 1rem 1rem 0.5rem;
     font-size: 0.75rem;
@@ -359,7 +389,6 @@ body.caja-theme {
     margin-top: 0.5rem;
 }
 
-/* Footer del sidebar */
 .sidebar-footer {
     padding: 1rem;
     border-top: 1px solid rgba(255,255,255,0.1);
@@ -404,7 +433,6 @@ body.caja-theme {
     margin: 0;
 }
 
-/* User dropdown */
 .user-actions {
     display: flex;
     align-items: center;
@@ -417,14 +445,19 @@ body.caja-theme {
     gap: 0.75rem;
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius-sm);
-    background: var(--bg-tertiary);
+    background: var(--primary-gradient);
+    color: white;
     border: none;
     cursor: pointer;
     transition: var(--transition);
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
 }
 
 .user-profile:hover {
-    background: var(--border-color);
+    background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .user-avatar {
@@ -503,7 +536,6 @@ body.caja-theme {
     flex-wrap: wrap;
 }
 
-/* Grid de estadísticas */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -579,7 +611,6 @@ body.caja-theme {
     font-size: 0.85rem;
 }
 
-/* Actividad reciente */
 .recent-activity {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
@@ -634,7 +665,7 @@ body.caja-theme {
 }
 
 /* ==========================
-   ESTILOS PARA TABLAS (Devoluciones, Productos, etc.)
+   ESTILOS PARA TABLAS
 =========================== */
 .table-container {
     background: var(--bg-primary);
@@ -668,7 +699,6 @@ body.caja-theme {
     background: var(--bg-secondary);
 }
 
-/* Badges para estados */
 .badge {
     padding: 0.35em 0.65em;
     font-size: 0.75em;
@@ -688,7 +718,9 @@ body.caja-theme {
 .badge.bg-info { background: var(--info-color); }
 .badge.bg-secondary { background: var(--secondary-color); }
 
-/* Botones en tablas */
+/* ==========================
+   BOTONES
+=========================== */
 .btn {
     padding: 0.5rem 1rem;
     border: none;
@@ -781,7 +813,7 @@ body.caja-theme {
 }
 
 /* ==========================
-   ESTILOS PARA FORMULARIOS (Configuración)
+   ESTILOS PARA FORMULARIOS
 =========================== */
 .form-container {
     background: var(--bg-primary);
@@ -863,7 +895,6 @@ body.caja-theme {
     height: fit-content;
 }
 
-/* Búsqueda de productos */
 .busqueda-productos {
     display: flex;
     gap: 0.5rem;
@@ -874,7 +905,6 @@ body.caja-theme {
     flex: 1;
 }
 
-/* Filtros de categoría */
 .filtros-categoria {
     display: flex;
     gap: 0.5rem;
@@ -900,7 +930,6 @@ body.caja-theme {
     border-color: var(--primary-color);
 }
 
-/* Grid de productos */
 .grid-productos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -951,7 +980,6 @@ body.caja-theme {
     color: var(--text-secondary);
 }
 
-/* Cabecera del carrito */
 .cabecera-carrito {
     display: flex;
     justify-content: space-between;
@@ -967,7 +995,6 @@ body.caja-theme {
     color: var(--text-primary);
 }
 
-/* Items del carrito */
 .items-carrito {
     max-height: 300px;
     overflow-y: auto;
@@ -1038,7 +1065,6 @@ body.caja-theme {
     color: var(--primary-dark);
 }
 
-/* Total del carrito */
 .total-carrito {
     text-align: right;
     font-size: 1.3rem;
@@ -1051,7 +1077,6 @@ body.caja-theme {
     align-items: center;
 }
 
-/* Métodos de pago */
 .metodos-pago {
     margin-top: 1.5rem;
 }
@@ -1094,7 +1119,7 @@ body.caja-theme {
 }
 
 /* ==========================
-   ESTILOS PARA VENTAS RÁPIDAS
+   VENTAS RÁPIDAS Y PEDIDOS
 =========================== */
 .ventas-rapidas-container {
     background: var(--bg-primary);
@@ -1104,14 +1129,108 @@ body.caja-theme {
     border: 1px solid var(--border-color);
 }
 
-/* ==========================
-   ESTILOS ESPECÍFICOS PARA PEDIDOS
-=========================== */
 .acciones-pedidos {
     display: flex;
     gap: 1rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+}
+
+/* ==========================
+   DROPDOWN ADMINISTRADOR
+=========================== */
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown .dropdown-menu {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0;
+    box-shadow: var(--shadow-xl);
+    min-width: 220px;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    list-style: none;
+    margin: 0;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.25s ease-in-out;
+    z-index: 1500;
+}
+
+.user-dropdown .dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.user-dropdown .dropdown-item {
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.user-dropdown .dropdown-item i {
+    font-size: 1rem;
+    color: var(--primary-color);
+    transition: var(--transition);
+}
+
+.user-dropdown .dropdown-item:hover {
+    background: var(--primary-gradient);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.user-dropdown .dropdown-item:hover i {
+    color: #fff;
+}
+
+.user-dropdown .dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: var(--border-color);
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, var(--danger-color), var(--accent-color));
+    transform: translateX(5px);
+}
+
+.dropdown-arrow {
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.user-profile.active .dropdown-arrow {
+    transform: rotate(180deg);
 }
 
 /* ==========================
@@ -1271,137 +1390,5 @@ body.caja-theme {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-dark);
 }
-
-/* ===== DROPDOWN ADMINISTRADOR ===== */
-.user-dropdown {
-    position: relative;
-}
-
-.user-dropdown .dropdown-menu {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 0.5rem 0;
-    box-shadow: var(--shadow-xl);
-    min-width: 220px;
-    position: absolute;
-    right: 0;
-    top: 100%;
-    list-style: none;
-    margin: 0;
-    display: none;
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.25s ease-in-out;
-    z-index: 1500;
-}
-
-/* Visible cuando JS agrega .show */
-.user-dropdown .dropdown-menu.show {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Items */
-.user-dropdown .dropdown-item {
-    color: var(--text-primary);
-    padding: 0.8rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.user-dropdown .dropdown-item i {
-    font-size: 1rem;
-    color: var(--primary-color);
-    transition: var(--transition);
-}
-
-/* Hover elegante */
-.user-dropdown .dropdown-item:hover {
-    background: var(--primary-gradient);
-    color: #fff;
-    transform: translateX(5px);
-}
-
-.user-dropdown .dropdown-item:hover i {
-    color: #fff;
-}
-
-.user-dropdown .dropdown-divider {
-    margin: 0.5rem 0;
-    border-color: var(--border-color);
-}
-
-/* ===== BOTÓN CERRAR SESIÓN ===== */
-.logout-btn {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
-    color: white;
-    font-weight: 600;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.logout-btn:hover {
-    background: linear-gradient(135deg, var(--danger-color), var(--accent-color));
-    transform: translateX(5px);
-}
-
-/* ===== BOTÓN PRINCIPAL ADMINISTRADOR ===== */
-.user-profile {
-    background: var(--primary-gradient);
-    color: white;
-    font-weight: 600;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    padding: 0.6rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: var(--shadow-md);
-    font-size: 0.95rem;
-}
-
-/* Flecha */
-.dropdown-arrow {
-    margin-left: auto;
-    font-size: 0.8rem;
-    transition: transform 0.3s ease;
-}
-
-/* Animación cuando el menú está abierto */
-.user-profile.active .dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-/* Hover del botón Administrador */
-.user-profile:hover {
-    background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-
-
-
-
-
-
 
 

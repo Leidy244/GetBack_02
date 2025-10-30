@@ -64,7 +64,7 @@ img {
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-	padding: 1rem 0;
+	padding: 0;
 	transition: all 0.3s ease;
 }
 
@@ -74,11 +74,12 @@ img {
 	padding: 0 2rem;
 	display: flex;
 	justify-content: space-between;
+	min-height: 90px;
 	align-items: center;
 }
 
 .brand .logo {
-	height: 60px;
+	height: 90px;
 	transition: all 0.3s;
 }
 
@@ -94,7 +95,7 @@ img {
 .nav-link {
 	position: relative;
 	font-weight: 500;
-	font-size: 0.9rem;
+	font-size: 1.3rem;
 	letter-spacing: 1px;
 	color: var(--text-dark);
 	transition: all 0.3s;
@@ -144,19 +145,18 @@ img {
 	overflow: hidden;
 }
 
-.video-background {
+.image-background {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	z-index: -1;
-}
-
-.video-background video {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
+	background-image: url('https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/28/d3/02/get-back-concert.jpg?w=1200&h=1200&s=1');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
 }
 
 .overlay {
@@ -553,50 +553,62 @@ img {
 	background: rgba(0, 0, 0, 0.2);
 }
 
-/* Contacto */
-.contact {
+/* Footer */
+.footer {
 	background-color: var(--gray);
+	padding: 0;
 }
 
-.contact-container {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	gap: 3rem;
+.footer .contact {
+	padding: 4rem 0 2rem;
+	margin-bottom: 0;
+}
+
+.footer .contact-container {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0 2rem;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 3rem;
 }
 
-.contact-info {
-	padding: 2rem;
+.footer .contact-info {
+	padding: 0;
+	text-align: left;
 }
 
-.contact-title {
+.footer .contact-title {
 	font-size: 2rem;
 	margin-bottom: 2rem;
 	color: var(--light);
+	font-family: 'Kanit', sans-serif;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1px;
 }
 
-.info-item {
+.footer .info-item {
 	display: flex;
 	align-items: flex-start;
 	margin-bottom: 1.5rem;
+	font-family: 'Exo 2', sans-serif;
 }
 
-.info-item i {
+.footer .info-item i {
 	font-size: 1.2rem;
 	color: var(--primary-light);
 	margin-right: 1rem;
 	margin-top: 0.2rem;
 }
 
-.social-links {
+.footer .social-links {
 	display: flex;
 	gap: 1rem;
 	margin-top: 2rem;
 }
 
-.social-link {
+.footer .social-link {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -608,64 +620,9 @@ img {
 	transition: all 0.3s;
 }
 
-.social-link:hover {
+.footer .social-link:hover {
 	background: var(--primary);
 	transform: translateY(-3px);
-}
-
-.contact-form {
-	background: var(--dark);
-	padding: 2rem;
-	border-radius: 10px;
-	box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-}
-
-.form-title {
-	font-size: 1.5rem;
-	margin-bottom: 1.5rem;
-	color: var(--light);
-}
-
-.form-group {
-	margin-bottom: 1.5rem;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-	width: 100%;
-	padding: 0.8rem 1rem;
-	background: var(--gray-light);
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-radius: 5px;
-	color: var(--light);
-	font-family: 'Exo 2', sans-serif;
-	transition: all 0.3s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-	outline: none;
-	border-color: var(--primary);
-	background: var(--gray);
-}
-
-.form-group textarea {
-	min-height: 120px;
-	resize: vertical;
-}
-
-.form-row {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-	gap: 1rem;
-}
-
-/* Footer */
-.footer {
-	background-color: var(--dark);
-	padding: 4rem 0 0;
 }
 
 .footer-content {
@@ -674,21 +631,32 @@ img {
 	gap: 3rem;
 	max-width: 1200px;
 	margin: 0 auto;
-	padding: 0 2rem 3rem;
+	padding: 3rem 2rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-logo {
-	margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .footer-logo .logo {
-	height: 40px;
-	margin-bottom: 1rem;
+    height: 250px;
+    margin-bottom: 1rem;
+    display: block;
+    margin-right: auto;
+    margin-left: 0;
 }
 
 .footer-logo p {
-	color: var(--text-dark);
-	font-size: 0.9rem;
+    color: var(--text-dark);
+    font-size: 1rem;
+    text-align: left;
+    margin-left: 13%;
+    width: 100%;
 }
 
 .footer-links {
@@ -776,6 +744,7 @@ img {
 	color: var(--light);
 }
 
+
 /* Animaciones */
 @keyframes fadeInUp {
 	from {
@@ -847,12 +816,20 @@ img {
 		flex-direction: column;
 	}
 
-	.contact-container {
+	.footer .contact-container {
 		grid-template-columns: 1fr;
 	}
 
-	.form-row {
-		grid-template-columns: 1fr;
+	.footer .contact-info {
+		text-align: center;
+	}
+
+	.footer .info-item {
+		justify-content: center;
+	}
+
+	.footer .social-links {
+		justify-content: center;
 	}
 }
 
@@ -868,10 +845,21 @@ img {
 	.section-title {
 		font-size: 2rem;
 	}
+
+	.footer-content {
+		grid-template-columns: 1fr;
+		text-align: center;
+	}
+
+	.footer-logo {
+		text-align: center;
+	}
+
+	.footer-logo .logo {
+		margin: 0 auto 1rem;
+	}
 }
 
-/* Estilos adicionales para el menú completo */
-/* Estilos adicionales para el menú completo */
 .menu {
 	background: linear-gradient(to bottom, #121212 0%, #1a1a1a 100%);
 	padding: 5rem 0;
@@ -1090,13 +1078,11 @@ img {
 	position: relative;
 	width: 100%;
 	height: 230px;
-	/* 💡 todas tendrán la misma altura */
 	overflow: hidden;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	background: #1a1a1a;
-	/* color de fondo por si alguna no carga */
 	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -1104,9 +1090,7 @@ img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	/* 🔥 recorta solo lo justo para llenar el espacio */
 	object-position: center;
-	/* centra la parte visible */
 	transition: transform 0.6s ease;
 	filter: brightness(0.95);
 }
@@ -1149,7 +1133,6 @@ img {
 	font-family: 'Kanit', sans-serif;
 	letter-spacing: 1.2px;
 	margin-bottom: 0.2rem;
-
 }
 
 .menu-title::after {
@@ -1230,6 +1213,5 @@ img {
 	.menu-price {
 		font-size: 1rem;
 		margin-top: 0.3rem;
-
 	}
 }
