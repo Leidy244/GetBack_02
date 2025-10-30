@@ -46,13 +46,17 @@
 					<i class="fa-solid fa-gear"></i>
 					<span>Configuración</span>
 				</a>
-				<a th:href="@{/login}" class="nav-btn">
+
+				<a th:href="@{/login}" class="nav-btn"
+					onclick="return confirm('¿Estás seguro de que deseas cerrar sesión?')">
 					<i class="fa-solid fa-arrow-right-from-bracket"></i>
-					<span>Cerrar sessión</span>
+					<span>Cerrar sesión</span>
 				</a>
 			</nav>
 		</div>
 	</header>
+
+
 
 	<!-- Información -->
 	<div class="content-col">
@@ -187,7 +191,6 @@
 </body>
 
 <script th:src="@{/js/ConfigMesero.js}" defer>
-
 </script>
 
 </html>
