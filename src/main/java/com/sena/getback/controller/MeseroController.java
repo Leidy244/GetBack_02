@@ -130,4 +130,8 @@ public class MeseroController {
 		return "/configuracion";
 	}
 
+	@GetMapping("/configuracionMesero")
+	public String mostrarConfiguracionMesero() {
+		return "configuracion"; // debe coincidir con el nombre del HTML
+	}
 }

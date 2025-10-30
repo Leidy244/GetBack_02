@@ -4,16 +4,26 @@ import com.sena.getback.model.*;
 import com.sena.getback.repository.*;
 import com.sena.getback.service.*;
 
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
+	private final MenuService menuService;
+	private final CategoriaService categoriaService;
 	private final UsuarioService usuarioService;
+	private final LocationService locationService;
+	private final MesaService mesaService;
+
+	@Autowired
+	private UploadFileService uploadFileService;
 
 	private final CategoriaRepository categoriaRepository;
 	private final MenuRepository menuRepository;
@@ -26,10 +36,17 @@ public class AdminController {
 	@Autowired
 	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
 			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
-			LocationService locationService, LocationRepository locationRepository, MesaRepository mesaRepository,
-			RolRepository rolRepository) {
+			MenuService menuService, CategoriaService categoriaService, UploadFileService uploadFileService,
+			LocationService locationService, LocationRepository locationRepository, MesaService mesaService,
+			MesaRepository mesaRepository, RolRepository rolRepository) {
 
+		this.menuService = menuService;
+		this.categoriaService = categoriaService;
 		this.usuarioService = usuarioService;
+		this.uploadFileService = uploadFileService;
+		this.locationService = locationService;
+		this.mesaService = mesaService;
+
 		this.categoriaRepository = categoriaRepository;
 		this.menuRepository = menuRepository;
 		this.eventoRepository = eventoRepository;
