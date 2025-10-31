@@ -7,7 +7,6 @@
 			<div class="sidebar-logo">
 				<img th:src="@{/images/Logo_principal.png}" alt="GETBACK Logo" class="logo-image">
 				<h3 class="sidebar-title">GETBACK</h3>
-				<p class="navigation-text">Barra de navegación</p>
 			</div>
 		</div>
 
@@ -44,12 +43,17 @@
 				th:classappend="${activeSection == 'mesas'} ? 'nav-link active' : 'nav-link'">
 				<i class="fas fa-chair"></i>Asignar Mesas
 			</a>
+			
+			<a th:href="@{/admin(activeSection='mesas')}"
+				th:classappend="${activeSection == 'mesas'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-chair"></i>Historial de ventas
+			</a>
 		</nav>
 
 		<!-- Footer compacto -->
 		<div class="sidebar-footer">
 			<p class="text-secondary small mb-0">
-			    © 2025 Ignitia — Desarrollado por Ignitia. Todos los derechos reservados.
+				© 2025 Ignitia — Desarrollado por Ignitia. Todos los derechos reservados.
 			</p>
 
 		</div>
