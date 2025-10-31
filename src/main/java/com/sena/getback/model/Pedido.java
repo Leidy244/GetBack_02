@@ -1,5 +1,6 @@
 package com.sena.getback.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import jakarta.persistence.*;
 
@@ -7,150 +8,146 @@ import jakarta.persistence.*;
 @Table(name = "pedidos")
 public class Pedido {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	@Lob
-	private String comentario;
+    @Lob
+    private String comentario;
 
-	@Column(name = "estado_pago", length = 50)
-	private String estadoPago;
+    @Column(name = "estado_pago", length = 50)
+    private String estadoPago;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "usuario_id", nullable = false)
-	private Usuario usuario;
+    // ✅ Nuevo campo: fecha y hora de creación automática
+    @Column(name = "fecha_hora_creacion", nullable = false, updatable = false)
+    private LocalDateTime fechaHoraCreacion;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "menu_id", nullable = false)
-	private Menu menu;
+    // Relaciones
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "mesa_id", nullable = false)
-	private Mesa mesa;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id", nullable = false)
+    private Menu menu;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "estado_id", nullable = false)
-	private Estado estado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mesa_id", nullable = false)
+    private Mesa mesa;
 
-	@OneToMany(mappedBy = "pedido", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY) // ←
-																													// Cascade
-																													// ajustado
-	private List<Bar> bares;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estado_id", nullable = false)
+    private Estado estado;
 
-	@OneToMany(mappedBy = "pedido", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY) // ←
-																													// Cascade
-																													// ajustado
-	private List<Cocina> cocinas;
+    @OneToMany(mappedBy = "pedido", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    private List<Bar> bares;
 
-	@OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Factura factura;
+    @OneToMany(mappedBy = "pedido", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    private List<Cocina> cocinas;
 
-	// Constructores
-	public Pedido() {
-	}
+    @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Factura factura;
 
-	public Pedido(String comentario, Usuario usuario, Menu menu, Mesa mesa, Estado estado) {
-		this.comentario = comentario;
-		this.usuario = usuario;
-		this.menu = menu;
-		this.mesa = mesa;
-		this.estado = estado;
-	}
+    // ✅ Constructor: asigna fecha y hora automáticamente
+    public Pedido() {
+        this.fechaHoraCreacion = LocalDateTime.now();
+    }
 
-	public Pedido(Integer id, String comentario, Usuario usuario, Menu menu, Mesa mesa, Estado estado) {
-		this.id = id;
-		this.comentario = comentario;
-		this.usuario = usuario;
-		this.menu = menu;
-		this.mesa = mesa;
-		this.estado = estado;
-	}
+    public Pedido(String comentario, Usuario usuario, Menu menu, Mesa mesa, Estado estado) {
+        this.comentario = comentario;
+        this.usuario = usuario;
+        this.menu = menu;
+        this.mesa = mesa;
+        this.estado = estado;
+        this.fechaHoraCreacion = LocalDateTime.now();
+    }
 
-	// Getters y Setters
-	public Integer getId() {
-		return id;
-	}
+    // Getters y Setters
+    public Integer getId() {
+        return id;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public String getComentario() {
-		return comentario;
-	}
+    public String getComentario() {
+        return comentario;
+    }
 
-	public void setComentario(String comentario) {
-		this.comentario = comentario;
-	}
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
 
-	public String getEstadoPago() {
-		return estadoPago;
-	}
+    public String getEstadoPago() {
+        return estadoPago;
+    }
 
-	public void setEstadoPago(String estadoPago) {
-		this.estadoPago = estadoPago;
-	}
+    public void setEstadoPago(String estadoPago) {
+        this.estadoPago = estadoPago;
+    }
 
-	public Usuario getUsuario() {
-		return usuario;
-	}
+    public LocalDateTime getFechaHoraCreacion() {
+        return fechaHoraCreacion;
+    }
 
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
+    public void setFechaHoraCreacion(LocalDateTime fechaHoraCreacion) {
+        this.fechaHoraCreacion = fechaHoraCreacion;
+    }
 
-	public Menu getMenu() {
-		return menu;
-	}
+    public Usuario getUsuario() {
+        return usuario;
+    }
 
-	public void setMenu(Menu menu) {
-		this.menu = menu;
-	}
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
 
-	public Mesa getMesa() {
-		return mesa;
-	}
+    public Menu getMenu() {
+        return menu;
+    }
 
-	public void setMesa(Mesa mesa) {
-		this.mesa = mesa;
-	}
+    public void setMenu(Menu menu) {
+        this.menu = menu;
+    }
 
-	public Estado getEstado() {
-		return estado;
-	}
+    public Mesa getMesa() {
+        return mesa;
+    }
 
-	public void setEstado(Estado estado) {
-		this.estado = estado;
-	}
+    public void setMesa(Mesa mesa) {
+        this.mesa = mesa;
+    }
 
-	public List<Bar> getBares() {
-		return bares;
-	}
+    public Estado getEstado() {
+        return estado;
+    }
 
-	public void setBares(List<Bar> bares) {
-		this.bares = bares;
-	}
+    public void setEstado(Estado estado) {
+        this.estado = estado;
+    }
 
-	public List<Cocina> getCocinas() {
-		return cocinas;
-	}
+    public List<Bar> getBares() {
+        return bares;
+    }
 
-	public void setCocinas(List<Cocina> cocinas) {
-		this.cocinas = cocinas;
-	}
+    public void setBares(List<Bar> bares) {
+        this.bares = bares;
+    }
 
-	public Factura getFactura() {
-		return factura;
-	}
+    public List<Cocina> getCocinas() {
+        return cocinas;
+    }
 
-	public void setFactura(Factura factura) {
-		this.factura = factura;
-	}
+    public void setCocinas(List<Cocina> cocinas) {
+        this.cocinas = cocinas;
+    }
 
-	@Override
-	public String toString() {
-		return "Pedido [id=" + id + ", comentario=" + comentario + ", mesa=" + (mesa != null ? mesa.getId() : "null")
-				+ "]";
-	}
+    public Factura getFactura() {
+        return factura;
+    }
+
+    public void setFactura(Factura factura) {
+        this.factura = factura;
+    }
 }
