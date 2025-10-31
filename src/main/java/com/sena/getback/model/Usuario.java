@@ -1,5 +1,8 @@
 package com.sena.getback.model;
 
+import java.sql.Time;
+import java.util.Date;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -16,6 +19,9 @@ public class Usuario {
 	private String correo;
 	private String clave;
 	private String foto;
+	private Time horaInicio;
+	private Time horaFin;
+	private Date fecha;
 	private String estado = "ACTIVO";
 
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -27,7 +33,7 @@ public class Usuario {
 	}
 
 	public Usuario(Long id, String nombre, String apellido, String telefono, String direccion, String correo,
-			String clave, String foto, String estado, Rol rol) {
+			String clave, String foto, Time horaInicio, Time horaFin, Date fecha, String estado, Rol rol) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
@@ -37,6 +43,9 @@ public class Usuario {
 		this.correo = correo;
 		this.clave = clave;
 		this.foto = foto;
+		this.horaInicio = horaInicio;
+		this.horaFin = horaFin;
+		this.fecha = fecha;
 		this.estado = estado;
 		this.rol = rol;
 	}
@@ -105,6 +114,30 @@ public class Usuario {
 		this.foto = foto;
 	}
 
+	public Time getHoraInicio() {
+		return horaInicio;
+	}
+
+	public void setHoraInicio(Time horaInicio) {
+		this.horaInicio = horaInicio;
+	}
+
+	public Time getHoraFin() {
+		return horaFin;
+	}
+
+	public void setHoraFin(Time horaFin) {
+		this.horaFin = horaFin;
+	}
+
+	public Date getFecha() {
+		return fecha;
+	}
+
+	public void setFecha(Date fecha) {
+		this.fecha = fecha;
+	}
+
 	public String getEstado() {
 		return estado;
 	}
@@ -125,7 +158,8 @@ public class Usuario {
 	public String toString() {
 		return "Usuario [id=" + id + ", nombre=" + nombre + ", apellido=" + apellido + ", telefono=" + telefono
 				+ ", direccion=" + direccion + ", correo=" + correo + ", clave=" + clave + ", foto=" + foto
-				+ ", estado=" + estado + "]";
+				+ ", horaInicio=" + horaInicio + ", horaFin=" + horaFin + ", fecha=" + fecha + ", estado=" + estado
+				+ "]";
 	}
 
 }
