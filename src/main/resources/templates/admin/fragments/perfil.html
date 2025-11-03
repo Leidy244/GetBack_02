@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+	<section th:fragment="perfil" class="content-section">
+
+		<!-- Header -->
+		<div class="section-header">
+			<h2><i class="fas fa-user-shield"></i> Perfil del Administrador</h2>
+		</div>
+
+		<!-- Información -->
+		<div class="content-col">
+			<div class="content-card">
+				<div class="card-header">Administrador del sistema</div>
+
+				<div class="card-body">
+					<div class="account-info">
+						<div class="user-display">
+							<!-- FOTO -->
+							<div class="avatar" id="avatar">
+								<img th:if="${session.usuarioLogueado.foto != null}"
+									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
+								<div th:if="${session.usuarioLogueado.foto == null}" class="avatar-placeholder">
+									<span th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + 
+										#strings.substring(session.usuarioLogueado.apellido,0,1)}">AD</span>
+								</div>
+							</div>
+
+							<!-- DATOS -->
+							<div class="user-details">
+								<h3
+									th:text="${session.usuarioLogueado.nombre + ' ' + session.usuarioLogueado.apellido}">
+								</h3>
+								<p th:text="${session.usuarioLogueado.correo}"></p>
+								<p th:text="${session.usuarioLogueado.telefono}"></p>
+								<p th:text="${session.usuarioLogueado.direccion}"></p>
+								<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+							</div>
+
+							<!-- BOTONES -->
+							<div class="account-actions" style="display:flex; gap:10px; margin-left:auto;">
+								<button type="button" id="btnEditProfile" class="dropdown-item">
+									<i class="fas fa-user-edit"></i> Editar Perfil
+								</button>
+								<button type="button" id="btnChangePhoto" class="dropdown-item">
+									<i class="fas fa-camera"></i> Cambiar Foto
+								</button>
+							</div>
+						</div>
+
+						<!-- FORMULARIO EDITAR -->
+						<form id="formEditar" th:action="@{/actualizar-datos}" method="post" style="display:none;">
+							<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
+
+							<label>Nombres:</label>
+							<input type="text" name="nombre" th:value="${session.usuarioLogueado.nombre}" />
+
+							<label>Apellidos:</label>
+							<input type="text" name="apellido" th:value="${session.usuarioLogueado.apellido}" />
+
+							<label>Correo:</label>
+							<input type="email" name="correo" th:value="${session.usuarioLogueado.correo}" />
+
+							<label>Dirección:</label>
+							<input type="text" name="direccion" th:value="${session.usuarioLogueado.direccion}" />
+
+							<label>Teléfono:</label>
+							<input type="text" name="telefono" th:value="${session.usuarioLogueado.telefono}" />
+
+							<label>Clave:</label>
+							<input type="password" name="clave" th:value="${session.usuarioLogueado.clave}" />
+
+							<div style="margin-top:10px; display:flex; gap:10px;">
+								<button type="submit" class="btn">Guardar cambios</button>
+								<button type="button" id="btnCancelEdit" class="btn ghost">Cancelar</button>
+							</div>
+						</form>
+
+
+						<!-- FORMULARIO FOTO -->
+						<div id="formFoto" style="display:none; margin-top:20px;">
+							<div class="card">
+								<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data">
+									<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
+
+									<input type="file" id="inputFoto" name="foto" accept="image/*" required
+										style="display:none;" />
+
+									<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
+									<span id="nombreArchivo" class="nombre-archivo">Ningún archivo seleccionado</span>
+									<br>
+									<div style="margin-top:10px; display:flex; gap:10px;">
+										<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
+										<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- SCRIPT -->
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				const formEditar = document.getElementById("formEditar");
+				const formFoto = document.getElementById("formFoto");
+				const btnEditProfile = document.getElementById("btnEditProfile");
+				const btnChangePhoto = document.getElementById("btnChangePhoto");
+				const btnCancelEdit = document.getElementById("btnCancelEdit");
+				const btnCancelFoto = document.getElementById("cancelFoto");
+
+				btnEditProfile.addEventListener("click", () => {
+					formFoto.style.display = "none";
+					formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
+				});
+
+				btnChangePhoto.addEventListener("click", () => {
+					formEditar.style.display = "none";
+					formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
+				});
+
+				btnCancelEdit.addEventListener("click", () => formEditar.style.display = "none");
+				btnCancelFoto.addEventListener("click", () => formFoto.style.display = "none");
+
+				const inputFoto = document.getElementById("inputFoto");
+				const nombreArchivo = document.getElementById("nombreArchivo");
+
+				if (inputFoto && nombreArchivo) {
+					inputFoto.addEventListener("change", () => {
+						const archivo = inputFoto.files[0];
+						nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
+					});
+				}
+			});
+		</script>
+	</section>
+</body>
+
+</html>

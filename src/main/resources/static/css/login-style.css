@@ -1,0 +1,485 @@
+:root {
+    --primary-color: #b32fff;
+    --secondary-color: #00f7ff;
+    --accent-color: #fd79a8;
+    --text-color: #333;
+    --text-light: #777;
+    --bg-light: #f8f9fa;
+    --bg-white: #ffffff;
+    --border-color: #e0e0e0;
+    --success-color: #00b894;
+    --warning-color: #fdcb6e;
+    --danger-color: #d63031;
+    --info-color: #0984e3;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    --sidebar-width: 280px;
+    --header-height: 70px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/jack-daniels-get-back\ \(1\).jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+/* Fallback en caso de que la imagen no cargue */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0f1923 0%, #152238 25%, #1c2e4a 50%, #243b55 75%, #2c5282 100%);
+    z-index: -2;
+}
+
+.login-container {
+    position: relative;
+    width: 420px;
+    height: 540px;
+    background: rgba(25, 25, 25, 0.85);
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.login-box {
+    width: 100%;
+    padding: 35px 40px;
+    position: relative;
+}
+
+/* Estilos del logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.logo {
+    max-width: 140px;
+    height: auto;
+}
+
+.input-check:checked ~ .login-box .logo {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 5px rgba(179, 47, 255, 0.5));
+}
+
+h2 {
+    font-size: 2em;
+    color: var(--secondary-color);
+    text-align: center;
+    transition: .5s ease;
+    margin-bottom: 25px;
+}
+
+.input-check:checked ~ .login-box h2 {
+    color: var(--primary-color);
+    text-shadow: 0 0 15px #6E03AB, 0 0 30px #6E03AB;
+}
+
+.input-box {
+    position: relative;
+    width: 100%;
+    margin: 18px 0;
+}
+
+.input-box .input-line {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2.5px;
+    background: var(--secondary-color);
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .login-box .input-box .input-line {
+    background: var(--primary-color);
+    box-shadow: 0 0 10px #6E03AB;
+}
+
+.input-box label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    font-size: 1em;
+    color: var(--secondary-color);
+    pointer-events: none;
+    transition: .5s ease;
+}
+
+.input-box input:focus ~ label,
+.input-box input:not(:placeholder-shown) ~ label {
+    top: -5px;
+    font-size: 0.85em;
+}
+
+.input-check:checked ~ .login-box .input-box label {
+    color: var(--primary-color);
+    text-shadow: 0 0 10px #6E03AB;
+}
+
+.input-box input {
+    width: 100%;
+    height: 50px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    color: var(--secondary-color);
+    padding: 0 35px 0 5px;
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .login-box .input-box input {
+    color: var(--primary-color);
+    text-shadow: 0 0 5px #6E03AB;
+}
+
+.input-box .icon {
+    position: absolute;
+    right: 8px;
+    color: var(--secondary-color);
+    font-size: 1.2em;
+    line-height: 57px;
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .login-box .input-box .icon {
+    color: var(--primary-color);
+    filter: drop-shadow(0 0 5px #6E03AB);
+}
+
+.remember-forgot {
+    color: var(--secondary-color);
+    font-size: .9em;
+    margin: -10px 0 12px;
+    display: flex;
+    justify-content: space-between;
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .login-box .remember-forgot {
+    color: var(--primary-color);
+    text-shadow: 0 0 10px #6E03AB;
+}
+
+.remember-forgot label input {
+    accent-color: var(--secondary-color);
+    margin-right: 3px;
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .login-box .remember-forgot label input {
+    accent-color: var(--primary-color);
+}
+
+.remember-forgot a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color .5s ease;
+}
+
+.remember-forgot a:hover {
+    text-decoration: underline;
+}
+
+.input-check:checked ~ .login-box .remember-forgot a {
+    color: var(--primary-color);
+}
+
+button {
+    width: 100%;
+    height: 40px;
+    background: var(--secondary-color);
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 1em;
+    color: #191919;
+    font-weight: 500;
+    transition: .5s ease;
+    margin-top: 15px;
+}
+
+.input-check:checked ~ .login-box button {
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 0 15px #6E03AB, 0 0 25px #6E03AB;
+}
+
+button:hover {
+    transform: scale(1.02);
+}
+
+.register-link {
+    color: var(--secondary-color);
+    font-size: .9em;
+    text-align: center;
+    margin: 18px 0 8px;
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .login-box .register-link {
+    color: #6E03AB;
+    text-shadow: 0 0 10px #6E03AB;
+}
+
+.register-link p a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color .5s ease;
+}
+
+.register-link p a:hover {
+    text-decoration: underline;
+}
+
+.input-check:checked ~ .login-box .register-link p a {
+    color: var(--primary-color);
+}
+
+.light {
+    position: absolute;
+    top: -200%;
+    left: 0;
+    width: 100%;
+    height: 950px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, .3) -50%, rgba(255, 255, 255, 0) 90%);
+    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+    pointer-events: none;
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .light {
+    top: -90%;
+}
+
+.toggle {
+    position: absolute;
+    top: 20px;
+    right: -80px;
+    width: 60px;
+    height: 120px;
+    background: rgba(25, 25, 25, 0.9);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toggle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 80%;
+    background: #000;
+}
+
+.toggle::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 45px;
+    height: 45px;
+    background: #333;
+    border: 2px solid #191919;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .5);
+    transition: .5s ease;
+}
+
+.input-check:checked ~ .toggle::after {
+    top: 65px;
+}
+
+.input-check {
+    position: absolute;
+    right: -80px;
+    z-index: 1;
+    opacity: 0;
+    cursor: pointer;
+    height: 120px;
+    width: 60px;
+    top: 20px;
+}
+
+.toggle .text {
+    position: absolute;
+    top: 17px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--secondary-color);
+    font-size: 1em;
+    z-index: 1;
+    text-transform: uppercase;
+    pointer-events: none;
+    transition: .5s ease;
+}
+
+.toggle .text.off {
+    opacity: 1;
+}
+
+.input-check:checked ~ .toggle .text.off {
+    top: 76px;
+    opacity: 0;
+}
+
+.toggle .text.on {
+    opacity: 0;
+}
+
+.input-check:checked ~ .toggle .text.on {
+    top: 76px;
+    opacity: 1;
+    color: var(--primary-color);
+    text-shadow: 0 0 15px #6E03AB, 0 0 30px #6E03AB, 0 0 45px #6E03AB, 0 0 60px #6E03AB;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--secondary-color);
+    font-size: 1.2em;
+    z-index: 2;
+}
+
+.input-check:checked ~ .login-box .input-box .toggle-password {
+    color: var(--primary-color);
+    filter: drop-shadow(0 0 5px #6E03AB);
+}
+
+.glowing-light {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 20px;
+}
+
+.error-message {
+    color: var(--danger-color);
+    background: rgba(214, 48, 49, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    border: 1px solid rgba(214, 48, 49, 0.3);
+}
+
+.success-message {
+    color: var(--success-color);
+    background: rgba(0, 184, 148, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    border: 1px solid rgba(0, 184, 148, 0.3);
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        width: 90%;
+        height: auto;
+        min-height: 500px;
+        padding: 20px 0;
+        margin: 20px;
+    }
+    
+    .login-box {
+        padding: 25px 20px;
+    }
+    
+    .toggle {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin: 20px auto;
+    }
+    
+    .input-check {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin: 0 auto;
+    }
+    
+    .logo {
+        max-width: 120px;
+    }
+    
+    h2 {
+        font-size: 1.7em;
+        margin-bottom: 20px;
+    }
+    
+    .glowing-light {
+        width: 300px;
+    }
+}
+
+/* Efectos adicionales para mejor visibilidad sobre la imagen de fondo */
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color), var(--secondary-color));
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.1;
+    transition: opacity 0.5s ease;
+}
+
+.input-check:checked ~ .login-container::before {
+    opacity: 0.2;
+}

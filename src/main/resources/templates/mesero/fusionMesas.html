@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title th:text="(${title} ?: 'Panel') + ' - GETBACK Admin'">Mesas | GETBACK</title>
+	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" th:href="@{/css/fusionMesas.css}">
+</head>
+
+<body>
+	<div class="welcome-toast" id="welcome-toast">
+		<div class="toast-content">
+			<div class="toast-icon">
+				<i class="fas fa-utensils"></i>
+			</div>
+			<div class="toast-text">
+				<h2>¡Bienvenido al Sistema!</h2>
+				<p class="toast-subtitle">Gestor de Mesas - Get Back</p>
+			</div>
+		</div>
+		<button class="close-toast" aria-label="Cerrar mensaje">
+			<i class="fas fa-times"></i>
+		</button>
+		<div class="toast-progress"></div>
+	</div>
+
+	<header>
+
+		<div class="container">
+			<nav>
+
+				<div class="logo">
+					<a th:href="@{/configuracion}">
+						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+					</a>
+					<h1 id="zona-titulo">TARIMA <div class="user-actions">
+							<div class="dropdown user-dropdown">
+								<button class="btn user-profile dropdown-toggle" type="button" id="userDropdown"
+									aria-expanded="false">
+									<div class="user-avatar"></div>
+									<span>Mesero </span>
+									<i class="fas fa-chevron-down dropdown-arrow"></i>
+								</button>
+
+								<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+									<li><a class="dropdown-item" th:href="@{/admin}">
+											<i class="fas fa-cash-register"></i> Administrador
+										</a></li>
+
+									<li><a class="dropdown-item" th:href="@{/caja}">
+											<i class="fas fa-cash-register"></i> Panel Cajero
+										</a></li>
+
+
+									<li>
+										<hr class="dropdown-divider">
+									</li>
+									<li><button class="dropdown-item logout-btn" onclick="adminApp.logout()">
+											<i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+										</button></li>
+								</ul>
+							</div>
+						</div>
+					</h1>
+
+				</div>
+				<button class="menu-toggle" id="menu-toggle" aria-label="Menú">
+					<i class="fas fa-bars"></i>
+				</button>
+
+
+				<ul class="nav-links" id="nav-links">
+					<li><a href="#" class="filter-btn-zone active" data-zone="tarima">Tarima</a></li>
+					<li><a href="#" class="filter-btn-zone" data-zone="barra">Barra</a></li>
+					<li><a href="#" class="filter-btn-zone" data-zone="fumadores">Fumadores</a></li>
+					<li><a href="#" class="filter-btn-zone" data-zone="mesanine">Mezzanine</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<div class="container">
+		<div class="filter-buttons-container">
+			<button class="filter-btn-status active" data-filter="todas">Todas</button>
+			<button class="filter-btn-status" data-filter="disponible">Disponibles</button>
+			<button class="filter-btn-status" data-filter="ocupada">Ocupadas</button>
+		</div>
+
+		<div class="mesas-container" id="mesas-container">
+
+			<script>
+				function redirectMesa(mesaId) {
+					// Redirigir a la página del menú con el ID de la mesa como parámetro
+					window.location.href = `/mesero/menu?mesa=${mesaId}`;
+				}
+			</script>
+		</div>
+	</div>
+	<button id="back-to-top" title="Volver arriba">↑</button>
+	<script th:src="@{/js/fusionMesas.js}" defer></script>
+</body>
+
+</html>

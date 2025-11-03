@@ -1,0 +1,32 @@
+<!-- templates/caja/fragments/reportes-diarios.html -->
+<div th:fragment="reportes-diarios">
+    <h2>Reportes Diarios</h2>
+    <p>Resumen de ventas y operaciones realizadas durante el día.</p>
+
+    <div class="acciones-reportes mb-3">
+        <button class="btn btn-primary">Generar Reporte</button>
+        <button class="btn btn-secondary">Descargar PDF</button>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Total Ventas</th>
+                <th>Número de Transacciones</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Ejemplo de fila estática -->
+            <tr>
+                <td>25/09/2025</td>
+                <td>$250.00</td>
+                <td>30</td>
+                <td>
+                    <button class="btn btn-sm btn-primary">Ver Detalles</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

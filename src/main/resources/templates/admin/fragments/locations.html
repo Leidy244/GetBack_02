@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="locations" class="content-section">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="section-header mb-4">
+            <h2><i class="fas fa-map-marker-alt me-2"></i>Gestión de Ubicaciones</h2>
+            <p class="text-muted">Administra las diferentes zonas del establecimiento</p>
+        </div>
+
+        <!-- Mensajes Flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Header con botón -->
+        <div class="locations-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="section-subtitle mb-0">Lista de Ubicaciones 
+                <span class="badge bg-primary" th:text="${locations.size()}"></span>
+            </h4>
+            <button type="button" class="btn btn-primary btn-add-mesa" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                <i class="fas fa-plus me-2"></i>Agregar Ubicación
+            </button>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="loc : ${locations}">
+                        <td th:text="${loc.id}"></td>
+                        <td><strong th:text="${loc.nombre}"></strong></td>
+                        <td th:text="${loc.descripcion} ?: 'Sin descripción'"></td>
+                        <td>
+                            <div class="btn-actions d-flex gap-1">
+                                <a th:href="@{/admin/locations/edit/{id}(id=${loc.id})}" class="btn btn-warning btn-sm" title="Editar ubicación">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        th:attr="data-bs-target='#deleteModal'+${loc.id}"
+                                        data-bs-toggle="modal"
+                                        title="Eliminar ubicación">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${locations.empty}">
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="fas fa-map-marker-alt fa-2x mb-3"></i>
+                            <p>No hay ubicaciones registradas</p>
+                            <p class="small">Comienza agregando tu primera ubicación</p>
+                            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                                <i class="fas fa-plus me-2"></i>Agregar Primera Ubicación
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Agregar -->
+    <div class="modal fade" id="addLocationModal" tabindex="-1">
+        <div class="modal-dialog" style="margin-top:5vh">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Agregar Nueva Ubicación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/locations/save}" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="id">
+                        <div class="mb-3">
+                            <label class="form-label required">Nombre de Ubicación</label>
+                            <input type="text" class="form-control" name="nombre" required placeholder="Terraza, Interior, Barra...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" name="descripcion" rows="2" placeholder="Descripción opcional..." maxlength="255"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Guardar Ubicación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales de eliminación (fuera de la tabla) -->
+    <div th:each="loc : ${locations}">
+        <div class="modal fade" th:id="'deleteModal'+${loc.id}" tabindex="-1">
+            <div class="modal-dialog" style="margin-top:10vh">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-trash me-2"></i>Confirmar Eliminación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Está seguro de eliminar la ubicación <strong th:text="${loc.nombre}"></strong>?</p>
+                        <p class="text-muted">Esta acción no se puede deshacer.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <a th:href="@{/admin/locations/delete/{id}(id=${loc.id})}" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Eliminar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar -->
+    <div th:if="${location.id != null}" class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog" style="margin-top:8vh">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Ubicación</h5>
+                    <a th:href="@{/admin/locations/cancel}" class="btn-close"></a>
+                </div>
+                <form th:action="@{/admin/locations/save}" th:object="${location}" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" th:field="*{id}">
+                        <div class="mb-3">
+                            <label class="form-label required">Nombre de Ubicación</label>
+                            <input type="text" class="form-control" th:field="*{nombre}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" th:field="*{descripcion}" rows="2" maxlength="255"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a th:href="@{/admin/locations/cancel}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Actualizar Ubicación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div th:if="${location.id != null}" class="modal-backdrop fade show"></div>
+</section>
+</body>
+</html>

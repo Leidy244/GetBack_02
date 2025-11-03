@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Menu | GETBACK - Mesa <span th:text="${mesaId}">#</span></title>
+	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+	<link rel=" stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" th:href="@{/css/fusionMesero.css}">
+</head>
+
+<body>
+	<div class="nav-overlay" id="nav-overlay"></div>
+
+	<header>
+		<div class="container">
+			<nav aria-label="Navegación principal">
+				<div class="logo">
+					<div class="logo-btn-mobile" id="menu-toggle">
+						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+					</div>
+					<div class="logo-desktop">
+						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+					</div>
+					<span>Menú Pedidos - Mesa #<span th:text="${mesaId}">0</span></span>
+				</div>
+
+				<ul class="nav-links" id="nav-links">
+					<li><a href="#" class="filter-btn active" data-categoria="todas">Todos</a></li>
+					<li th:each="categoria : ${categorias}">
+						<a href="#" class="filter-btn" th:data-categoria="${categoria.id}"
+							th:text="${categoria.nombre}">Categoría</a>
+					</li>
+				</ul>
+
+				<div class="search-container">
+					<input type="text" id="search-input" placeholder="Buscar producto...">
+					<i class="fas fa-search"></i>
+				</div>
+			</nav>
+		</div>
+	</header>
+
+	<div class="container">
+		<!-- Mensaje cuando no hay productos -->
+		<div id="no-products" class="no-products-message" style="display: none;">
+			<i class="fas fa-search"></i>
+			<h3>No se encontraron productos</h3>
+			<p>Intenta con otros filtros o términos de búsqueda</p>
+		</div>
+
+
+
+		<!-- Grid de productos -->
+		<div class="menu-grid" id="menu-grid">
+			<div th:each="producto : ${productos}" class="product-item" th:data-categoria="${producto.categoria.id}"
+				th:data-producto-id="${producto.id}" th:data-nombre="${producto.nombreProducto.toLowerCase()}">
+				<div class="product-info">
+					<img th:if="${producto.imagen}" th:src="${producto.imagen}" alt="Imagen del evento"
+						th:alt="${producto.nombreProducto}" class="product-img">
+					<div class="product-text">
+						<div class="product-name" th:text="${producto.nombreProducto}">Nombre del producto</div>
+						<div class="product-description" th:text="${producto.descripcion}">Descripción del producto
+						</div>
+						<div class="product-price"
+							th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2, 'COMMA')}">$0.00</div>
+					</div>
+				</div>
+				<div class="quantity-control">
+					<button class="btn-quantity minus"><i class="fas fa-minus"></i></button>
+					<input type="number" min="0" value="0" class="quantity-input" readonly>
+					<button class="btn-quantity plus"><i class="fas fa-plus"></i></button>
+					<button class="btn-add-to-order">
+						<i class="fas fa-cart-plus"></i> Agregar
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal de confirmación -->
+	<div id="orderModal" class="modal">
+		<div class="modal-content">
+			<span class="close-modal">&times;</span>
+			<div class="modal-header">
+				<h2>Confirmar Pedido</h2>
+			</div>
+			<div class="modal-body">
+				<p>¿Estás seguro de que quieres enviar el pedido a la cocina?</p>
+				<div id="order-summary"></div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn-modal btn-cancel">Cancelar</button>
+				<button class="btn-modal btn-confirm" id="btn-confirm-order" th:data-mesa="${mesaId}">Confirmar</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Navegación inferior -->
+	<nav class="bottom-nav" aria-label="Navegación inferior">
+		<div class="order-summary-mobile">
+			<div class="total-info">
+				<span>Total: </span>
+				<span id="pedido-total-value">$0.00</span>
+			</div>
+
+			<!-- Botón de comentarios -->
+			<div class="order-comments">
+				<button class="btn-comments" id="btn-comments">
+					<i class="fas fa-edit"></i> Comentarios
+				</button>
+				<div class="comments-container" id="comments-container">
+					<textarea id="order-comments" placeholder="Agregar comentarios al pedido..."></textarea>
+				</div>
+			</div>
+
+			<button class="btn-order" id="btn-send-order">
+				<i class="fas fa-paper-plane"></i> Enviar Pedido
+			</button>
+		</div>
+	</nav>
+
+	<!-- Botón flotante para volver a mesas -->
+	<a class="floating-back-btn" id="btn-back-to-mesas" title="Volver a Mesas" th:href="@{/mesero}">
+		<i class="fas fa-arrow-left"></i>
+		<span>Volver a Mesas</span>
+	</a>
+
+	<script th:src="@{/js/fusionMesero.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head-login">
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login proyecto</title>
+	<link rel="stylesheet" th:href="@{/css/login-style.css}">
+	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+</head>
+
+<body>
+	<div class="background-image"></div>
+	<div class="glowing-light"></div>
+	<div class="login-container">
+		<input type="checkbox" class="input-check" id="input-check">
+
+		<div class="light"></div>
+
+		<label for="input-check" class="toggle">
+			<span class="text off">off</span>
+			<span class="text on">on</span>
+		</label>
+
+		<div class="login-box">
+			<!-- LOGO AGREGADO -->
+			<div class="logo-container">
+				<img th:src="@{/images/Logo_principal.png}" alt="Logo" class="logo">
+			</div>
+
+			<form th:action="@{/login}" method="post">
+				<h2>Inicio Sesión</h2>
+
+				<div th:if="${param.error}" class="error-message">
+					Usuario o contraseña incorrectos
+				</div>
+
+				<div th:if="${param.logout}" class="success-message">
+					Has cerrado sesión correctamente
+				</div>
+
+				<div class="input-box">
+					<span class="icon">
+						<ion-icon name="mail"></ion-icon>
+					</span>
+					<input type="text" th:name="correo" required>
+					<label>Correo</label>
+					<div class="input-line"></div>
+				</div>
+
+				<div class="input-box">
+					<span class="icon">
+						<ion-icon name="lock-closed"></ion-icon>
+					</span>
+					<input type="password" th:name="password" id="password" required>
+					<label>Contraseña</label>
+					<span class="toggle-password" onclick="togglePassword()">
+						<ion-icon id="eye-icon" name="eye-off"></ion-icon>
+					</span>
+					<div class="input-line"></div>
+				</div>
+
+				<div class="remember-forgot">
+					<label><input type="checkbox" th:name="remember-me"> Recuérdame</label>
+					<a th:href="@{/forgot-password}">¿Olvidaste la contraseña?</a>
+				</div>
+
+				<button type="submit">Iniciar Sesión</button>
+
+				<div class="register-link">
+					<p>¿No tienes una cuenta? <a th:href="@{/users/registro}">Regístrate</a></p>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+	<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+	<script th:src="@{/js/login.js}" defer></script>
+</body>
+
+</html>
