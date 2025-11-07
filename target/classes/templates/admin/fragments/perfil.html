@@ -19,7 +19,8 @@
 						<div class="user-display">
 							<!-- FOTO -->
 							<div class="avatar" id="avatar">
-								<img th:if="${session.usuarioLogueado.foto != null}"
+								<th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}">
+
 									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
 								<div th:if="${session.usuarioLogueado.foto == null}" class="avatar-placeholder">
 									<span th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + 
