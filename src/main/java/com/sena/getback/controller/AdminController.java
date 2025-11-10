@@ -32,13 +32,16 @@ public class AdminController {
 	private final LocationRepository locationRepository;
 	private final MesaRepository mesaRepository;
 	private final RolRepository rolRepository;
+	private final FacturaRepository facturaRepository;
+	private final PedidoRepository pedidoRepository;
 
 	@Autowired
 	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
 			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
 			MenuService menuService, CategoriaService categoriaService, UploadFileService uploadFileService,
 			LocationService locationService, LocationRepository locationRepository, MesaService mesaService,
-			MesaRepository mesaRepository, RolRepository rolRepository) {
+			MesaRepository mesaRepository, RolRepository rolRepository,
+			FacturaRepository facturaRepository, PedidoRepository pedidoRepository) {
 
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
@@ -54,6 +57,8 @@ public class AdminController {
 		this.locationRepository = locationRepository;
 		this.mesaRepository = mesaRepository;
 		this.rolRepository = rolRepository;
+		this.facturaRepository = facturaRepository;
+		this.pedidoRepository = pedidoRepository;
 	}
 
 	/** ==================== PANEL PRINCIPAL ==================== **/
@@ -67,18 +72,58 @@ public class AdminController {
 		try {
 			// DASHBOARD
 			if ("dashboard".equals(section)) {
-				model.addAttribute("totalCategorias", categoriaRepository.count());
-				model.addAttribute("totalProductos", menuRepository.count());
-				model.addAttribute("totalEventos", eventoRepository.count());
-				model.addAttribute("totalUsuarios", usuarioRepository.count());
-				model.addAttribute("totalUbicaciones", locationRepository.count());
-				model.addAttribute("totalMesas", mesaRepository.count());
+				model.addAttribute("totalCategorias", (long) categoriaRepository.findAll().size());
+				model.addAttribute("totalProductos", (long) menuRepository.findAll().size());
+				model.addAttribute("totalEventos", (long) eventoRepository.findAll().size());
+				model.addAttribute("totalUsuarios", (long) usuarioRepository.findAll().size());
+				model.addAttribute("totalUbicaciones", (long) locationRepository.findAll().size());
+				model.addAttribute("totalMesas", (long) mesaRepository.findAll().size());
+				
+				// NUEVAS ESTADÍSTICAS PARA EL DASHBOARD MEJORADO
+				java.util.List<Factura> facturas = facturaRepository.findAll();
+				java.util.List<Pedido> pedidos = pedidoRepository.findAll();
+				
+				model.addAttribute("totalVentas", (long) facturas.size());
+				
+				// Ventas de hoy
+				long ventasHoy = facturas.stream()
+					.filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
+					.count();
+				model.addAttribute("ventasHoy", ventasHoy);
+				
+				// Ingresos de hoy
+				double ingresosHoy = facturas.stream()
+					.filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
+					.filter(f -> "PAGADO".equals(f.getEstadoPago()))
+					.mapToDouble(f -> f.getTotalPagar().doubleValue())
+					.sum();
+				model.addAttribute("ingresosHoy", ingresosHoy);
+				
+				// Ingresos totales
+				double ingresosTotales = facturas.stream()
+					.filter(f -> "PAGADO".equals(f.getEstadoPago()))
+					.mapToDouble(f -> f.getTotalPagar().doubleValue())
+					.sum();
+				model.addAttribute("ingresosTotales", ingresosTotales);
+				
+				// Pedidos pendientes
+				long pedidosPendientes = pedidos.stream()
+					.filter(p -> "PENDIENTE".equals(p.getEstado()))
+					.count();
+				model.addAttribute("pedidosPendientes", pedidosPendientes);
+				
+				// Actividad reciente (últimas 5 facturas)
+				java.util.List<Factura> actividadReciente = facturas.stream()
+					.sorted((f1, f2) -> f2.getFechaEmision().compareTo(f1.getFechaEmision()))
+					.limit(5)
+					.collect(java.util.stream.Collectors.toList());
+				model.addAttribute("actividadReciente", actividadReciente);
 			}
 
 			// LOCATIONS
 			if ("locations".equals(section)) {
 				model.addAttribute("locations", locationRepository.findAll());
-				model.addAttribute("totalUbicaciones", locationRepository.count());
+				model.addAttribute("totalUbicaciones", (long) locationRepository.findAll().size());
 				model.addAttribute("location",
 						model.containsAttribute("location") ? model.getAttribute("location") : new Location());
 			}
@@ -86,7 +131,7 @@ public class AdminController {
 			// MESAS
 			if ("mesas".equals(section)) {
 				model.addAttribute("mesas", mesaRepository.findAll());
-				model.addAttribute("totalMesas", mesaRepository.count());
+				model.addAttribute("totalMesas", (long) mesaRepository.findAll().size());
 				model.addAttribute("ubicaciones", locationRepository.findAll());
 				model.addAttribute("mesa", model.containsAttribute("mesa") ? model.getAttribute("mesa") : new Mesa());
 			}
@@ -117,6 +162,33 @@ public class AdminController {
 				model.addAttribute("roles", rolRepository.findAll());
 			}
 
+			// VENTAS - NUEVA SECCIÓN
+			if ("ventas".equals(section)) {
+				java.util.List<Factura> facturas = facturaRepository.findAll();
+				model.addAttribute("facturas", facturas);
+				model.addAttribute("totalVentas", (long) facturas.size());
+				
+				// Calcular estadísticas básicas sin queries
+				long ventasHoy = facturas.stream()
+					.filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
+					.count();
+				model.addAttribute("ventasHoy", ventasHoy);
+				
+				long ventasCanceladas = facturas.stream()
+					.filter(f -> "CANCELADO".equals(f.getEstadoPago()))
+					.count();
+				model.addAttribute("ventasCanceladas", ventasCanceladas);
+				
+				double totalIngresos = facturas.stream()
+					.filter(f -> "PAGADO".equals(f.getEstadoPago()))
+					.mapToDouble(f -> f.getTotalPagar().doubleValue())
+					.sum();
+				model.addAttribute("totalIngresos", totalIngresos);
+				
+				double promedioVenta = ventasHoy > 0 ? totalIngresos / ventasHoy : 0.0;
+				model.addAttribute("promedioVenta", promedioVenta);
+			}
+
 			// PERFIL ADMIN
 			Usuario admin = usuarioService.getFirstUser().orElse(new Usuario());
 			model.addAttribute("usuario", admin);
@@ -130,6 +202,8 @@ public class AdminController {
 			model.addAttribute("locations", java.util.Collections.emptyList());
 			model.addAttribute("mesas", java.util.Collections.emptyList());
 			model.addAttribute("roles", java.util.Collections.emptyList());
+			model.addAttribute("facturas", java.util.Collections.emptyList());
+			model.addAttribute("actividadReciente", java.util.Collections.emptyList());
 
 			model.addAttribute("newProduct", new Menu());
 			model.addAttribute("categoria", new Categoria());
@@ -137,6 +211,17 @@ public class AdminController {
 			model.addAttribute("location", new Location());
 			model.addAttribute("mesa", new Mesa());
 			model.addAttribute("usuario", new Usuario());
+			model.addAttribute("newUser", new Usuario());
+			
+			// AGREGAR ESTADÍSTICAS POR DEFECTO PARA VENTAS Y DASHBOARD
+			model.addAttribute("totalVentas", 0L);
+			model.addAttribute("ventasHoy", 0L);
+			model.addAttribute("ingresosHoy", 0.0);
+			model.addAttribute("ingresosTotales", 0.0);
+			model.addAttribute("pedidosPendientes", 0L);
+			model.addAttribute("ventasCanceladas", 0L);
+			model.addAttribute("totalIngresos", 0.0);
+			model.addAttribute("promedioVenta", 0.0);
 		}
 
 		return "admin";

@@ -44,9 +44,10 @@
 				<i class="fas fa-chair"></i>Asignar Mesas
 			</a>
 
-			<a th:href="@{/admin(activeSection='mesas')}"
-				th:classappend="${activeSection == 'mesas'} ? 'nav-link active' : 'nav-link'">
-				<i class="fas fa-chair"></i>Historial de ventas
+			
+			<a th:href="@{/admin(activeSection='ventas')}"
+			   th:classappend="${activeSection == 'ventas'} ? 'nav-link active' : 'nav-link'">
+			    <i class="fas fa-history"></i> Historial de ventas
 			</a>
 		</nav>
 		<!-- Footer compacto -->

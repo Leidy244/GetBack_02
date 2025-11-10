@@ -1,132 +1,351 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-	<link rel="stylesheet" href="admin-styles.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin-styles.css">
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-
 <body>
-	<section th:fragment="dashboard" class="content-section">
+    <section th:fragment="dashboard" class="content-section">
+        <div class="dashboard-container">
+            
+            <!-- Header del Dashboard -->
+            <div class="dashboard-header">
+                <h1>Panel de Control</h1>
+                <p class="subtitle">Resumen general del sistema</p>
+            </div>
 
-		<!-- Header del dashboard -->
-		<div class="section-header">
-			<h2><i class="fas fa-tachometer-alt"></i> Panel de Control</h2>
-		</div>
+            <!-- Estadísticas Principales Compactas -->
+            <div class="dashboard-stats-grid">
+                <!-- Ventas Hoy -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${ventasHoy}">0</div>
+                            <div class="stat-label">Ventas Hoy</div>
+                            <div class="stat-description" th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 0, 2)}">$0.00</div>
+                        </div>
+                    </div>
+                </div>
 
-		<div class="stats-grid compact">
-			<!-- Fila 1 -->
-			<!-- Categorías -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-tags"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalCategorias}">0</h3>
-					<p>Categorías agregadas</p>
-					<small>Clasificación del menú</small>
-				</div>
-			</div>
+                <!-- Ingresos Totales -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 0, 2)}">$0.00</div>
+                            <div class="stat-label">Ingresos Totales</div>
+                            <div class="stat-description" th:text="${totalVentas} + ' ventas'">0 ventas</div>
+                        </div>
+                    </div>
+                </div>
 
-			<!-- Productos -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-cocktail"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalProductos}">0</h3>
-					<p>Productos en el menú</p>
-					<small>Bebidas y snacks disponibles</small>
-				</div>
-			</div>
+                <!-- Pedidos Pendientes -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${pedidosPendientes}">0</div>
+                            <div class="stat-label">Pedidos Pendientes</div>
+                            <div class="stat-description">Por preparar</div>
+                        </div>
+                    </div>
+                </div>
 
-			<!-- Eventos -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-calendar-alt"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalEventos}">0</h3>
-					<p>Eventos programados</p>
-					<small>Próximos shows en el bar</small>
-				</div>
-			</div>
+                <!-- Productos Activos -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-cocktail"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${totalProductos}">0</div>
+                            <div class="stat-label">Productos</div>
+                            <div class="stat-description">En menú</div>
+                        </div>
+                    </div>
+                </div>
 
-			<!-- Fila 2 -->
-			<!-- Usuarios -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-users"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalUsuarios}">0</h3>
-					<p>Usuarios registrados</p>
-					<small>Clientes y administradores</small>
-				</div>
-			</div>
+                <!-- Categorías -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${totalCategorias}">0</div>
+                            <div class="stat-label">Categorías</div>
+                            <div class="stat-description">Activas</div>
+                        </div>
+                    </div>
+                </div>
 
-			<!-- Ubicacion de mesas -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-map-marker-alt"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalUbicaciones}">0</h3>
-					<p>Ubicaciones disponibles</p>
-					<small>Zonas del establecimiento</small>
-				</div>
-			</div>
+                <!-- Eventos -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${totalEventos}">0</div>
+                            <div class="stat-label">Eventos</div>
+                            <div class="stat-description">Programados</div>
+                        </div>
+                    </div>
+                </div>
 
-			<!-- mesas -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-chair"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalMesas}">0</h3>
-					<p>Mesas registradas</p>
-					<small>Mesas disponibles</small>
-				</div>
-			</div>
-		</div>
+                <!-- Usuarios -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${totalUsuarios}">0</div>
+                            <div class="stat-label">Usuarios</div>
+                            <div class="stat-description">Registrados</div>
+                        </div>
+                    </div>
+                </div>
 
-		<!-- Actividad reciente -->
-		<div class="recent-activity minimal">
-			<div class="section-header minimal">
-				<h3><i class="fas fa-clock"></i> Actividad Reciente</h3>
-				<a href="#" class="view-all">Ver todo</a>
-			</div>
-			<div class="activity-list minimal">
-				<div class="activity-item minimal">
-					<div class="activity-icon minimal">
-						<i class="fas fa-plus"></i>
-					</div>
-					<div class="activity-content minimal">
-						<p>Nuevo producto <strong>Heineken</strong> agregado</p>
-						<small>Hace 2 horas</small>
-					</div>
-				</div>
-				<div class="activity-item minimal">
-					<div class="activity-icon minimal">
-						<i class="fas fa-edit"></i>
-					</div>
-					<div class="activity-content minimal">
-						<p>Categoría <strong>Bebidas calientes</strong> actualizada</p>
-						<small>Hace 5 horas</small>
-					</div>
-				</div>
-				<div class="activity-item minimal">
-					<div class="activity-icon minimal">
-						<i class="fas fa-user-plus"></i>
-					</div>
-					<div class="activity-content minimal">
-						<p>Nuevo usuario registrado</p>
-						<small>Ayer a las 14:30</small>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
+                <!-- Mesas -->
+                <div class="stat-card-compact">
+                    <div class="stat-content">
+                        <div class="stat-icon">
+                            <i class="fas fa-chair"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" th:text="${totalMesas}">0</div>
+                            <div class="stat-label">Mesas</div>
+                            <div class="stat-description">Disponibles</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Gráficas con Filtros Integrados -->
+            <div class="charts-section">
+                <div class="charts-header">
+                    <h3><i class="fas fa-chart-pie"></i> Estadísticas Detalladas</h3>
+                    <div class="chart-filters">
+                        <div class="chart-filter-btn active" data-filter="all">Todos</div>
+                        <div class="chart-filter-btn" data-filter="products">Productos</div>
+                        <div class="chart-filter-btn" data-filter="categories">Categorías</div>
+                        <div class="chart-filter-btn" data-filter="events">Eventos</div>
+                        <div class="chart-filter-btn" data-filter="users">Usuarios</div>
+                        <div class="chart-filter-btn" data-filter="mesas">Mesas</div>
+                    </div>
+                </div>
+
+                <!-- Gráficas para TODOS -->
+                <div class="charts-container active" id="charts-all">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-shopping-cart"></i>
+                                Ventas por Día
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-line"></i>
+                                <p>Gráfica de ventas diarias</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-cocktail"></i>
+                                Productos Más Vendidos
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar"></i>
+                                <p>Top productos por ventas</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-tags"></i>
+                                Distribución por Categoría
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-pie"></i>
+                                <p>Ventas por categoría de producto</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-calendar"></i>
+                                Eventos por Mes
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-area"></i>
+                                <p>Eventos programados por mes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficas para PRODUCTOS -->
+                <div class="charts-container" id="charts-products">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Productos Más Vendidos
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-cocktail"></i>
+                                <p>Top 10 productos por ventas</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Distribución por Categoría
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-tags"></i>
+                                <p>Productos por categoría</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficas para CATEGORÍAS -->
+                <div class="charts-container" id="charts-categories">
+                    <div class="chart-wrapper">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Productos por Categoría
+                        </div>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-tags"></i>
+                            <p>Distribución de productos en categorías</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficas para EVENTOS -->
+                <div class="charts-container" id="charts-events">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-line"></i>
+                                Eventos por Mes
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-calendar"></i>
+                                <p>Eventos programados mensualmente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficas para USUARIOS -->
+                <div class="charts-container" id="charts-users">
+                    <div class="chart-wrapper">
+                        <div class="chart-title">
+                            <i class="fas fa-users"></i>
+                            Usuarios por Rol
+                        </div>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-user-friends"></i>
+                            <p>Distribución de usuarios por tipo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficas para MESAS -->
+                <div class="charts-container" id="charts-mesas">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-title">
+                                <i class="fas fa-chair"></i>
+                                Estado de Mesas
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-pie"></i>
+                                <p>Mesas disponibles vs ocupadas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actividad Reciente -->
+            <div class="activity-section">
+                <div class="activity-header">
+                    <h3><i class="fas fa-history"></i> Actividad Reciente de Ventas</h3>
+                    <a th:href="@{/admin(activeSection='ventas')}" class="view-all-link">
+                        Ver todas <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="activity-list">
+                    <div th:if="${actividadReciente.empty}" class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h4>No hay actividad reciente</h4>
+                        <p>Las ventas aparecerán aquí cuando se realicen transacciones</p>
+                    </div>
+                    <div th:each="factura, status : ${actividadReciente}" 
+                         class="activity-item" 
+                         th:classappend="${factura.estadoPago == 'PAGADO'} ? 'activity-success' : 
+                                        ${factura.estadoPago == 'PENDIENTE'} ? 'activity-warning' : 'activity-info'">
+                        <div class="activity-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">
+                                <strong th:text="${factura.numeroFactura}">FAC-001</strong>
+                                - 
+                                <span th:text="'$' + ${#numbers.formatDecimal(factura.totalPagar, 0, 2)}">$0.00</span>
+                            </div>
+                            <div class="activity-meta">
+                                <span class="activity-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span th:text="${#temporals.format(factura.fechaEmision, 'HH:mm')}">00:00</span>
+                                </span>
+                                <span th:if="${factura.clienteNombre}" th:text="${factura.clienteNombre}">Cliente</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // JavaScript para manejar los filtros
+            document.addEventListener('DOMContentLoaded', function() {
+                const filterBtns = document.querySelectorAll('.chart-filter-btn');
+                const chartContainers = document.querySelectorAll('.charts-container');
+                
+                filterBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const filter = this.getAttribute('data-filter');
+                        
+                        // Remover clase active de todos los botones
+                        filterBtns.forEach(b => b.classList.remove('active'));
+                        // Agregar clase active al botón clickeado
+                        this.classList.add('active');
+                        
+                        // Ocultar todos los contenedores de gráficas
+                        chartContainers.forEach(container => {
+                            container.classList.remove('active');
+                        });
+                        
+                        // Mostrar el contenedor correspondiente
+                        const targetContainer = document.getElementById(`charts-${filter}`);
+                        if (targetContainer) {
+                            targetContainer.classList.add('active');
+                        }
+                    });
+                });
+            });
+        </script>
+    </section>
 </body>
-
 </html>

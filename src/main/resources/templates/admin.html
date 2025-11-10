@@ -94,7 +94,11 @@
 			<div th:if="${activeSection == 'mesas'}">
 			    <div th:replace="admin/fragments/mesas :: mesas"></div>
 			</div>
-
+			
+			<!-- Sección de ventas -->
+			<div th:if="${activeSection == 'ventas'}">
+			    <div th:replace="admin/fragments/ventas :: ventas"></div>
+			</div>
 		</div>
 	</main>
 
