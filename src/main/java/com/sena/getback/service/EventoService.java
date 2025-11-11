@@ -37,4 +37,27 @@ public class EventoService {
             eventoRepository.deleteById(id);
         }
     }
+ // Contar todos los eventos registrados
+    public long count() {
+        return eventoRepository.count();
+    }
+ // 🔹 Obtener cantidad de eventos por mes
+    public List<Integer> obtenerEventosPorMes() {
+        // Creamos una lista de 12 posiciones, una por cada mes
+        int[] eventosPorMes = new int[12];
+
+        // Recorremos todos los eventos y contamos por mes
+        for (Evento evento : eventoRepository.findAll()) {
+            if (evento.getFecha() != null) {
+                int mes = evento.getFecha().getMonthValue(); // 1 = enero ... 12 = diciembre
+                eventosPorMes[mes - 1]++;
+            }
+        }
+
+        // Convertimos a lista para el gráfico
+        return java.util.Arrays.stream(eventosPorMes)
+                .boxed()
+                .toList();
+    }
+
 }

@@ -64,5 +64,10 @@ public class MesaService {
             mesaRepository.save(mesa);
         });
     }
+ // 🔹 Contar todas las mesas registradas
+    public long count() {
+        return mesaRepository.count();
+    }
+
 
 }

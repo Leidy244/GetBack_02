@@ -6,6 +6,7 @@ import com.sena.getback.repository.MenuRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -96,6 +97,16 @@ public class MenuService {
 	                    && menu.getCategoria().getNombre().equalsIgnoreCase(nombreCategoria))
 	            .collect(Collectors.toList());
 	}
+	// 🔹 Contar cuántos productos hay por categoría
+	public Map<String, Long> contarProductosPorCategoria() {
+	    return menuRepository.findAll().stream()
+	            .filter(menu -> menu.getCategoria() != null && menu.getCategoria().getNombre() != null)
+	            .collect(Collectors.groupingBy(
+	                    menu -> menu.getCategoria().getNombre(), // agrupa por nombre de categoría
+	                    Collectors.counting() // cuenta los productos de cada grupo
+	            ));
+	}
+
 
 
 }

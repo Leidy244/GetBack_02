@@ -1,0 +1,224 @@
+package com.sena.getback.controller;
+
+import com.sena.getback.service.*;
+import org.knowm.xchart.*;
+import org.knowm.xchart.BitmapEncoder.BitmapFormat;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+
+@Controller
+public class DashboardController {
+
+    @Autowired private MenuService menuService;
+    @Autowired private CategoriaService categoriaService;
+    @Autowired private EventoService eventoService;
+    @Autowired private UsuarioService usuarioService;
+    @Autowired private MesaService mesaService;
+    
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+    @GetMapping("/dashboard")
+    public String mostrarDashboard(Model model) {
+        System.out.println("=== INICIANDO DASHBOARD SPRING ===");
+        
+        try {
+            // =======================
+            // 1️⃣ CONFIGURAR RUTAS SPRING
+            // =======================
+            Resource resource = resourceLoader.getResource("classpath:static/img/");
+            String staticImgPath = resource.getFile().getAbsolutePath();
+            System.out.println("📁 Ruta static/img: " + staticImgPath);
+            
+            // Crear directorio si no existe
+            Files.createDirectories(Paths.get(staticImgPath));
+            
+            // =======================
+            // 2️⃣ CREAR PLACEHOLDER SI NO EXISTE
+            // =======================
+            crearPlaceholderSpring(staticImgPath);
+            
+            // =======================
+            // 3️⃣ MÉTRICAS PRINCIPALES
+            // =======================
+            model.addAttribute("ventasHoy", 15);
+            model.addAttribute("ingresosHoy", 450000.0);
+            model.addAttribute("ingresosTotales", 12500000.0);
+            model.addAttribute("totalVentas", 320);
+            model.addAttribute("pedidosPendientes", 8);
+            model.addAttribute("totalProductos", menuService.count());
+            model.addAttribute("totalCategorias", categoriaService.count());
+            model.addAttribute("totalEventos", eventoService.count());
+            model.addAttribute("totalUsuarios", usuarioService.countActiveUsers());
+            model.addAttribute("totalMesas", mesaService.count());
+
+            // =======================
+            // 4️⃣ GENERAR GRÁFICAS
+            // =======================
+            boolean graficasGeneradas = generarTodasLasGraficasSpring(staticImgPath);
+            
+            if (graficasGeneradas) {
+                System.out.println("✅ Gráficas generadas en: " + staticImgPath);
+                model.addAttribute("chartCategorias", "/img/chart-categorias.png");
+                model.addAttribute("chartEventos", "/img/chart-eventos.png");
+                model.addAttribute("chartUsuarios", "/img/chart-usuarios.png");
+                model.addAttribute("chartMesas", "/img/chart-mesas.png");
+            } else {
+                System.out.println("🔄 Usando placeholders");
+                model.addAttribute("chartCategorias", "/img/placeholder-chart.png");
+                model.addAttribute("chartEventos", "/img/placeholder-chart.png");
+                model.addAttribute("chartUsuarios", "/img/placeholder-chart.png");
+                model.addAttribute("chartMesas", "/img/placeholder-chart.png");
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ ERROR: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("chartCategorias", "/img/placeholder-chart.png");
+            model.addAttribute("chartEventos", "/img/placeholder-chart.png");
+            model.addAttribute("chartUsuarios", "/img/placeholder-chart.png");
+            model.addAttribute("chartMesas", "/img/placeholder-chart.png");
+        }
+
+        return "admin/dashboard";
+    }
+
+    private void crearPlaceholderSpring(String basePath) throws IOException {
+        File placeholderFile = new File(basePath + "/placeholder-chart.png");
+        if (!placeholderFile.exists()) {
+            System.out.println("🔄 Creando placeholder...");
+            
+            PieChart chart = new PieChartBuilder()
+                    .width(600)
+                    .height(400)
+                    .title("Datos no disponibles")
+                    .build();
+
+            chart.addSeries("Cargando...", 1);
+            BitmapEncoder.saveBitmap(chart, basePath + "/placeholder-chart", BitmapFormat.PNG);
+            System.out.println("✅ Placeholder creado: " + placeholderFile.getAbsolutePath());
+        }
+    }
+
+    private boolean generarTodasLasGraficasSpring(String basePath) {
+        try {
+            // 1. Productos por categoría
+            Map<String, Long> datosCategorias = menuService.contarProductosPorCategoria();
+            if (datosCategorias == null || datosCategorias.isEmpty()) {
+                datosCategorias = new HashMap<>();
+                datosCategorias.put("Bebidas", 15L);
+                datosCategorias.put("Platos", 12L);
+                datosCategorias.put("Postres", 8L);
+            }
+            generarGraficoProductosPorCategoria(datosCategorias, basePath);
+
+            // 2. Eventos por mes
+            List<Integer> eventosMes = eventoService.obtenerEventosPorMes();
+            generarGraficoEventosPorMes(eventosMes, basePath);
+
+            // 3. Usuarios por rol
+            generarGraficoUsuariosPorRol(basePath);
+
+            // 4. Estado de mesas
+            generarGraficoEstadoMesas(basePath);
+
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error generando gráficas: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void generarGraficoProductosPorCategoria(Map<String, Long> datos, String basePath) throws IOException {
+        PieChart chart = new PieChartBuilder()
+                .width(600)
+                .height(400)
+                .title("Productos por Categoría")
+                .build();
+
+        datos.forEach(chart::addSeries);
+        BitmapEncoder.saveBitmap(chart, basePath + "/chart-categorias", BitmapFormat.PNG);
+    }
+
+    private void generarGraficoEventosPorMes(List<Integer> eventosPorMes, String basePath) throws IOException {
+        CategoryChart chart = new CategoryChartBuilder()
+                .width(700)
+                .height(400)
+                .title("Eventos por Mes")
+                .xAxisTitle("Mes")
+                .yAxisTitle("Cantidad")
+                .build();
+
+        List<String> meses = Arrays.asList("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                                         "Jul", "Ago", "Sep", "Oct", "Nov", "Dic");
+
+        if (eventosPorMes == null || eventosPorMes.isEmpty() || eventosPorMes.size() != 12) {
+            eventosPorMes = Arrays.asList(2, 3, 5, 4, 6, 8, 7, 6, 5, 4, 3, 2);
+        }
+
+        chart.addSeries("Eventos", meses, eventosPorMes);
+        BitmapEncoder.saveBitmap(chart, basePath + "/chart-eventos", BitmapFormat.PNG);
+    }
+
+    private void generarGraficoUsuariosPorRol(String basePath) throws IOException {
+        PieChart chart = new PieChartBuilder()
+                .width(600)
+                .height(400)
+                .title("Usuarios por Rol")
+                .build();
+
+        try {
+            long adminCount = usuarioService.countByRol("ADMIN");
+            long meseroCount = usuarioService.countByRol("MESERO"); 
+            long cajeroCount = usuarioService.countByRol("CAJERO");
+            
+            chart.addSeries("Administradores", adminCount);
+            chart.addSeries("Meseros", meseroCount);
+            chart.addSeries("Cajeros", cajeroCount);
+            
+        } catch (Exception e) {
+            chart.addSeries("Administradores", 3);
+            chart.addSeries("Meseros", 8);
+            chart.addSeries("Cajeros", 4);
+        }
+
+        BitmapEncoder.saveBitmap(chart, basePath + "/chart-usuarios", BitmapFormat.PNG);
+    }
+
+    private void generarGraficoEstadoMesas(String basePath) throws IOException {
+        PieChart chart = new PieChartBuilder()
+                .width(600)
+                .height(400)
+                .title("Estado de Mesas")
+                .build();
+
+        try {
+            long disponibles = mesaService.findAll().stream()
+                    .filter(m -> m.getEstado() != null && "DISPONIBLE".equalsIgnoreCase(m.getEstado()))
+                    .count();
+            long ocupadas = mesaService.findAll().stream()
+                    .filter(m -> m.getEstado() != null && "OCUPADA".equalsIgnoreCase(m.getEstado()))
+                    .count();
+
+            chart.addSeries("Disponibles", disponibles);
+            chart.addSeries("Ocupadas", ocupadas);
+            
+        } catch (Exception e) {
+            chart.addSeries("Disponibles", 12);
+            chart.addSeries("Ocupadas", 8);
+        }
+
+        BitmapEncoder.saveBitmap(chart, basePath + "/chart-mesas", BitmapFormat.PNG);
+    }
+}
