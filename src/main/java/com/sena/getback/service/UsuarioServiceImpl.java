@@ -3,6 +3,8 @@ package com.sena.getback.service;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,12 +17,23 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private ActivityLogService activityLogService;
+
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public List<Usuario> findAllUsers() {
         return usuarioRepository.findAll();
     }
+
+// helpers
+private String currentUser() {
+    try {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return (a != null && a.getName() != null) ? a.getName() : "system";
+    } catch (Exception e) { return "system"; }
+}
 
     @Override
     public Optional<Usuario> findUserById(Long id) {
@@ -47,7 +60,16 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setClave(passwordEncoder.encode(usuario.getClave()));
         }
 
-        return usuarioRepository.save(usuario);
+        boolean isUpdate = usuario.getId() != null;
+        Usuario saved = usuarioRepository.save(usuario);
+        try {
+            String name = (saved.getNombre() != null ? saved.getNombre() : "Usuario") +
+                    (saved.getApellido() != null ? (" " + saved.getApellido()) : "");
+            String user = currentUser();
+            String msg = (isUpdate ? "Se actualizó el usuario \"" : "Se creó el usuario \"") + name.trim() + "\"";
+            activityLogService.log("USER", msg, user, null);
+        } catch (Exception ignored) {}
+        return saved;
     }
 
     @Override
@@ -66,7 +88,13 @@ public class UsuarioServiceImpl implements UsuarioService {
         existente.setEstado(usuario.getEstado());
         existente.setRol(usuario.getRol());
 
-        return usuarioRepository.save(existente);
+        Usuario saved = usuarioRepository.save(existente);
+        try {
+            String name = (saved.getNombre() != null ? saved.getNombre() : "Usuario") +
+                    (saved.getApellido() != null ? (" " + saved.getApellido()) : "");
+            activityLogService.log("USER", "Se actualizó el usuario \"" + name.trim() + "\"", currentUser(), null);
+        } catch (Exception ignored) {}
+        return saved;
     }
 
     @Override
@@ -105,7 +133,12 @@ public class UsuarioServiceImpl implements UsuarioService {
             existente.setClave(passwordEncoder.encode(usuario.getClave()));
         }
 
-        usuarioRepository.save(existente);
+        Usuario saved = usuarioRepository.save(existente);
+        try {
+            String name = (saved.getNombre() != null ? saved.getNombre() : "Usuario") +
+                    (saved.getApellido() != null ? (" " + saved.getApellido()) : "");
+            activityLogService.log("PROFILE", "Se actualizó el perfil de \"" + name.trim() + "\"", currentUser(), null);
+        } catch (Exception ignored) {}
     }
 
     @Override

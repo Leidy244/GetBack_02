@@ -4,11 +4,10 @@ import com.sena.getback.service.*;
 import org.knowm.xchart.*;
 import org.knowm.xchart.BitmapEncoder.BitmapFormat;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,9 +23,9 @@ public class DashboardController {
     @Autowired private EventoService eventoService;
     @Autowired private UsuarioService usuarioService;
     @Autowired private MesaService mesaService;
+    @Autowired private FacturaService facturaService;
+    @Autowired private PedidoService pedidoService;
     
-    @Autowired
-    private ResourceLoader resourceLoader;
 
     @GetMapping("/dashboard")
     public String mostrarDashboard(Model model) {
@@ -36,9 +35,8 @@ public class DashboardController {
             // =======================
             // 1️⃣ CONFIGURAR RUTAS SPRING
             // =======================
-            Resource resource = resourceLoader.getResource("classpath:static/img/");
-            String staticImgPath = resource.getFile().getAbsolutePath();
-            System.out.println("📁 Ruta static/img: " + staticImgPath);
+            String staticImgPath = System.getProperty("user.dir") + java.io.File.separator + "images";
+            System.out.println("📁 Ruta externa images: " + staticImgPath);
             
             // Crear directorio si no existe
             Files.createDirectories(Paths.get(staticImgPath));
@@ -51,11 +49,11 @@ public class DashboardController {
             // =======================
             // 3️⃣ MÉTRICAS PRINCIPALES
             // =======================
-            model.addAttribute("ventasHoy", 15);
-            model.addAttribute("ingresosHoy", 450000.0);
-            model.addAttribute("ingresosTotales", 12500000.0);
-            model.addAttribute("totalVentas", 320);
-            model.addAttribute("pedidosPendientes", 8);
+            model.addAttribute("ventasHoy", facturaService.obtenerVentasHoy());
+            model.addAttribute("ingresosHoy", facturaService.obtenerIngresosHoy());
+            model.addAttribute("ingresosTotales", facturaService.obtenerIngresosTotales());
+            model.addAttribute("totalVentas", facturaService.contarFacturas());
+            model.addAttribute("pedidosPendientes", pedidoService.contarPedidosPendientes());
             model.addAttribute("totalProductos", menuService.count());
             model.addAttribute("totalCategorias", categoriaService.count());
             model.addAttribute("totalEventos", eventoService.count());
@@ -69,28 +67,29 @@ public class DashboardController {
             
             if (graficasGeneradas) {
                 System.out.println("✅ Gráficas generadas en: " + staticImgPath);
-                model.addAttribute("chartCategorias", "/img/chart-categorias.png");
-                model.addAttribute("chartEventos", "/img/chart-eventos.png");
-                model.addAttribute("chartUsuarios", "/img/chart-usuarios.png");
-                model.addAttribute("chartMesas", "/img/chart-mesas.png");
+                model.addAttribute("chartCategorias", "/images/chart-categorias.png");
+                model.addAttribute("chartEventos", "/images/chart-eventos.png");
+                model.addAttribute("chartUsuarios", "/images/chart-usuarios.png");
+                model.addAttribute("chartMesas", "/images/chart-mesas.png");
             } else {
                 System.out.println("🔄 Usando placeholders");
-                model.addAttribute("chartCategorias", "/img/placeholder-chart.png");
-                model.addAttribute("chartEventos", "/img/placeholder-chart.png");
-                model.addAttribute("chartUsuarios", "/img/placeholder-chart.png");
-                model.addAttribute("chartMesas", "/img/placeholder-chart.png");
+                model.addAttribute("chartCategorias", "/images/placeholder-chart.png");
+                model.addAttribute("chartEventos", "/images/placeholder-chart.png");
+                model.addAttribute("chartUsuarios", "/images/placeholder-chart.png");
+                model.addAttribute("chartMesas", "/images/placeholder-chart.png");
             }
 
         } catch (Exception e) {
             System.err.println("❌ ERROR: " + e.getMessage());
             e.printStackTrace();
-            model.addAttribute("chartCategorias", "/img/placeholder-chart.png");
-            model.addAttribute("chartEventos", "/img/placeholder-chart.png");
-            model.addAttribute("chartUsuarios", "/img/placeholder-chart.png");
-            model.addAttribute("chartMesas", "/img/placeholder-chart.png");
+            model.addAttribute("chartCategorias", "/images/placeholder-chart.png");
+            model.addAttribute("chartEventos", "/images/placeholder-chart.png");
+            model.addAttribute("chartUsuarios", "/images/placeholder-chart.png");
+            model.addAttribute("chartMesas", "/images/placeholder-chart.png");
         }
 
-        return "admin/dashboard";
+        model.addAttribute("activeSection", "dashboard");
+        return "admin";
     }
 
     private void crearPlaceholderSpring(String basePath) throws IOException {
@@ -220,5 +219,56 @@ public class DashboardController {
         }
 
         BitmapEncoder.saveBitmap(chart, basePath + "/chart-mesas", BitmapFormat.PNG);
+    }
+
+    @GetMapping("/api/dashboard/stats")
+    @ResponseBody
+    public Map<String, Object> obtenerEstadisticas() {
+        Map<String, Object> result = new HashMap<>();
+
+        // Métricas principales
+        result.put("ventasHoy", facturaService.obtenerVentasHoy());
+        result.put("ingresosHoy", facturaService.obtenerIngresosHoy());
+        result.put("ingresosTotales", facturaService.obtenerIngresosTotales());
+        result.put("totalVentas", facturaService.contarFacturas());
+        result.put("pedidosPendientes", pedidoService.contarPedidosPendientes());
+        result.put("totalProductos", menuService.count());
+        result.put("totalCategorias", categoriaService.count());
+        result.put("totalEventos", eventoService.count());
+        result.put("totalUsuarios", usuarioService.countActiveUsers());
+        result.put("totalMesas", mesaService.count());
+
+        // Productos por categoría
+        Map<String, Long> catMap = menuService.contarProductosPorCategoria();
+        result.put("productosPorCategoria", Map.of(
+                "labels", new ArrayList<>(catMap.keySet()),
+                "data", new ArrayList<>(catMap.values())
+        ));
+
+        // Eventos por mes
+        result.put("eventosPorMes", eventoService.obtenerEventosPorMes());
+
+        // Usuarios por rol
+        long admin = usuarioService.countByRol("ADMIN");
+        long mesero = usuarioService.countByRol("MESERO");
+        long cajero = usuarioService.countByRol("CAJERO");
+        result.put("usuariosPorRol", Map.of(
+                "labels", Arrays.asList("Administradores", "Meseros", "Cajeros"),
+                "data", Arrays.asList(admin, mesero, cajero)
+        ));
+
+        // Estado de mesas
+        long disponibles = mesaService.findAll().stream()
+                .filter(m -> m.getEstado() != null && "DISPONIBLE".equalsIgnoreCase(m.getEstado()))
+                .count();
+        long ocupadas = mesaService.findAll().stream()
+                .filter(m -> m.getEstado() != null && "OCUPADA".equalsIgnoreCase(m.getEstado()))
+                .count();
+        result.put("estadoMesas", Map.of(
+                "labels", Arrays.asList("Disponibles", "Ocupadas"),
+                "data", Arrays.asList(disponibles, ocupadas)
+        ));
+
+        return result;
     }
 }

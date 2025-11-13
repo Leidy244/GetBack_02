@@ -3,6 +3,8 @@ package com.sena.getback.service;
 import com.sena.getback.model.Mesa;
 import com.sena.getback.repository.MesaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +15,9 @@ public class MesaService {
 
     @Autowired
     private MesaRepository mesaRepository;
+
+    @Autowired
+    private ActivityLogService activityLogService;
 
     // 🔹 Listar todas las mesas
     public List<Mesa> findAll() {
@@ -26,7 +31,22 @@ public class MesaService {
 
     // 🔹 Guardar o actualizar mesa
     public Mesa save(Mesa mesa) {
-        return mesaRepository.save(mesa);
+        boolean isUpdate = (mesa.getId() != null);
+        Mesa saved = mesaRepository.save(mesa);
+        try {
+            String nombre = saved.getNumero() != null ? saved.getNumero() : ("#" + saved.getId());
+            String user = currentUser();
+            String msg = (isUpdate ? "Se actualizó la mesa \"" : "Se creó la mesa \"") + nombre + "\"";
+            activityLogService.log("TABLE", msg, user, null);
+        } catch (Exception ignored) {}
+        return saved;
+    }
+
+    private String currentUser() {
+        try {
+            Authentication a = SecurityContextHolder.getContext().getAuthentication();
+            return (a != null && a.getName() != null) ? a.getName() : "system";
+        } catch (Exception e) { return "system"; }
     }
 
     // 🔹 Eliminar mesa por ID

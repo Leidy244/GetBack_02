@@ -106,9 +106,11 @@ public class MesaController {
 
             // 🧩 Guardar mesa
             Mesa mesaGuardada = mesaService.save(mesa);
+            String ubicacionNombre = (mesaGuardada.getUbicacion() != null) ? mesaGuardada.getUbicacion().getNombre() : null;
+            String ubicacionTexto = (ubicacionNombre != null && !ubicacionNombre.trim().isEmpty()) ? (" en " + ubicacionNombre) : "";
             String mensaje = (mesa.getId() == null ? "Mesa creada exitosamente: " : "Mesa actualizada exitosamente: ")
                     + mesaGuardada.getNumero()
-                    + (mesaGuardada.getUbicacion() != null ? " en " + mesaGuardada.getUbicacion().getNombre() : "");
+                    + ubicacionTexto;
 
             redirectAttributes.addFlashAttribute("success", mensaje);
             logger.info(mensaje);

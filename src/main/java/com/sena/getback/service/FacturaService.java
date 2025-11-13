@@ -41,4 +41,18 @@ public class FacturaService {
                 .mapToDouble(f -> f.getTotalPagar().doubleValue())
                 .sum();
     }
+
+    // 💵 Ingresos de hoy
+    public double obtenerIngresosHoy() {
+        LocalDate hoy = LocalDate.now();
+        return facturaRepository.findAll().stream()
+                .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().toLocalDate().isEqual(hoy))
+                .mapToDouble(f -> f.getTotalPagar().doubleValue())
+                .sum();
+    }
+
+    // 🧾 Cantidad total de facturas (ventas)
+    public long contarFacturas() {
+        return facturaRepository.count();
+    }
 }

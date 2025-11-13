@@ -12,28 +12,30 @@
             <p class="text-muted">Administra las categorías de productos del establecimiento</p>
         </div>
 
-        <!-- Mensajes Flash -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>
-            <span th:text="${success}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
         
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
 
         <!-- Subtítulo con botón -->
-        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
             <h4 class="section-subtitle mb-0 text-dark-emphasis">
                 Lista de Categorías 
                 <span class="badge bg-primary ms-1" th:text="${categorias.size()}"></span>
             </h4>
-            <button class="btn btn-primary rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#categoryModalNew">
-                <i class="fas fa-plus me-2"></i>Nueva Categoría
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#importCategoriesModal" title="Sube un archivo para agregar o actualizar varias categorías a la vez">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>Subir lista (Excel/CSV)
+                </button>
+                <button class="btn btn-primary rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#categoryModalNew">
+                    <i class="fas fa-plus me-2"></i>Nueva Categoría
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <div class="input-group" style="max-width: 320px;">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="categoryFilterInput" class="form-control" placeholder="Filtrar categorías...">
+            </div>
+            <div id="categoriesPagination" class="btn-group" role="group" aria-label="Paginación"></div>
         </div>
 
         <!-- Tabla -->
@@ -46,8 +48,8 @@
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="text-center">
-                    <tr th:each="categoria : ${categorias}">
+                <tbody class="text-center" id="categoriesTableBody">
+                    <tr th:each="categoria : ${categorias}" data-row="cat">
                         <td th:text="${categoria.id}">1</td>
                         <td><strong th:text="${categoria.nombre}">Categoría</strong></td>
                         <td>
@@ -78,6 +80,12 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Paginación inferior -->
+        <div class="d-flex justify-content-between align-items-center mt-2">
+            <div id="categoriesInfo" class="text-muted small"></div>
+            <div id="categoriesPaginationBottom" class="btn-group" role="group" aria-label="Paginación inferior"></div>
         </div>
     </div>
 
@@ -164,32 +172,101 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Carga Masiva -->
+    <div class="modal fade" id="importCategoriesModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form th:action="@{/admin/categorias/import}" method="post" enctype="multipart/form-data" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-list-ul me-2"></i>Subir lista de categorías</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Sube tu archivo para agregar o actualizar varias categorías en segundos.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Selecciona tu archivo</label>
+                        <input type="file" name="file" class="form-control" accept=".csv" required>
+                        <div class="form-text">Puedes usar nuestra plantilla y guardarla como CSV.</div>
+                    </div>
+                    <a th:href="@{/admin/categorias/import/template}" class="btn btn-link p-0 mt-1"><i class="fas fa-download me-1"></i>Descargar plantilla</a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i>Subir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </section>
 
-<style>
-    /* Adaptación a modo oscuro */
-    @media (prefers-color-scheme: dark) {
-        body, .modal-content {
-            background-color: #1e1e1e !important;
-            color: #eaeaea !important;
+ 
+<script>
+    (function(){
+      const run = () => {
+        const tbody = document.getElementById('categoriesTableBody');
+        const filterInput = document.getElementById('categoryFilterInput');
+        const pager = document.getElementById('categoriesPagination');
+        const pageSize = 7;
+        let rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
+        let filtered = rows.slice();
+        let page = 1;
+
+        function getText(r){
+            const tds = r.querySelectorAll('td');
+            const name = tds[1] ? tds[1].innerText || '' : '';
+            const id = tds[0] ? tds[0].innerText || '' : '';
+            return (id + ' ' + name).toLowerCase();
         }
-        .table {
-            color: #eaeaea;
+
+        function render(){
+            rows.forEach(r => r.style.display = 'none');
+            const total = filtered.length;
+            const pages = Math.max(1, Math.ceil(total / pageSize));
+            page = Math.min(page, pages);
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+            filtered.slice(start, end).forEach(r => r.style.display = '');
+            renderPager(pages);
         }
-        .table-striped > tbody > tr:nth-of-type(odd) {
-            background-color: rgba(255, 255, 255, 0.05);
+
+        function renderPager(pages){
+            if (!pager) return;
+            pager.innerHTML = '';
+            const prev = document.createElement('button');
+            prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
+            prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
+            pager.appendChild(prev);
+
+            for (let i = 1; i <= pages; i++){
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary');
+                b.textContent = i;
+                b.onclick = () => { page = i; render(); };
+                pager.appendChild(b);
+            }
+
+            const next = document.createElement('button');
+            next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
+            next.disabled = page >= pages; next.onclick = () => { page++; render(); };
+            pager.appendChild(next);
         }
-        .section-title, .section-subtitle, .text-dark-emphasis {
-            color: #eaeaea !important;
+
+        function applyFilter(){
+            const q = (filterInput?.value || '').toLowerCase().trim();
+            filtered = q ? rows.filter(r => getText(r).includes(q)) : rows.slice();
+            page = 1; render();
         }
-        .modal-header.bg-warning {
-            background-color: #ffc107 !important;
-            color: #000 !important;
-        }
-        .table-dark {
-            background-color: #2c2c2c !important;
-        }
-    }
-</style>
+
+        if (filterInput) filterInput.addEventListener('input', applyFilter);
+        render();
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+      } else {
+        run();
+      }
+    })();
+</script>
 </body>
 </html>

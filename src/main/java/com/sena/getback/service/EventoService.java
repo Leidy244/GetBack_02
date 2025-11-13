@@ -2,6 +2,8 @@ package com.sena.getback.service;
 
 import com.sena.getback.model.Evento;
 import com.sena.getback.repository.EventoRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +13,11 @@ import java.util.Optional;
 public class EventoService {
 
     private final EventoRepository eventoRepository;
+    private final ActivityLogService activityLogService;
 
-    public EventoService(EventoRepository eventoRepository) {
+    public EventoService(EventoRepository eventoRepository, ActivityLogService activityLogService) {
         this.eventoRepository = eventoRepository;
+        this.activityLogService = activityLogService;
     }
 
     // Listar todos los eventos
@@ -28,7 +32,22 @@ public class EventoService {
 
     // Guardar o actualizar un evento
     public Evento save(Evento evento) {
-        return eventoRepository.save(evento);
+        boolean isUpdate = (evento.getId() != null);
+        Evento saved = eventoRepository.save(evento);
+        try {
+            String nombre = saved.getTitulo() != null ? saved.getTitulo() : ("#" + saved.getId());
+            String user = currentUser();
+            String msg = (isUpdate ? "Se actualizó el evento \"" : "Se creó el evento \"") + nombre + "\"";
+            activityLogService.log("EVENT", msg, user, null);
+        } catch (Exception ignored) {}
+        return saved;
+    }
+
+    private String currentUser() {
+        try {
+            Authentication a = SecurityContextHolder.getContext().getAuthentication();
+            return (a != null && a.getName() != null) ? a.getName() : "system";
+        } catch (Exception e) { return "system"; }
     }
 
     // Eliminar un evento por ID (con verificación)

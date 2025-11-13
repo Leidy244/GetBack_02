@@ -16,20 +16,19 @@
 
 				<div class="card-body">
 					<div class="account-info">
-						<div class="user-display">
+						<div class="user-display row" style="gap:16px;">
 							<!-- FOTO -->
-							<div class="avatar" id="avatar">
-								<th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}">
-
-									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
-								<div th:if="${session.usuarioLogueado.foto == null}" class="avatar-placeholder">
-									<span th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + 
-										#strings.substring(session.usuarioLogueado.apellido,0,1)}">AD</span>
+							<div class="avatar col-auto" id="avatar">
+								<img th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}"
+									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}"
+									alt="Foto de perfil" class="avatar-img" />
+								<div th:if="${session.usuarioLogueado == null or session.usuarioLogueado.foto == null}" class="avatar-placeholder">
+									<span th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}">AD</span>
 								</div>
 							</div>
 
 							<!-- DATOS -->
-							<div class="user-details">
+							<div class="user-details col-lg-5 col-md-6 col-12">
 								<h3
 									th:text="${session.usuarioLogueado.nombre + ' ' + session.usuarioLogueado.apellido}">
 								</h3>
@@ -37,66 +36,84 @@
 								<p th:text="${session.usuarioLogueado.telefono}"></p>
 								<p th:text="${session.usuarioLogueado.direccion}"></p>
 								<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+
+								<!-- BOTONES -->
+								<div class="account-actions" style="display:flex; gap:10px; margin-left:auto;">
+									<button type="button" id="btnShowEdit" class="dropdown-item">
+										<i class="fas fa-user-edit"></i> Editar Perfil
+									</button>
+									<button type="button" id="btnShowPhoto" class="dropdown-item">
+										<i class="fas fa-camera"></i> Cambiar Foto
+									</button>
+								</div>
 							</div>
 
-							<!-- BOTONES -->
-							<div class="account-actions" style="display:flex; gap:10px; margin-left:auto;">
-								<button type="button" id="btnEditProfile" class="dropdown-item">
-									<i class="fas fa-user-edit"></i> Editar Perfil
-								</button>
-								<button type="button" id="btnChangePhoto" class="dropdown-item">
-									<i class="fas fa-camera"></i> Cambiar Foto
-								</button>
-							</div>
-						</div>
-
-						<!-- FORMULARIO EDITAR -->
-						<form id="formEditar" th:action="@{/actualizar-datos}" method="post" style="display:none;">
-							<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
-
-							<label>Nombres:</label>
-							<input type="text" name="nombre" th:value="${session.usuarioLogueado.nombre}" />
-
-							<label>Apellidos:</label>
-							<input type="text" name="apellido" th:value="${session.usuarioLogueado.apellido}" />
-
-							<label>Correo:</label>
-							<input type="email" name="correo" th:value="${session.usuarioLogueado.correo}" />
-
-							<label>Dirección:</label>
-							<input type="text" name="direccion" th:value="${session.usuarioLogueado.direccion}" />
-
-							<label>Teléfono:</label>
-							<input type="text" name="telefono" th:value="${session.usuarioLogueado.telefono}" />
-
-							<label>Clave:</label>
-							<input type="password" name="clave" th:value="${session.usuarioLogueado.clave}" />
-
-							<div style="margin-top:10px; display:flex; gap:10px;">
-								<button type="submit" class="btn">Guardar cambios</button>
-								<button type="button" id="btnCancelEdit" class="btn ghost">Cancelar</button>
-							</div>
-						</form>
-
-
-						<!-- FORMULARIO FOTO -->
-						<div id="formFoto" style="display:none; margin-top:20px;">
-							<div class="card">
-								<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data">
-									<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
-
-									<input type="file" id="inputFoto" name="foto" accept="image/*" required
-										style="display:none;" />
-
-									<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
-									<span id="nombreArchivo" class="nombre-archivo">Ningún archivo seleccionado</span>
-									<br>
-									<div style="margin-top:10px; display:flex; gap:10px;">
-										<button type="submit" class="btnGuardarFoto">Actualizar Foto</button>
-										<button type="button" id="cancelFoto" class="btnCancelarFoto">Cancelar</button>
+							<!-- FORMULARIO EDITAR PERFIL (inline) -->
+							<div id="editar-perfil" class="col-lg-4 col-md-6 col-12" style="display:none; min-width:420px;">
+								<div class="content-card">
+									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i class="fas fa-user-edit"></i> Editar perfil</div>
+									<div class="card-body">
+										<form th:action="@{/actualizar-datos}" method="post">
+											<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
+											<div class="mb-2">
+												<label class="form-label">Nombres</label>
+												<input class="form-control" type="text" name="nombre" th:value="${session.usuarioLogueado.nombre}" required minlength="2" autocomplete="name" />
+											</div>
+											<div class="mb-2">
+												<label class="form-label">Apellidos</label>
+												<input class="form-control" type="text" name="apellido" th:value="${session.usuarioLogueado.apellido}" required minlength="2" autocomplete="family-name" />
+											</div>
+											<div class="mb-2">
+												<label class="form-label">Correo</label>
+												<input class="form-control" type="email" name="correo" th:value="${session.usuarioLogueado.correo}" required autocomplete="email" />
+											</div>
+											<div class="mb-2">
+												<label class="form-label">Dirección</label>
+												<input class="form-control" type="text" name="direccion" th:value="${session.usuarioLogueado.direccion}" autocomplete="street-address" />
+											</div>
+											<div class="mb-2">
+												<label class="form-label">Teléfono</label>
+												<input class="form-control" type="tel" name="telefono" th:value="${session.usuarioLogueado.telefono}" inputmode="tel" />
+											</div>
+											<div class="mb-2">
+												<label class="form-label">Clave</label>
+												<input class="form-control" type="password" name="clave" th:value="${session.usuarioLogueado.clave}" autocomplete="new-password" />
+											</div>
+											<div class="mt-2" style="display:flex; gap:8px;">
+												<button type="submit" class="btn btn-primary" style="padding:6px 14px; font-size:0.875rem; line-height:1.4; background-color:#6f42c1; border-color:#6f42c1; color:#fff;">Guardar cambios</button>
+												<button type="button" id="btnHideEdit" class="btn btn-sm" style="padding:2px 8px; font-size:0.75rem; line-height:1.2; background-color:transparent; color:#6f42c1; border:1px solid #6f42c1;">Cancelar</button>
+											</div>
+										</form>
 									</div>
-								</form>
+								</div>
 							</div>
+
+							<!-- CAMBIAR FOTO (inline) -->
+							<div id="cambiar-foto" class="col-lg-4 col-md-6 col-12" style="display:none; min-width:420px;">
+								<div class="content-card">
+									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i class="fas fa-camera"></i> Cambiar Foto</div>
+									<div class="card-body">
+										<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data">
+											<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
+											<div class="mb-2" style="display:flex; gap:12px; align-items:center;">
+												<div class="avatar" style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;">
+													<img id="previewFoto" class="avatar-img" style="width:100%;height:100%;object-fit:cover;display:none;" alt="Preview" />
+													<span id="previewIniciales" th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}"></span>
+												</div>
+												<div>
+													<input class="form-control form-control-sm" type="file" id="inputFoto" name="foto" accept="image/*" required />
+													<small id="nombreArchivo" class="text-muted">Ningún archivo seleccionado</small>
+												</div>
+											</div>
+											<div style="display:flex; gap:8px;">
+												<button type="submit" class="btn btn-primary" style="padding:6px 14px; font-size:0.875rem; line-height:1.4; background-color:#6f42c1; border-color:#6f42c1; color:#fff;">Actualizar Foto</button>
+												<button type="button" id="btnHidePhoto" class="btn btn-sm" style="padding:2px 8px; font-size:0.75rem; line-height:1.2; background-color:transparent; color:#6f42c1; border:1px solid #6f42c1;">Cancelar</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+
 						</div>
 					</div>
 				</div>
@@ -106,33 +123,41 @@
 		<!-- SCRIPT -->
 		<script>
 			document.addEventListener("DOMContentLoaded", () => {
-				const formEditar = document.getElementById("formEditar");
-				const formFoto = document.getElementById("formFoto");
-				const btnEditProfile = document.getElementById("btnEditProfile");
-				const btnChangePhoto = document.getElementById("btnChangePhoto");
-				const btnCancelEdit = document.getElementById("btnCancelEdit");
-				const btnCancelFoto = document.getElementById("cancelFoto");
-
-				btnEditProfile.addEventListener("click", () => {
-					formFoto.style.display = "none";
-					formEditar.style.display = formEditar.style.display === "block" ? "none" : "block";
-				});
-
-				btnChangePhoto.addEventListener("click", () => {
-					formEditar.style.display = "none";
-					formFoto.style.display = formFoto.style.display === "block" ? "none" : "block";
-				});
-
-				btnCancelEdit.addEventListener("click", () => formEditar.style.display = "none");
-				btnCancelFoto.addEventListener("click", () => formFoto.style.display = "none");
-
 				const inputFoto = document.getElementById("inputFoto");
 				const nombreArchivo = document.getElementById("nombreArchivo");
+				const preview = document.getElementById("previewFoto");
+				const previewIniciales = document.getElementById("previewIniciales");
+				const btnShowEdit = document.getElementById("btnShowEdit");
+				const btnHideEdit = document.getElementById("btnHideEdit");
+				const btnShowPhoto = document.getElementById("btnShowPhoto");
+				const btnHidePhoto = document.getElementById("btnHidePhoto");
+				const boxEdit = document.getElementById("editar-perfil");
+				const boxPhoto = document.getElementById("cambiar-foto");
+
+				if (btnShowEdit && boxEdit) btnShowEdit.addEventListener('click', ()=>{
+                    const willShow = boxEdit.style.display==='none';
+                    boxPhoto.style.display = 'none';
+                    boxEdit.style.display = willShow ? 'block' : 'none';
+                });
+				if (btnHideEdit && boxEdit) btnHideEdit.addEventListener('click', ()=>{ boxEdit.style.display = 'none'; });
+				if (btnShowPhoto && boxPhoto) btnShowPhoto.addEventListener('click', ()=>{
+                    const willShow = boxPhoto.style.display==='none';
+                    boxEdit.style.display = 'none';
+                    boxPhoto.style.display = willShow ? 'block' : 'none';
+                });
+				if (btnHidePhoto && boxPhoto) btnHidePhoto.addEventListener('click', ()=>{ boxPhoto.style.display = 'none'; });
 
 				if (inputFoto && nombreArchivo) {
 					inputFoto.addEventListener("change", () => {
 						const archivo = inputFoto.files[0];
 						nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
+						if (archivo) {
+							const url = URL.createObjectURL(archivo);
+							if (preview) { preview.src = url; preview.style.display = 'block'; }
+							if (previewIniciales) { previewIniciales.style.display = 'none'; }
+							const headerAvatar = document.querySelector('.admin-header .user-avatar .avatar-img');
+							if (headerAvatar) headerAvatar.src = url;
+						}
 					});
 				}
 			});
