@@ -26,7 +26,7 @@ public class ClienteController {
     @GetMapping("/cliente")
     public String mostrarPaginaCliente(Model model) {
         // Eventos
-        List<Evento> eventos = eventoService.findAll();
+        List<Evento> eventos = eventoService.findEventosUltimas24Horas();
         model.addAttribute("eventos", eventos);
 
         // Productos (Menú)
