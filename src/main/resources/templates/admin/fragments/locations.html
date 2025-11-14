@@ -3,6 +3,7 @@
 <body>
 <section th:fragment="locations" class="content-section">
     <div class="container-fluid">
+        <div class="mx-auto" style="max-width: 1200px;">
         <!-- Header -->
         <div class="section-header mb-4">
             <h2><i class="fas fa-map-marker-alt me-2"></i>Gestión de Ubicaciones</h2>
@@ -11,14 +12,28 @@
 
         
 
-        <!-- Header con botón -->
-        <div class="locations-header d-flex justify-content-between align-items-center mb-4">
-            <h4 class="section-subtitle mb-0">Lista de Ubicaciones 
-                <span class="badge bg-primary" th:text="${locations.size()}"></span>
-            </h4>
-            <button type="button" class="btn btn-primary btn-add-mesa" data-bs-toggle="modal" data-bs-target="#addLocationModal">
-                <i class="fas fa-plus me-2"></i>Agregar Ubicación
-            </button>
+        <!-- Header con botón (estilo events/users) -->
+        <div class="events-header mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="section-subtitle mb-0">
+                    Lista de Ubicaciones 
+                    <span class="badge bg-primary" th:text="${locations.size()}"></span>
+                </h4>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                        <i class="fas fa-plus me-2"></i>Agregar Ubicación
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <div class="d-flex flex-wrap gap-2 align-items-center" style="flex:1; min-width:260px;">
+                    <div class="input-group" style="max-width: 360px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="locationsFilterInput" class="form-control" placeholder="Buscar ubicaciones...">
+                    </div>
+                </div>
+                <div id="locationsPagination" class="btn-group" role="group" aria-label="Paginación"></div>
+            </div>
         </div>
 
         <!-- Tabla -->
@@ -32,8 +47,8 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="loc : ${locations}">
+                <tbody id="locationsTableBody">
+                    <tr th:each="loc : ${locations}" data-row>
                         <td th:text="${loc.id}"></td>
                         <td><strong th:text="${loc.nombre}"></strong></td>
                         <td th:text="${loc.descripcion} ?: 'Sin descripción'"></td>
@@ -64,14 +79,10 @@
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <!-- Modal Agregar -->
-    <div class="modal fade" id="addLocationModal" tabindex="-1">
-        <div class="modal-dialog" style="margin-top:5vh">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Agregar Nueva Ubicación</h5>
+        <div class="mx-auto" style="max-width: 1200px;">
+        <!-- Modal Agregar -->
+        <div class="modal fade" id="addLocationModal" tabindex="-1">
+            <div class="modal-dialog" style="margin-top:5vh">
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form th:action="@{/admin/locations/save}" method="post">
@@ -156,6 +167,70 @@
         </div>
     </div>
     <div th:if="${location.id != null}" class="modal-backdrop fade show"></div>
-</section>
-</body>
-</html>
+        <script>
+        (function(){
+          const run = () => {
+            const tbody = document.getElementById('locationsTableBody');
+            const textInput = document.getElementById('locationsFilterInput');
+            const pager = document.getElementById('locationsPagination');
+            const pageSize = 6;
+            const rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
+            const emptyRow = tbody ? tbody.querySelector('tr:not([data-row])') : null;
+            let filtered = rows.slice();
+            let page = 1;
+
+            function getText(row){
+              const tds = row.querySelectorAll('td');
+              const id = tds[0]?.innerText || '';
+              const nombre = tds[1]?.innerText || '';
+              const desc = tds[2]?.innerText || '';
+              return (id+" "+nombre+" "+desc).toLowerCase();
+            }
+
+            function render(){
+              rows.forEach(r => r.style.display = 'none');
+              if (emptyRow) emptyRow.style.display = filtered.length ? 'none' : '';
+              const total = filtered.length;
+              const pages = Math.max(1, Math.ceil(total / pageSize));
+              page = Math.min(page, pages);
+              const start = (page - 1) * pageSize;
+              const end = start + pageSize;
+              filtered.slice(start, end).forEach(r => r.style.display = '');
+              renderPager(pages, total);
+            }
+
+            function renderPager(pages, total){
+              if (!pager) return;
+              pager.innerHTML = '';
+              if (total <= pageSize) return;
+              const prev = document.createElement('button');
+              prev.type='button'; prev.className='btn btn-outline-secondary'; prev.textContent='«';
+              prev.disabled = page<=1; prev.onclick = ()=>{ page--; render(); };
+              pager.appendChild(prev);
+              for (let i=1;i<=pages;i++){
+                const b=document.createElement('button');
+                b.type='button'; b.className='btn '+(i===page?'btn-primary':'btn-outline-secondary');
+                b.textContent=i; b.onclick=()=>{ page=i; render(); };
+                pager.appendChild(b);
+              }
+              const next = document.createElement('button');
+              next.type='button'; next.className='btn btn-outline-secondary'; next.textContent='»';
+              next.disabled = page>=pages; next.onclick = ()=>{ page++; render(); };
+              pager.appendChild(next);
+            }
+
+            function applyFilter(){
+              const q = (textInput?.value || '').toLowerCase().trim();
+              filtered = rows.filter(r => !q || getText(r).includes(q));
+              page = 1; render();
+            }
+
+            textInput && textInput.addEventListener('input', applyFilter);
+            render();
+          };
+          if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
+        })();
+        </script>
+    </section>
+    </body>
+    </html>

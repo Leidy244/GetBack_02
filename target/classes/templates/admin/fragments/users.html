@@ -8,14 +8,21 @@
 				<p class="text-muted">Administra los usuarios registrados del sistema</p>
 			</div>
 
-
 			<!-- Encabezado de tabla -->
-			<div class="locations-header mb-3">
-				<h4 class="section-subtitle mb-2">
-					Lista de Usuarios
-					<span class="badge bg-primary ms-2" th:text="${users != null ? users.size() : 0}"></span>
-				</h4>
-				<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3 border-bottom pb-2">
+			<div class="events-header mb-3">
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h4 class="section-subtitle mb-0">
+						Lista de Usuarios
+						<span class="badge bg-primary" th:text="${users != null ? users.size() : 0}"></span>
+					</h4>
+					<div class="d-flex gap-2">
+						<button type="button" class="btn btn-primary rounded-pill shadow-sm px-3" data-bs-toggle="modal"
+							data-bs-target="#nuevoUsuarioModal">
+							<i class="fas fa-user-plus me-2"></i>Agregar Usuario
+						</button>
+					</div>
+				</div>
+				<div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
 					<div class="d-flex flex-wrap gap-2 align-items-center" style="flex:1; min-width:260px;">
 						<div class="input-group" style="max-width: 320px;">
 							<span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -29,12 +36,6 @@
 								<option value="INACTIVO">Inactivos</option>
 							</select>
 						</div>
-					</div>
-					<div class="ms-auto">
-						<button type="button" class="btn btn-primary btn-add-user" data-bs-toggle="modal"
-							data-bs-target="#nuevoUsuarioModal">
-							<i class="fas fa-user-plus me-2"></i>Agregar Usuario
-						</button>
 					</div>
 				</div>
 			</div>
@@ -50,6 +51,7 @@
 							<th>Correo</th>
 							<th>Teléfono</th>
 							<th>Estado</th>
+							<th>Activar<br>Desactivar</th>
 							<th>Turno</th>
 							<th>Acciones</th>
 						</tr>
@@ -66,6 +68,14 @@
 									th:text="${usuario.estado}"></span>
 							</td>
 							<td>
+								<a th:href="@{/users/toggle-status/{id}(id=${usuario.id})}"
+									th:class="${usuario.estado=='ACTIVO'} ? 'btn btn-secondary btn-sm rounded-pill px-3' : 'btn btn-success btn-sm rounded-pill px-3'"
+									th:title="${usuario.estado=='ACTIVO'} ? 'Desactivar' : 'Activar'">
+									<i
+										th:class="${usuario.estado=='ACTIVO'} ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
+								</a>
+							</td>
+							<td>
 								<span th:if="${usuario.fecha != null}">
 									<div th:text="${#temporals.format(usuario.fecha, 'dd/MM/yyyy')}"></div>
 									<small th:text="${usuario.horaInicio} + ' - ' + ${usuario.horaFin}"></small>
@@ -77,28 +87,20 @@
 									<!-- EDITAR: abre modal  -->
 									<button type="button" class="btn btn-warning btn-sm rounded-pill px-3 btn-edit-user"
 										data-bs-toggle="modal" data-bs-target="#editarUsuarioModal" th:attr="
-									        data-user-id=${usuario.id},
-									        data-user-nombre=${usuario.nombre},
-									        data-user-apellido=${usuario.apellido},
-									        data-user-correo=${usuario.correo},
-									        data-user-telefono=${usuario.telefono},
-									        data-user-direccion=${usuario.direccion},
-									        data-user-estado=${usuario.estado},
-									        data-user-rol=${usuario.rol != null ? usuario.rol.id : ''},
-									        data-user-fecha=${usuario.fecha != null ? #temporals.format(usuario.fecha, 'yyyy-MM-dd') : ''},
-									        data-user-horainicio=${usuario.horaInicio != null ? #temporals.format(usuario.horaInicio, 'HH:mm') : ''},
-									        data-user-horafin=${usuario.horaFin != null ? #temporals.format(usuario.horaFin, 'HH:mm') : ''}"
+										        data-user-id=${usuario.id},
+										        data-user-nombre=${usuario.nombre},
+										        data-user-apellido=${usuario.apellido},
+										        data-user-correo=${usuario.correo},
+										        data-user-telefono=${usuario.telefono},
+										        data-user-direccion=${usuario.direccion},
+										        data-user-estado=${usuario.estado},
+										        data-user-rol=${usuario.rol != null ? usuario.rol.id : ''},
+										        data-user-fecha=${usuario.fecha != null ? #temporals.format(usuario.fecha, 'yyyy-MM-dd') : ''},
+										        data-user-horainicio=${usuario.horaInicio != null ? #temporals.format(usuario.horaInicio, 'HH:mm') : ''},
+										        data-user-horafin=${usuario.horaFin != null ? #temporals.format(usuario.horaFin, 'HH:mm') : ''}"
 										title="Editar">
 										<i class="fas fa-edit"></i>
 									</button>
-
-									<!-- TOGGLE STATUS -->
-									<a th:href="@{/users/toggle-status/{id}(id=${usuario.id})}"
-										th:class="${usuario.estado=='ACTIVO'} ? 'btn btn-secondary btn-sm rounded-pill px-3' : 'btn btn-success btn-sm rounded-pill px-3'"
-										th:title="${usuario.estado=='ACTIVO'} ? 'Desactivar' : 'Activar'">
-										<i
-											th:class="${usuario.estado=='ACTIVO'} ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
-									</a>
 
 									<!-- ELIMINAR: abre modal de confirmación -->
 									<button type="button" class="btn btn-danger btn-sm rounded-pill px-3 btn-open-delete-modal"
@@ -111,7 +113,7 @@
 						</tr>
 
 						<tr th:if="${users == null or users.isEmpty()}">
-							<td colspan="8" class="text-center py-4 text-muted">
+							<td colspan="9" class="text-center py-4 text-muted">
 								<i class="fas fa-users fa-2x mb-3"></i>
 								<p>No hay usuarios registrados.</p>
 								<button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal"
