@@ -1,73 +1,71 @@
 document.addEventListener('DOMContentLoaded', () => {
-	
-	function sendOrder() {
-	      if (orderItems.length === 0) {
-	          showNotification('❌ No hay productos en el pedido', 'error');
-	          return;
-	      }
+    
+    function sendOrder() {
+        if (orderItems.length === 0) {
+            showNotification('❌ No hay productos en el pedido', 'error');
+            return;
+        }
 
-	      const comments = orderComments ? orderComments.value : '';
-	      const mesaId = confirmBtn ? confirmBtn.getAttribute('data-mesa') : '1';
+        const comments = orderComments ? orderComments.value : '';
+        const mesaId = confirmBtn ? confirmBtn.getAttribute('data-mesa') : '1';
 
-	      // Preparar datos para enviar (formato simple)
-	      const itemsData = {
-	          items: orderItems.map(item => ({
-	              productoId: parseInt(item.id),
-	              productoNombre: item.name,
-	              cantidad: item.quantity,
-	              precio: item.price,
-	              subtotal: item.price * item.quantity,
-	              comentarios: ''
-	          })),
-	          total: totalOrder
-	      };
+        // Recalcular total por si hubo cambios recientes
+        totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
 
-	      // Convertir a JSON string
-	      const itemsJson = JSON.stringify(itemsData);
+        const itemsData = {
+            items: orderItems.map(item => ({
+                productoId: parseInt(item.id),
+                productoNombre: item.name,
+                cantidad: item.quantity,
+                precio: item.price,
+                subtotal: item.price * item.quantity,
+                comentarios: ''
+            })),
+            total: totalOrder
+        };
 
-	      // Crear form data para enviar
-	      const formData = new URLSearchParams();
-	      formData.append('mesaId', parseInt(mesaId));
-	      formData.append('itemsJson', itemsJson);
-	      formData.append('comentarios', comments);
-	      formData.append('total', totalOrder);
+        const itemsJson = JSON.stringify(itemsData);
 
-	      // Enviar pedido al servidor
-	      fetch('/pedidos/crear', {
-	          method: 'POST',
-	          headers: {
-	              'Content-Type': 'application/x-www-form-urlencoded',
-	          },
-	          body: formData
-	      })
-	      .then(response => response.json())
-	      .then(data => {
-	          if (data.success) {
-	              showNotification('✅ Pedido enviado correctamente a la cocina!');
-	              orderModal.style.display = 'none';
-	              
-	              // Redirigir a la página de ver pedido
-	              setTimeout(() => {
-	                  window.location.href = '/pedidos/ver?mesa=' + mesaId;
-	              }, 1500);
-	              
-	              resetOrder();
-	          } else {
-	              showNotification('❌ Error al enviar pedido: ' + data.message, 'error');
-	          }
-	      })
-	      .catch(error => {
-	          console.error('Error:', error);
-	          showNotification('❌ Error de conexión', 'error');
-	      });
-	  }
+        const formData = new URLSearchParams();
+        formData.append('mesaId', parseInt(mesaId));
+        formData.append('itemsJson', itemsJson);
+        formData.append('comentarios', comments);
+        formData.append('total', totalOrder);
+
+        fetch('/pedidos/preparar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
+                orderModal.style.display = 'none';
+                // Reset order after successful preparation
+                resetOrder();
+                setTimeout(() => {
+                    const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
+                    window.location.href = redirectUrl;
+                }, 800);
+            } else {
+                showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('❌ Error de conexión', 'error');
+        });
+    }
     
     // Botón flotante para volver a mesas
     const backToMesasBtn = document.getElementById('btn-back-to-mesas');
     if (backToMesasBtn) {
         backToMesasBtn.addEventListener('click', () => {
             // Redirigir a la vista de mesas
-            window.location.href = '/mesero/mesas';
+            window.location.href = '/mesero';
         });
     }
 
@@ -96,6 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = orderModal?.querySelector('.btn-cancel');
     const confirmBtn = orderModal?.querySelector('.btn-confirm');
     const orderBtn = document.querySelector('.btn-order');
+
+    // Quantity controls and order total (declarados antes de usar borrador)
+    const quantityControls = document.querySelectorAll('.quantity-control');
+    const pedidoTotalValue = document.getElementById('pedido-total-value');
+    let totalOrder = 0;
+    let orderItems = [];
 
     if (orderBtn && orderModal) {
         orderBtn.addEventListener('click', () => {
@@ -131,11 +135,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Quantity controls and order total
-    const quantityControls = document.querySelectorAll('.quantity-control');
-    const pedidoTotalValue = document.getElementById('pedido-total-value');
-    let totalOrder = 0;
-    let orderItems = [];
+    const orderComments = document.getElementById('order-comments');
+
+    // Inicializar desde borrador (flujo de "Editar") si existe
+    try {
+        if (typeof draftItemsJson !== 'undefined' && draftItemsJson) {
+            const draftData = JSON.parse(draftItemsJson);
+            if (draftData && Array.isArray(draftData.items)) {
+                orderItems = draftData.items.map(it => {
+                    const price = Number(it.precio) || 0;
+                    const quantity = Number(it.cantidad) || 0;
+                    return {
+                        id: String(it.productoId),
+                        name: it.productoNombre,
+                        price: price,
+                        quantity: quantity,
+                        subtotal: price * quantity
+                    };
+                });
+
+                // Reflejar cantidades en los controles de la UI
+                orderItems.forEach(item => {
+                    const product = document.querySelector(`.product-item[data-producto-id="${item.id}"]`);
+                    if (product) {
+                        const quantityInput = product.querySelector('.quantity-input');
+                        if (quantityInput) {
+                            quantityInput.value = item.quantity;
+                        }
+                    }
+                });
+
+                // Recalcular SIEMPRE el total a partir de los subtotales
+                totalOrder = orderItems.reduce((sum, it) => sum + (it.subtotal || 0), 0);
+                updateTotal();
+
+                // Cargar comentarios del borrador si existen
+                if (typeof draftComentarios !== 'undefined' && draftComentarios && orderComments) {
+                    orderComments.value = draftComentarios;
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Error al inicializar borrador de pedido:', e);
+    }
 
     quantityControls.forEach(control => {
         const minusBtn = control.querySelector('.minus');
@@ -151,24 +193,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const productName = productItem.querySelector('.product-name')?.textContent || 'Producto';
             
             if (minusBtn) {
-                minusBtn.addEventListener('click', () => {
+                minusBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent product click event
                     let currentValue = parseInt(quantityInput.value);
                     if (currentValue > 0) {
-                        quantityInput.value = currentValue - 1;
-                        totalOrder -= price;
-                        updateOrderItem(productId, productName, price, currentValue - 1);
+                        const newQuantity = currentValue - 1;
+                        quantityInput.value = newQuantity;
+                        updateOrderItem(productId, productName, price, newQuantity);
+                        // Recalculate total from all items
+                        totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
                         updateTotal();
+                        
+                        if (newQuantity === 0) {
+                            showNotification(`❌ Eliminado: ${productName}`);
+                        } else {
+                            showNotification(`➖ ${productName}: ${newQuantity}`);
+                        }
                     }
                 });
             }
 
             if (plusBtn) {
-                plusBtn.addEventListener('click', () => {
+                plusBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent product click event
                     let currentValue = parseInt(quantityInput.value);
-                    quantityInput.value = currentValue + 1;
-                    totalOrder += price;
-                    updateOrderItem(productId, productName, price, currentValue + 1);
+                    const newQuantity = currentValue + 1;
+                    quantityInput.value = newQuantity;
+                    updateOrderItem(productId, productName, price, newQuantity);
+                    // Recalculate total from all items
+                    totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
                     updateTotal();
+                    showNotification(`➕ ${productName}: ${newQuantity}`);
                 });
             }
 
@@ -217,6 +272,43 @@ document.addEventListener('DOMContentLoaded', () => {
             pedidoTotalValue.textContent = `$${totalOrder.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
         }
     };
+
+    // Click on product to add functionality (only on product info, not buttons)
+    const clickableProducts = document.querySelectorAll('.clickable-product');
+    clickableProducts.forEach(product => {
+        const productInfo = product.querySelector('.product-info');
+        if (productInfo) {
+            productInfo.addEventListener('click', (e) => {
+                // Prevent event if clicking on quantity controls
+                if (e.target.closest('.quantity-control')) {
+                    return;
+                }
+                
+                const productId = product.getAttribute('data-producto-id');
+                const productName = product.getAttribute('data-producto-nombre');
+                const productPrice = parseFloat(product.getAttribute('data-precio'));
+                
+                // Find existing item or get current quantity
+                const existingItem = orderItems.find(item => item.id === productId);
+                const newQuantity = existingItem ? existingItem.quantity + 1 : 1;
+                
+                // Update order item with new quantity
+                updateOrderItem(productId, productName, productPrice, newQuantity);
+                
+                // Recalculate total from all items
+                totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+                updateTotal();
+                
+                showNotification(`✅ Agregado: ${newQuantity} x ${productName}`);
+                
+                // Update the quantity input
+                const quantityInput = product.querySelector('.quantity-input');
+                if (quantityInput) {
+                    quantityInput.value = newQuantity;
+                }
+            });
+        }
+    });
 
     // Filter functionality by category
     const filterButtons = document.querySelectorAll('.nav-links .filter-btn');
@@ -296,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Comments functionality
     const commentsBtn = document.getElementById('btn-comments');
     const commentsContainer = document.getElementById('comments-container');
-    const orderComments = document.getElementById('order-comments');
     
     if (commentsBtn && commentsContainer) {
         commentsBtn.addEventListener('click', (e) => {
@@ -346,34 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         orderSummary.innerHTML = summaryHTML;
-    }
-
-    // Send order function
-    function sendOrder() {
-        if (orderItems.length === 0) {
-            showNotification('❌ No hay productos en el pedido', 'error');
-            return;
-        }
-
-        const comments = orderComments ? orderComments.value : '';
-        const mesaId = confirmBtn ? confirmBtn.getAttribute('data-mesa') : '1';
-
-        // Simular envío del pedido
-        const orderData = {
-            mesaId: mesaId,
-            items: orderItems,
-            total: totalOrder,
-            comments: comments,
-            timestamp: new Date().toISOString()
-        };
-
-        console.log('Pedido enviado:', orderData);
-        
-        showNotification('✅ Pedido enviado correctamente a la cocina!');
-        orderModal.style.display = 'none';
-        
-        // Reset order
-        resetOrder();
     }
 
     function resetOrder() {
@@ -457,71 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .order-total-modal { margin-top: 15px; padding-top: 10px; border-top: 2px solid var(--primary); text-align: center; font-size: 1.2em; }
     `;
     document.head.appendChild(style);
-	
-	// fusionMesero.js - FUNCIÓN sendOrder ACTUALIZADA
-	function sendOrder() {
-	    if (orderItems.length === 0) {
-	        showNotification('❌ No hay productos en el pedido', 'error');
-	        return;
-	    }
 
-	    const comments = orderComments ? orderComments.value : '';
-	    const mesaId = confirmBtn ? confirmBtn.getAttribute('data-mesa') : '1';
-
-	    // Preparar datos para enviar (formato simple)
-	    const itemsData = {
-	        items: orderItems.map(item => ({
-	            productoId: parseInt(item.id),
-	            productoNombre: item.name,
-	            cantidad: item.quantity,
-	            precio: item.price,
-	            subtotal: item.price * item.quantity,
-	            comentarios: ''
-	        })),
-	        total: totalOrder
-	    };
-
-	    // Convertir a JSON string
-	    const itemsJson = JSON.stringify(itemsData);
-
-	    // Crear form data para enviar
-	    const formData = new URLSearchParams();
-	    formData.append('mesaId', parseInt(mesaId));
-	    formData.append('itemsJson', itemsJson);
-	    formData.append('comentarios', comments);
-	    formData.append('total', totalOrder);
-
-	    // Enviar pedido al servidor
-	    fetch('/pedidos/crear', {
-	        method: 'POST',
-	        headers: {
-	            'Content-Type': 'application/x-www-form-urlencoded',
-	        },
-	        body: formData
-	    })
-	    .then(response => response.json())
-	    .then(data => {
-	        if (data.success) {
-	            showNotification('✅ Pedido enviado correctamente a la cocina!');
-	            orderModal.style.display = 'none';
-	            
-	            // Redirigir a la página de ver pedido
-	            setTimeout(() => {
-	                window.location.href = '/pedidos/ver?mesa=' + mesaId;
-	            }, 1500);
-	            
-	            resetOrder();
-	        } else {
-	            showNotification('❌ Error al enviar pedido: ' + data.message, 'error');
-	        }
-	    })
-	    .catch(error => {
-	        console.error('Error:', error);
-	        showNotification('❌ Error de conexión', 'error');
-	    });
-	}
-	
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     const userDropdownBtn = document.getElementById("userDropdown");
     const dropdownMenu = document.querySelector(".user-dropdown .dropdown-menu");

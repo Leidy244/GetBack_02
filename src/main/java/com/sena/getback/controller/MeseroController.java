@@ -2,22 +2,22 @@ package com.sena.getback.controller;
 
 import com.sena.getback.service.MenuService;
 import com.sena.getback.model.Usuario;
+import com.sena.getback.model.Pedido;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
-
+import com.sena.getback.service.LocationService;
 import jakarta.servlet.http.HttpSession;
-
 import com.sena.getback.service.MesaService;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 public class MeseroController {
@@ -26,39 +26,62 @@ public class MeseroController {
 	private final CategoriaService categoriaService;
 	private final PedidoService pedidoService;
 	private final MesaService mesaService;
+	private final LocationService locationService; // ← AÑADIDO
 
-	public MeseroController(MenuService menuService, CategoriaService categoriaService, PedidoService pedidoService,
-			MesaService mesaService) {
+	public MeseroController(MenuService menuService, CategoriaService categoriaService,
+			PedidoService pedidoService, MesaService mesaService, LocationService locationService) { // ← MODIFICADO
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
 		this.pedidoService = pedidoService;
 		this.mesaService = mesaService;
-
+		this.locationService = locationService; // ← AÑADIDO
 	}
 
 	@GetMapping("/mesero")
-	public String mesas(Model model) {
+	public String mesas(Model model, HttpSession session) {
 		try {
 			var mesas = mesaService.findAll();
+			var ubicaciones = locationService.findAll(); // ← AÑADIDO: Carga las ubicaciones
+			
 			model.addAttribute("mesas", mesas);
+			model.addAttribute("ubicaciones", ubicaciones); // ← AÑADIDO: Añade al modelo
+			model.addAttribute("totalMesas", mesas.size());
+			model.addAttribute("mesasDisponibles", mesas.stream().filter(m -> "DISPONIBLE".equals(m.getEstado())).count());
+			model.addAttribute("mesasOcupadas", mesas.stream().filter(m -> "OCUPADA".equals(m.getEstado())).count());
+			// limpiar borrador al regresar a la vista de mesas
+			clearDraft(session);
 		} catch (Exception e) {
 			model.addAttribute("error", "Error al cargar las mesas: " + e.getMessage());
 		}
 		return "mesero/fusionMesas";
 	}
 
+
 	@GetMapping("/mesero/menu")
 	public String mesasMenu(@RequestParam(name = "mesa", required = false, defaultValue = "1") Integer mesaId,
-			Model model) {
+			Model model, HttpSession session) {
 		try {
 			var categorias = categoriaService.findAll();
 			var productos = menuService.findAll();
-			var mesa = mesaService.findById(mesaId);
+			var mesaOpt = mesaService.findById(mesaId);
+			var mesa = mesaOpt.isPresent() ? mesaOpt.get() : null;
 
 			model.addAttribute("categorias", categorias);
 			model.addAttribute("productos", productos);
 			model.addAttribute("mesaId", mesaId);
 			model.addAttribute("mesa", mesa);
+
+			// Cargar borrador si pertenece a esta mesa (para el flujo de "Editar")
+			Integer draftMesaId = (Integer) session.getAttribute("draftMesaId");
+			String draftItemsJson = (String) session.getAttribute("draftItemsJson");
+			String draftComentarios = (String) session.getAttribute("draftComentarios");
+			Double draftTotal = (Double) session.getAttribute("draftTotal");
+
+			if (draftMesaId != null && draftMesaId.equals(mesaId) && draftItemsJson != null && draftTotal != null) {
+				model.addAttribute("draftItemsJson", draftItemsJson);
+				model.addAttribute("draftComentarios", draftComentarios);
+				model.addAttribute("draftTotal", draftTotal);
+			}
 		} catch (Exception e) {
 			model.addAttribute("error", "Error al cargar el menú: " + e.getMessage());
 			model.addAttribute("mesaId", mesaId);
@@ -67,17 +90,34 @@ public class MeseroController {
 	}
 
 	@GetMapping("/verpedido")
-	public String verPedidoActual(@RequestParam("mesa") Integer mesaId, Model model) {
+	public String verPedidoActual(@RequestParam("mesa") Integer mesaId, Model model, HttpSession session) {
 		try {
 			var pedido = pedidoService.obtenerPedidoActivoPorMesa(mesaId);
-			var mesa = mesaService.findById(mesaId);
+			var mesaOpt = mesaService.findById(mesaId);
+            var mesa = mesaOpt.isPresent() ? mesaOpt.get() : null;
 
 			model.addAttribute("pedido", pedido);
 			model.addAttribute("mesaId", mesaId);
 			model.addAttribute("mesa", mesa);
 
-			// Procesar items del pedido si existe
-			if (pedido != null && pedido.getComentario() != null && !pedido.getComentario().isEmpty()) {
+			// Back URL: depende del rol del usuario (admin o mesero)
+			Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+			String backUrl = "/mesero"; // valor por defecto (admin - fusionMesas)
+			if (usuario != null && usuario.getRol() != null && usuario.getRol().getNombre() != null) {
+				String rolNombre = usuario.getRol().getNombre().toUpperCase();
+				if ("MESERO".equals(rolNombre)) {
+					backUrl = "/mesero/mesas"; // vista fusionMesasMesero
+				} else if ("ADMIN".equals(rolNombre)) {
+					backUrl = "/mesero"; // vista fusionMesas
+				}
+			}
+			model.addAttribute("backUrl", backUrl);
+
+			// Cargar borrador si existe (tiene prioridad para vista de confirmacion)
+			sessionDraft(model, mesaId, session);
+			boolean hasDraft = Boolean.TRUE.equals(model.getAttribute("hasDraft"));
+
+			if (!hasDraft && pedido != null && pedido.getComentario() != null && !pedido.getComentario().isEmpty()) {
 				try {
 					Map<String, Object> itemsMap = procesarItemsPedido(pedido.getComentario());
 					model.addAttribute("itemsMap", itemsMap);
@@ -94,46 +134,138 @@ public class MeseroController {
 	}
 
 	@PostMapping("/pedidos/crear")
-	public String crearPedido(@RequestParam Integer mesaId, @RequestParam String itemsJson,
-			@RequestParam(required = false) String comentarios, @RequestParam Double total) {
-		try {
-			pedidoService.crearPedido(mesaId, itemsJson, comentarios, total);
-			return "redirect:/verpedido?mesa=" + mesaId;
-		} catch (Exception e) {
-			return "redirect:/mesero/menu?mesa=" + mesaId + "&error=" + e.getMessage();
-		}
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> crearPedido(@RequestParam Integer mesaId,
+                                    @RequestParam String itemsJson,
+                                    @RequestParam(required = false) String comentarios,
+                                    @RequestParam Double total) {
+        Map<String, Object> res = new HashMap<>();
+        try {
+            var pedido = pedidoService.crearPedido(mesaId, itemsJson, comentarios, total);
+            res.put("success", true);
+            res.put("message", "Pedido creado");
+            res.put("pedidoId", pedido != null ? pedido.getId() : null);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            res.put("success", false);
+            res.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(res);
+        }
+    }
+
+    // Guarda borrador en sesión para confirmar en vista
+    @PostMapping("/pedidos/preparar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> prepararPedido(HttpSession session,
+                                      @RequestParam Integer mesaId,
+                                      @RequestParam String itemsJson,
+                                      @RequestParam(required = false) String comentarios,
+                                      @RequestParam Double total) {
+        Map<String, Object> res = new HashMap<>();
+        session.setAttribute("draftMesaId", mesaId);
+        session.setAttribute("draftItemsJson", itemsJson);
+        session.setAttribute("draftComentarios", comentarios);
+        session.setAttribute("draftTotal", total);
+        res.put("success", true);
+        res.put("redirect", "/verpedido?mesa=" + mesaId);
+        return ResponseEntity.ok(res);
+    }
+
+    // Confirmar y persistir pedido desde borrador
+    @PostMapping("/pedidos/confirmar")
+    public String confirmarPedido(HttpSession session) {
+        Integer mesaId = (Integer) session.getAttribute("draftMesaId");
+        String itemsJson = (String) session.getAttribute("draftItemsJson");
+        String comentarios = (String) session.getAttribute("draftComentarios");
+        Double total = (Double) session.getAttribute("draftTotal");
+
+        System.out.println("=== CONFIRMANDO PEDIDO ===");
+        System.out.println("Mesa ID: " + mesaId);
+        System.out.println("Items JSON: " + itemsJson);
+        System.out.println("Comentarios: " + comentarios);
+        System.out.println("Total: " + total);
+
+        if (mesaId == null || itemsJson == null || total == null) {
+            System.out.println("ERROR: Datos incompletos en sesión");
+            return "redirect:/mesero/menu?mesa=" + (mesaId != null ? mesaId : 1) + "&error=Borrador incompleto";
+        }
+
+        try {
+            Pedido pedidoCreado = pedidoService.crearPedido(mesaId, itemsJson, comentarios, total);
+            System.out.println("ÉXITO: Pedido creado con ID: " + pedidoCreado.getId());
+            
+            // limpiar borrador
+            clearDraft(session);
+            
+            // Redireccionar a la vista de mesas del mesero (fusionMesas)
+            return "redirect:/mesero";
+        } catch (Exception e) {
+            System.out.println("ERROR al crear pedido: " + e.getMessage());
+            e.printStackTrace();
+            return "redirect:/mesero/menu?mesa=" + mesaId + "&error=" + e.getMessage();
+        }
+    }
+
+    // Carga borrador en el modelo si existe
+    private void sessionDraft(Model model, Integer mesaId, HttpSession session) {
+        Integer draftMesaId = (Integer) session.getAttribute("draftMesaId");
+        String draftItemsJson = (String) session.getAttribute("draftItemsJson");
+        String draftComentarios = (String) session.getAttribute("draftComentarios");
+        Double draftTotal = (Double) session.getAttribute("draftTotal");
+
+        if (draftMesaId != null && draftItemsJson != null && draftTotal != null) {
+            try {
+                Map<String, Object> itemsMap = procesarItemsPedido(draftItemsJson);
+                var mesaOpt = mesaService.findById(mesaId);
+                var mesa = mesaOpt.isPresent() ? mesaOpt.get() : null;
+                model.addAttribute("mesa", mesa);
+                model.addAttribute("itemsMap", itemsMap);
+                model.addAttribute("draftTotal", draftTotal);
+                model.addAttribute("draftComentarios", draftComentarios);
+                model.addAttribute("hasDraft", true);
+            } catch (Exception e) {
+                model.addAttribute("error", "Error al procesar los items del pedido");
+            }
+        }
+    }
+
+	private void clearDraft(HttpSession session) {
+	    session.removeAttribute("draftMesaId");
+	    session.removeAttribute("draftItemsJson");
+	    session.removeAttribute("draftComentarios");
+	    session.removeAttribute("draftTotal");
 	}
 
-	// Método auxiliar para procesar items del pedido
-	private Map<String, Object> procesarItemsPedido(String comentario) {
-		Map<String, Object> result = new HashMap<>();
-		// Lógica de procesamiento del JSON
-		return result;
+	@GetMapping("/pedidos/cancelar")
+	public String cancelarPedido(HttpSession session) {
+	    clearDraft(session);
+	    return "redirect:/mesero";
 	}
 
-	// redirige a la vista configuracion
+	private Map<String, Object> procesarItemsPedido(String itemsJson) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = mapper.readValue(itemsJson, Map.class);
+        return map;
+    }
+
 	@GetMapping("/configuracion")
 	public String mostrarConfiguracion() {
-		return "/mesero/configuracion";
+		return "mesero/configuracion";
 	}
 
 	@GetMapping("/PerfilMesero")
 	public String perfilMesero(HttpSession session, Model model) {
 		Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-
 		if (usuario == null) {
-			// Si no hay sesión, redirige al login
 			return "redirect:/login";
 		}
-
 		model.addAttribute("usuario", usuario);
-		return "/configuracion";
+		return "mesero/configuracion";
 	}
 
 	@GetMapping("/configuracionMesero")
 	public String mostrarConfiguracionMesero() {
-		return "configuracion"; // debe coincidir con el nombre del HTML
+		return "configuracion";
 	}
-	
-	
 }

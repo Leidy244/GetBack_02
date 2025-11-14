@@ -84,6 +84,17 @@ public class MenuService {
                 .collect(Collectors.toList());
     }
 
+    // Buscar producto por nombre exacto (case-insensitive)
+    public Menu findByNombreExact(String nombre) {
+        if (nombre == null) return null;
+        String target = nombre.trim().toLowerCase();
+        return menuRepository.findAll().stream()
+                .filter(menu -> menu.getNombreProducto() != null
+                        && menu.getNombreProducto().trim().toLowerCase().equals(target))
+                .findFirst()
+                .orElse(null);
+    }
+
     // Buscar productos por precio menor o igual
     public List<Menu> findByPrecioLessThanEqual(Double precio) {
         return menuRepository.findAll().stream().filter(menu -> menu.getPrecio() != null && menu.getPrecio() <= precio)

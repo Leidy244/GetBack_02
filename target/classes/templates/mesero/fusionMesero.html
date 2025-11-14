@@ -4,7 +4,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Menu | GETBACK - Mesa <span th:text="${mesaId}">#</span></title>
+    <title th:text="'Menú | GETBACK - Mesa #' + ((mesa != null and mesa.numero != null) ? mesa.numero : mesaId)">Menú | GETBACK</title>
+
 	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
 	<link rel=" stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<link rel="stylesheet" th:href="@{/css/fusionMesero.css}">
@@ -23,7 +24,10 @@
 					<div class="logo-desktop">
 						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
 					</div>
-					<span>Menú Pedidos - Mesa #<span th:text="${mesaId}">0</span></span>
+					<span>
+                        Menú Pedidos - Mesa #
+                        <span th:text="${mesa != null and mesa.numero != null} ? ${mesa.numero} : ${mesaId}">0</span>
+                    </span>
 				</div>
 
 				<ul class="nav-links" id="nav-links">
@@ -54,8 +58,9 @@
 
 		<!-- Grid de productos -->
 		<div class="menu-grid" id="menu-grid">
-			<div th:each="producto : ${productos}" class="product-item" th:data-categoria="${producto.categoria.id}"
-				th:data-producto-id="${producto.id}" th:data-nombre="${producto.nombreProducto.toLowerCase()}">
+			<div th:each="producto : ${productos}" class="product-item clickable-product" th:data-categoria="${producto.categoria.id}"
+				th:data-producto-id="${producto.id}" th:data-nombre="${producto.nombreProducto.toLowerCase()}"
+				th:data-precio="${producto.precio}" th:data-producto-nombre="${producto.nombreProducto}">
 				<div class="product-info">
 					<img th:if="${producto.imagen}" th:src="${producto.imagen}" alt="Imagen del evento"
 						th:alt="${producto.nombreProducto}" class="product-img">
@@ -67,11 +72,12 @@
 							th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2, 'COMMA')}">$0.00</div>
 					</div>
 				</div>
+				<!-- Controles de cantidad -->
 				<div class="quantity-control">
 					<button class="btn-quantity minus"><i class="fas fa-minus"></i></button>
 					<input type="number" min="0" value="0" class="quantity-input" readonly>
 					<button class="btn-quantity plus"><i class="fas fa-plus"></i></button>
-					<button class="btn-add-to-order">
+					<button class="btn-add-to-order" style="display: none;">
 						<i class="fas fa-cart-plus"></i> Agregar
 					</button>
 				</div>
@@ -127,6 +133,14 @@
 		<span>Volver a Mesas</span>
 	</a>
 	<script th:src="@{/js/ConfigMesero.js}" defer></script>
+
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		var draftItemsJson = /*[[${draftItemsJson}]]*/ null;
+		var draftTotal = /*[[${draftTotal}]]*/ null;
+		var draftComentarios = /*[[${draftComentarios}]]*/ null;
+		/*]]>*/
+	</script>
 	<script th:src="@{/js/fusionMesero.js}"></script>
 </body>
 

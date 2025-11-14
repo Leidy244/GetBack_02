@@ -10,15 +10,33 @@
 
 
 			<!-- Encabezado de tabla -->
-			<div class="locations-header d-flex justify-content-between align-items-center mb-4">
-				<h4 class="section-subtitle mb-0">
+			<div class="locations-header mb-3">
+				<h4 class="section-subtitle mb-2">
 					Lista de Usuarios
 					<span class="badge bg-primary ms-2" th:text="${users != null ? users.size() : 0}"></span>
 				</h4>
-				<button type="button" class="btn btn-primary btn-add-user" data-bs-toggle="modal"
-					data-bs-target="#nuevoUsuarioModal">
-					<i class="fas fa-user-plus me-2"></i>Agregar Usuario
-				</button>
+				<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3 border-bottom pb-2">
+					<div class="d-flex flex-wrap gap-2 align-items-center" style="flex:1; min-width:260px;">
+						<div class="input-group" style="max-width: 320px;">
+							<span class="input-group-text"><i class="fas fa-search"></i></span>
+							<input type="text" id="userFilterInput" class="form-control" placeholder="Buscar por nombre, correo, rol...">
+						</div>
+						<div class="d-flex align-items-center gap-2">
+							<label for="userStatusFilter" class="form-label mb-0">Estado:</label>
+							<select id="userStatusFilter" class="form-select form-select-sm" style="min-width: 150px;">
+								<option value="ALL">Todos</option>
+								<option value="ACTIVO">Activos</option>
+								<option value="INACTIVO">Inactivos</option>
+							</select>
+						</div>
+					</div>
+					<div class="ms-auto">
+						<button type="button" class="btn btn-primary btn-add-user" data-bs-toggle="modal"
+							data-bs-target="#nuevoUsuarioModal">
+							<i class="fas fa-user-plus me-2"></i>Agregar Usuario
+						</button>
+					</div>
+				</div>
 			</div>
 
 			<!-- Tabla de Usuarios -->
@@ -36,8 +54,8 @@
 							<th>Acciones</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr th:each="usuario : ${users}" class="text-center">
+					<tbody id="usersTableBody">
+						<tr th:each="usuario : ${users}" class="text-center" data-row th:attr="data-status=${usuario.estado}">
 							<td th:text="${usuario.rol != null ? usuario.rol.nombre : '—'}"></td>
 							<td th:text="${usuario.nombre}"></td>
 							<td th:text="${usuario.apellido}"></td>
@@ -55,10 +73,9 @@
 								<span th:if="${usuario.fecha == null}">—</span>
 							</td>
 							<td>
-								<div class="btn-group">
-
+								<div class="d-inline-flex flex-wrap gap-2 justify-content-center">
 									<!-- EDITAR: abre modal  -->
-									<button type="button" class="btn btn-sm btn-warning btn-edit-user"
+									<button type="button" class="btn btn-warning btn-sm rounded-pill px-3 btn-edit-user"
 										data-bs-toggle="modal" data-bs-target="#editarUsuarioModal" th:attr="
 									        data-user-id=${usuario.id},
 									        data-user-nombre=${usuario.nombre},
@@ -77,14 +94,14 @@
 
 									<!-- TOGGLE STATUS -->
 									<a th:href="@{/users/toggle-status/{id}(id=${usuario.id})}"
-										th:class="${usuario.estado=='ACTIVO'} ? 'btn btn-sm btn-secondary' : 'btn btn-sm btn-success'"
+										th:class="${usuario.estado=='ACTIVO'} ? 'btn btn-secondary btn-sm rounded-pill px-3' : 'btn btn-success btn-sm rounded-pill px-3'"
 										th:title="${usuario.estado=='ACTIVO'} ? 'Desactivar' : 'Activar'">
 										<i
 											th:class="${usuario.estado=='ACTIVO'} ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
 									</a>
 
 									<!-- ELIMINAR: abre modal de confirmación -->
-									<button type="button" class="btn btn-sm btn-danger btn-open-delete-modal"
+									<button type="button" class="btn btn-danger btn-sm rounded-pill px-3 btn-open-delete-modal"
 										data-bs-toggle="modal" data-bs-target="#confirmDeleteUserModal"
 										th:attr="data-user-id=${usuario.id}, data-user-nombre=${usuario.nombre + ' ' + usuario.apellido}">
 										<i class="fas fa-trash"></i>
@@ -304,6 +321,7 @@
 	<script>
 		// Modal de edición
 		document.querySelectorAll('.btn-edit-user').forEach(button => {
+
 			button.addEventListener('click', function () {
 				const userId = this.getAttribute('data-user-id');
 				const userNombre = this.getAttribute('data-user-nombre');
@@ -341,5 +359,39 @@
 				document.getElementById('confirm-delete-link').href = `/users/delete/${userId}`;
 			});
 		});
+
+		// Filtro por texto y estado
+		(function(){
+			const tbody = document.getElementById('usersTableBody');
+			if (!tbody) return;
+			const rows = Array.from(tbody.querySelectorAll('tr[data-row]'));
+			const textInput = document.getElementById('userFilterInput');
+			const statusSelect = document.getElementById('userStatusFilter');
+
+			function getRowText(row){
+				const tds = row.querySelectorAll('td');
+				const rol = tds[0] ? (tds[0].innerText || '') : '';
+				const nombre = tds[1] ? (tds[1].innerText || '') : '';
+				const apellido = tds[2] ? (tds[2].innerText || '') : '';
+				const correo = tds[3] ? (tds[3].innerText || '') : '';
+				return (rol + ' ' + nombre + ' ' + apellido + ' ' + correo).toLowerCase();
+			}
+
+			function applyFilter(){
+				const q = (textInput?.value || '').toLowerCase().trim();
+				const status = (statusSelect?.value || 'ALL');
+
+				rows.forEach(row => {
+					const rowStatus = row.getAttribute('data-status') || '';
+					const textMatch = !q || getRowText(row).includes(q);
+					const statusMatch = status === 'ALL' || rowStatus === status;
+					row.style.display = (textMatch && statusMatch) ? '' : 'none';
+				});
+			}
+
+			if (textInput) textInput.addEventListener('input', applyFilter);
+			if (statusSelect) statusSelect.addEventListener('change', applyFilter);
+			applyFilter();
+		})();
 	</script>
 </div>

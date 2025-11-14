@@ -70,9 +70,9 @@ public class CategoriaController {
     public ResponseEntity<byte[]> descargarPlantilla() {
         // Usamos ';' como separador para mejor compatibilidad con configuraciones regionales de Excel
         String csv = "\uFEFF" + // BOM UTF-8 para que Excel muestre bien acentos/ñ
-                "nombre;descripcion\n" +
-                "Bebidas;Productos líquidos\n" +
-                "Comidas;Platos principales\n";
+                "nombre;descripcion;area\n" +
+                "Bebidas;Productos líquidos;Bar\n" +
+                "Comidas;Platos principales;Cocina\n";
         byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=plantilla_categorias.csv")
@@ -81,7 +81,7 @@ public class CategoriaController {
     }
 
     /**
-     * Importar categorías desde CSV (nombre,descripcion)
+     * Importar categorías desde CSV (nombre,descripcion,area)
      */
     @PostMapping("/import")
     public String importarCsv(@RequestParam("file") MultipartFile file, RedirectAttributes redirect) {
@@ -101,19 +101,27 @@ public class CategoriaController {
                 String[] parts = line.split(java.util.regex.Pattern.quote(delim), -1);
                 String nombre = parts.length > 0 ? parts[0].trim() : "";
                 String descripcion = parts.length > 1 ? parts[1].trim() : null;
+                String area = parts.length > 2 ? parts[2].trim() : null;
                 if (nombre.isEmpty()) { fail++; errores.add("Fila " + row + ": nombre requerido"); continue; }
+                // Validar area: Cocina o Bar obligatoria
+                if (area == null || area.isEmpty()) { fail++; errores.add("Fila " + row + ": area requerida (Cocina o Bar)"); continue; }
+                String areaNorm = area.trim().toLowerCase();
+                if (!("cocina".equals(areaNorm) || "bar".equals(areaNorm))) { fail++; errores.add("Fila " + row + ": area inválida ('" + area + "'), use Cocina o Bar"); continue; }
+                String areaVal = Character.toUpperCase(areaNorm.charAt(0)) + areaNorm.substring(1); // Cocina/Bar
                 try {
                     // Regla de duplicados para categorías (por controlador):
                     // Si existe por nombre (case-insensitive) -> actualizar descripción; si no, crear.
                     Categoria existente = categoriaService.findByNombre(nombre);
                     if (existente != null) {
                         existente.setDescripcion((descripcion != null && !descripcion.isEmpty()) ? descripcion : null);
+                        existente.setArea(areaVal);
                         categoriaService.save(existente);
                         updated++;
                     } else {
                         Categoria c = new Categoria();
                         c.setNombre(nombre);
                         c.setDescripcion((descripcion != null && !descripcion.isEmpty()) ? descripcion : null);
+                        c.setArea(areaVal);
                         categoriaService.save(c);
                         created++;
                     }

@@ -55,14 +55,17 @@
 		<div class="section-header">
 			<h2 class="section-title">Próximos <span class="highlight">Eventos</span></h2>
 			<p class="section-subtitle">Vive la experiencia Get Back</p>
+			<div class="events-controls" style="margin-top:1rem; text-align:center;">
+				<input id="eventFilterInput" type="text" placeholder="Buscar eventos..." style="max-width:300px; padding:0.5rem 0.75rem; border-radius:999px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:#fff;">
+			</div>
 		</div>
 		<div class="menu-grid">
-			<div th:each="evento : ${eventos}" class="event-card">
+			<div th:each="evento : ${eventos}" class="event-card" data-row>
+
 				<div class="menu-image">
 					<img th:if="${evento.imagen}" th:src="${evento.imagen}" alt="Imagen del evento" />
 					<div class="event-badge">Evento</div>
 				</div>
-
 
 				<div class="event-info">
 					<div class="event-date">
@@ -86,6 +89,7 @@
 				<p>Estamos preparando eventos increíbles para ti. ¡Vuelve pronto!</p>
 			</div>
 		</div>
+		<div id="eventsPagination" style="margin-top:1.5rem; text-align:center;"></div>
 	</section>
 
 	<!-- Sección de menú/productos -->
@@ -192,6 +196,80 @@
 
 	<!-- Script -->
 	<script th:src="@{/js/script.js}"></script>
+	<script>
+		(function(){
+		  const run = () => {
+			const container = document.querySelector('#eventos .menu-grid');
+			const filterInput = document.getElementById('eventFilterInput');
+			const pager = document.getElementById('eventsPagination');
+			const pageSize = 4;
+			let rows = Array.from(container ? container.querySelectorAll('.event-card[data-row]') : []);
+			let emptyRow = container ? container.querySelector('.event-card:not([data-row])') : null;
+			let filtered = rows.slice();
+			let page = 1;
+
+			function getText(r){
+			  const title = r.querySelector('.event-title');
+			  const desc = r.querySelector('.event-description');
+			  return ((title ? title.innerText : '') + ' ' + (desc ? desc.innerText : '')).toLowerCase();
+			}
+
+			function render(){
+			  rows.forEach(r => r.style.display = 'none');
+			  if (emptyRow) emptyRow.style.display = 'none';
+			  const total = filtered.length;
+			  const pages = Math.max(1, Math.ceil(total / pageSize));
+			  page = Math.min(page, pages);
+			  const start = (page - 1) * pageSize;
+			  const end = start + pageSize;
+			  if (total > 0) {
+				filtered.slice(start, end).forEach(r => r.style.display = '');
+			  } else if (emptyRow) {
+				emptyRow.style.display = '';
+			  }
+			  renderPager(pages, total);
+			}
+
+			function renderPager(pages, total){
+			  if (!pager) return;
+			  pager.innerHTML = '';
+			  if (total <= pageSize) return; // sin paginación si caben en una sola página
+
+			  const prev = document.createElement('button');
+			  prev.type = 'button'; prev.className = 'btn-pager'; prev.textContent = '«';
+			  prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
+			  pager.appendChild(prev);
+
+			  for (let i = 1; i <= pages; i++){
+				const b = document.createElement('button');
+				b.type = 'button'; b.className = 'btn-pager ' + (i===page?'active':'');
+				b.textContent = i;
+				b.onclick = () => { page = i; render(); };
+				pager.appendChild(b);
+			  }
+
+			  const next = document.createElement('button');
+			  next.type = 'button'; next.className = 'btn-pager'; next.textContent = '»';
+			  next.disabled = page >= pages; next.onclick = () => { page++; render(); };
+			  pager.appendChild(next);
+			}
+
+			function applyFilter(){
+			  const q = (filterInput?.value || '').toLowerCase().trim();
+			  filtered = q ? rows.filter(r => getText(r).includes(q)) : rows.slice();
+			  page = 1; render();
+			}
+
+			if (filterInput) filterInput.addEventListener('input', applyFilter);
+			render();
+		  };
+		  if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', run);
+		  } else {
+			run();
+		  }
+		})();
+	</script>
 </body>
 
 </html>

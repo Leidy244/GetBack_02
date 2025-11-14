@@ -10,17 +10,30 @@
     </div>
 
     <!-- Subtítulo -->
+
     <div class="d-flex justify-content-between align-items-center mb-4 products-header">
+
         <h4 class="section-subtitle mb-0">
             Lista de Productos
             <span class="badge bg-primary" th:text="${#lists.size(products)}"></span>
         </h4>
-        <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#nuevoProductoModal">
-            <i class="fas fa-plus me-2"></i>Nuevo Producto
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#importProductsModal" title="Sube un archivo para agregar o actualizar varios productos a la vez">
+                <i class="fas fa-cloud-upload-alt me-2"></i>Subir lista (Excel/CSV)
+            </button>
+            <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#nuevoProductoModal">
+                <i class="fas fa-plus me-2"></i>Nuevo Producto
+            </button>
+        </div>
     </div>
 
-    
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <div class="input-group" style="max-width: 320px;">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" id="productFilterInput" class="form-control" placeholder="Filtrar productos...">
+        </div>
+        <div id="productsPagination" class="btn-group" role="group" aria-label="Paginación"></div>
+    </div>
 
     <!-- Tabla -->
     <div class="table-responsive">
@@ -36,8 +49,8 @@
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="text-center">
-                <tr th:each="producto : ${products}">
+            <tbody class="text-center" id="productsTableBody">
+                <tr th:each="producto : ${products}" data-row="prod">
                     <td th:text="${producto.nombreProducto}"></td>
                     <td th:text="${producto.descripcion}"></td>
                     <td th:text="${#strings.concat('$', #numbers.formatDecimal(producto.precio, 0, 'POINT', 0, 'POINT'))}"></td>
@@ -210,6 +223,100 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Carga Masiva Productos -->
+    <div class="modal fade" id="importProductsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form th:action="@{/admin/menu/productos/import}" method="post" enctype="multipart/form-data" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-list-ul me-2"></i>Subir lista de productos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Sube tu archivo para agregar o actualizar varios productos.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Selecciona tu archivo</label>
+                        <input type="file" name="file" class="form-control" accept=".csv" required>
+                        <div class="form-text">Puedes usar nuestra plantilla y guardarla como CSV (separador ";" recomendado).</div>
+                    </div>
+                    <a th:href="@{/admin/menu/productos/import/template}" class="btn btn-link p-0 mt-1"><i class="fas fa-download me-1"></i>Descargar plantilla</a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i>Subir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+          const run = () => {
+            const tbody = document.getElementById('productsTableBody');
+            const filterInput = document.getElementById('productFilterInput');
+            const pager = document.getElementById('productsPagination');
+            const pageSize = 4;
+            let rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
+            let filtered = rows.slice();
+            let page = 1;
+
+            function getText(r){
+                const tds = r.querySelectorAll('td');
+                const name = tds[0] ? (tds[0].innerText || '') : '';
+                const desc = tds[1] ? (tds[1].innerText || '') : '';
+                const cat = tds[3] ? (tds[3].innerText || '') : '';
+                return (name + ' ' + desc + ' ' + cat).toLowerCase();
+            }
+
+            function render(){
+                rows.forEach(r => r.style.display = 'none');
+                const total = filtered.length;
+                const pages = Math.max(1, Math.ceil(total / pageSize));
+                page = Math.min(page, pages);
+                const start = (page - 1) * pageSize;
+                const end = start + pageSize;
+                filtered.slice(start, end).forEach(r => r.style.display = '');
+                renderPager(pages);
+            }
+
+            function renderPager(pages){
+                if (!pager) return;
+                pager.innerHTML = '';
+                const prev = document.createElement('button');
+                prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
+                prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
+                pager.appendChild(prev);
+
+                for (let i = 1; i <= pages; i++){
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary');
+                    b.textContent = i;
+                    b.onclick = () => { page = i; render(); };
+                    pager.appendChild(b);
+                }
+
+                const next = document.createElement('button');
+                next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
+                next.disabled = page >= pages; next.onclick = () => { page++; render(); };
+                pager.appendChild(next);
+            }
+
+            function applyFilter(){
+                const q = (filterInput?.value || '').toLowerCase().trim();
+                filtered = q ? rows.filter(r => getText(r).includes(q)) : rows.slice();
+                page = 1; render();
+            }
+
+            if (filterInput) filterInput.addEventListener('input', applyFilter);
+            render();
+          };
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', run);
+          } else {
+            run();
+          }
+        })();
+    </script>
 
 </section>
 </body>
