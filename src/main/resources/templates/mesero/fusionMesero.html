@@ -69,7 +69,7 @@
 						<div class="product-description" th:text="${producto.descripcion}">Descripción del producto
 						</div>
 						<div class="product-price"
-							th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2, 'COMMA')}">$0.00</div>
+							th:text="${#strings.concat('$', #numbers.formatDecimal(producto.precio, 0, 'POINT', 0, 'POINT'))}"></div>
 					</div>
 				</div>
 				<!-- Controles de cantidad -->
@@ -108,7 +108,7 @@
 		<div class="order-summary-mobile">
 			<div class="total-info">
 				<span>Total: </span>
-				<span id="pedido-total-value">$0.00</span>
+				<span id="pedido-total-value">$</span>
 			</div>
 
 			<!-- Botón de comentarios -->
