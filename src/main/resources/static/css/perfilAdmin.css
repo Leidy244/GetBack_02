@@ -357,6 +357,138 @@
 	margin-bottom: 0;
 }
 
+/* Botón de ajustes en el perfil de admin */
+.admin-settings-btn {
+	margin-left: auto;
+	border: none;
+	border-radius: 999px;
+	width: 36px;
+	height: 36px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--primary-gradient);
+	color: #fff;
+	cursor: pointer;
+	box-shadow: var(--shadow-md);
+	transition: var(--transition);
+	font-size: 1rem;
+}
+
+.admin-settings-btn:hover {
+	transform: translateY(-1px) rotate(15deg);
+	box-shadow: var(--shadow-lg);
+}
+
+/* Modal de configuración del admin */
+.admin-settings-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.6);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 2000;
+}
+
+.admin-settings-modal.show {
+	display: flex;
+}
+
+.admin-settings-content {
+	background: var(--bg-primary);
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow-xl);
+	padding: 1.75rem 2rem;
+	width: 100%;
+	max-width: 420px;
+	position: relative;
+}
+
+.admin-settings-content h3 {
+	margin: 0 0 1rem;
+	font-size: 1.25rem;
+	color: var(--text-primary);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.admin-settings-content h3 i {
+	color: var(--primary-color);
+}
+
+.admin-settings-close {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	font-size: 1.3rem;
+	cursor: pointer;
+	color: var(--text-secondary);
+}
+
+.admin-setting-item {
+	margin-bottom: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.admin-setting-item label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	color: var(--text-primary);
+	font-weight: 500;
+}
+
+.admin-setting-item label i {
+	color: var(--primary-color);
+}
+
+.admin-setting-item select {
+	margin-top: 0.25rem;
+	width: 100%;
+	border-radius: var(--border-radius-sm);
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	padding: 0.5rem 0.75rem;
+}
+
+.admin-contrast-control {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.admin-contrast-control input[type="range"] {
+	flex: 1;
+}
+
+.admin-settings-save {
+	margin-top: 0.5rem;
+	width: 100%;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	padding: 0.75rem 1rem;
+	background: var(--primary-gradient);
+	color: #fff;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: var(--shadow-md);
+	transition: var(--transition);
+}
+
+.admin-settings-save:hover {
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-lg);
+}
+
 /*==BOTON ENTRE VISTAS ==*/
 /* ===== DROPDOWN ADMINISTRADOR ===== */
 .user-dropdown {

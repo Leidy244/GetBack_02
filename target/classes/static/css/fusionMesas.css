@@ -1,5 +1,6 @@
 /* ===== VARIABLES GLOBALES ===== */
 :root {
+    /* Tema por defecto (morado/turquesa) */
     --primary: #701BA4;
     --primary-light: #8d3bc5;
     --primary-dark: #4d1373;
@@ -15,6 +16,49 @@
     --transition: all 0.3s ease;
 }
 
+/* ===== TEMAS POR data-color (controlados desde ConfigMesero.js) ===== */
+[data-color="azul"] {
+    --primary: #1D4ED8;           /* azul fuerte */
+    --primary-light: #3B82F6;     /* azul claro */
+    --primary-dark: #1E3A8A;      /* azul oscuro */
+    --accent: #0EA5E9;            /* celeste */
+}
+
+[data-color="verde"] {
+    --primary: #065F46;           /* verde oscuro */
+    --primary-light: #10B981;     /* verde esmeralda */
+    --primary-dark: #064E3B;      /* verde más profundo */
+    --accent: #22C55E;            /* verde brillante */
+}
+
+[data-color="rojo"] {
+    --primary: #B91C1C;           /* rojo intenso */
+    --primary-light: #F97373;     /* rojo claro */
+    --primary-dark: #7F1D1D;      /* rojo oscuro */
+    --accent: #F97316;            /* naranja para acento */
+}
+
+[data-color="dorado"] {
+    --primary: #92400E;           /* dorado oscuro */
+    --primary-light: #D97706;     /* dorado medio */
+    --primary-dark: #78350F;      /* ámbar profundo */
+    --accent: #FBBF24;            /* dorado claro */
+}
+
+[data-color="rosa"] {
+    --primary: #BE185D;           /* rosa fuerte */
+    --primary-light: #EC4899;     /* rosa claro */
+    --primary-dark: #9D174D;      /* rosa oscuro */
+    --accent: #F9A8D4;            /* rosa pastel */
+}
+
+[data-color="gris"] {
+    --primary: #4B5563;           /* gris oscuro */
+    --primary-light: #9CA3AF;     /* gris medio */
+    --primary-dark: #374151;      /* gris muy oscuro */
+    --accent: #E5E7EB;            /* gris claro para acento */
+}
+
 /* ===== RESET Y ESTILOS BASE ===== */
 * {
     margin: 0;
@@ -24,7 +68,6 @@
 }
 
 html {
-    font-size: 16px;
     scroll-behavior: smooth;
 }
 
@@ -405,9 +448,6 @@ nav {
 
 /* ===== MEDIA QUERIES ===== */
 @media (max-width: 992px) {
-    html {
-        font-size: 15px;
-    }
 
     .mesas-container {
         grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
@@ -424,9 +464,6 @@ nav {
 }
 
 @media (max-width: 768px) {
-    html {
-        font-size: 14px;
-    }
 
     .menu-toggle {
         display: block;
@@ -469,9 +506,6 @@ nav {
 }
 
 @media (max-width: 480px) {
-    html {
-        font-size: 13px;
-    }
 
     .mesas-container {
         grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr));

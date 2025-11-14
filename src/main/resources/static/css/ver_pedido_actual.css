@@ -1,4 +1,5 @@
 :root {
+    /* Tema por defecto (morado/turquesa) */
     --primary: #9c4dff;
     --primary-light: #b47aff;
     --primary-dark: #6a1b9a;
@@ -12,6 +13,49 @@
     --error: #FF5252;
     --border: #424242;
     --hover-overlay: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== TEMAS POR data-color (controlados desde ConfigMesero.js) ===== */
+[data-color="azul"] {
+    --primary: #1D4ED8;
+    --primary-light: #3B82F6;
+    --primary-dark: #1E3A8A;
+    --accent: #0EA5E9;
+}
+
+[data-color="verde"] {
+    --primary: #065F46;
+    --primary-light: #10B981;
+    --primary-dark: #064E3B;
+    --accent: #22C55E;
+}
+
+[data-color="rojo"] {
+    --primary: #B91C1C;
+    --primary-light: #F97373;
+    --primary-dark: #7F1D1D;
+    --accent: #F97316;
+}
+
+[data-color="dorado"] {
+    --primary: #92400E;
+    --primary-light: #D97706;
+    --primary-dark: #78350F;
+    --accent: #FBBF24;
+}
+
+[data-color="rosa"] {
+    --primary: #BE185D;
+    --primary-light: #EC4899;
+    --primary-dark: #9D174D;
+    --accent: #F9A8D4;
+}
+
+[data-color="gris"] {
+    --primary: #4B5563;
+    --primary-light: #9CA3AF;
+    --primary-dark: #374151;
+    --accent: #E5E7EB;
 }
 
 /* Reset y estilos base */

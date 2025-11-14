@@ -49,6 +49,94 @@
     /* Gradientes */
     --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     --sidebar-gradient: linear-gradient(135deg, #22d3ee, #6E03AB);
+}
+
+/* ===== TEMAS DE COLOR DEL ADMIN (configuración independiente) ===== */
+body[data-admin-theme="azul"] {
+    --primary-color: #1D4ED8;
+    --primary-light: #3B82F6;
+    --primary-dark: #1E3A8A;
+    --secondary-color: #0EA5E9;
+    --primary-gradient: linear-gradient(135deg, #1D4ED8, #0EA5E9);
+}
+
+body[data-admin-theme="verde"] {
+    --primary-color: #065F46;
+    --primary-light: #10B981;
+    --primary-dark: #064E3B;
+    --secondary-color: #22C55E;
+    --primary-gradient: linear-gradient(135deg, #065F46, #22C55E);
+}
+
+body[data-admin-theme="rojo"] {
+    --primary-color: #B91C1C;
+    --primary-light: #F97373;
+    --primary-dark: #7F1D1D;
+    --secondary-color: #F97316;
+    --primary-gradient: linear-gradient(135deg, #B91C1C, #F97316);
+}
+
+body[data-admin-theme="dorado"] {
+    --primary-color: #92400E;
+    --primary-light: #D97706;
+    --primary-dark: #78350F;
+    --secondary-color: #FBBF24;
+    --primary-gradient: linear-gradient(135deg, #92400E, #FBBF24);
+}
+
+body[data-admin-theme="rosa"] {
+    --primary-color: #BE185D;
+    --primary-light: #EC4899;
+    --primary-dark: #9D174D;
+    --secondary-color: #F9A8D4;
+    --primary-gradient: linear-gradient(135deg, #BE185D, #F9A8D4);
+}
+
+body[data-admin-theme="gris"] {
+    --primary-color: #4B5563;
+    --primary-light: #9CA3AF;
+    --primary-dark: #374151;
+    --secondary-color: #E5E7EB;
+    --primary-gradient: linear-gradient(135deg, #4B5563, #9CA3AF);
+}
+
+/* Tamaño de fuente configurable del admin */
+body.admin-font-small {
+    font-size: 0.80rem;
+}
+
+body.admin-font-medium {
+    font-size: 0.85rem;
+}
+
+body.admin-font-large {
+    font-size: 0.95rem;
+}
+
+/* Contraste del contenido del panel admin */
+body[data-admin-contrast="0"] .content-card {
+    filter: none;
+}
+
+body[data-admin-contrast="1"] .content-card {
+    filter: contrast(1.2) brightness(1.03);
+}
+
+body[data-admin-contrast="2"] .content-card {
+    filter: contrast(1.4) brightness(1.06) saturate(1.08);
+}
+
+:root {
+    /* Colores principales (valores por defecto) */
+    --primary-color: #701BA4;
+    --primary-light: #8d3bc5;
+    --primary-dark: #4d1373;
+    --secondary-color: #1AA1A3;
+    --accent-color: #FF6B6B;
+
+    /* Gradientes */
+    --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    --sidebar-gradient: linear-gradient(135deg, #22d3ee, #6E03AB);
 
     /* Colores de texto */
     --text-primary: #2D3748;

@@ -12,6 +12,7 @@ const adminApp = {
 		this.hidePreloader();
 		this.restoreTheme();
 		this.setupNavigation();
+		this.setupAdminAppearanceSettings();
 		console.log("GETBACK Admin Panel inicializado ✅");
 	},
 

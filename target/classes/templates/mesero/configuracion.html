@@ -17,7 +17,7 @@
 				<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
 			</a>
 		</div>
-		<h2> Perfil del Mesero</h2>
+		<h2>Perfil del Mesero</h2>
 		<!-- Botón de menú hamburguesa Responsive -->
 		<div class="hamburger" id="hamburger">
 			<span></span>
@@ -42,21 +42,19 @@
 					<i class="fas fa-history"></i>
 					<span>Historial</span>
 				</a>
+
 				<a href="#" class="nav-btn" id="openSettingsBtn">
 					<i class="fa-solid fa-gear"></i>
 					<span>Configuración</span>
 				</a>
 
-				<a th:href="@{/login}" class="nav-btn"
-					onclick="return confirm('¿Estás seguro de que deseas cerrar sesión?')">
+				<a th:href="@{/login}" class="nav-btn" onclick="return confirm('¿Seguro que deseas cerrar sesión?')">
 					<i class="fa-solid fa-arrow-right-from-bracket"></i>
 					<span>Cerrar sesión</span>
 				</a>
 			</nav>
 		</div>
 	</header>
-
-
 
 	<!-- Información -->
 	<div class="content-col">
@@ -86,13 +84,12 @@
 							<div class="turno-info"
 								style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
 								<h4 style="margin: 0 0 8px 0; color: #007bff; font-size: 16px;">
-									<i class="fas fa-calendar-alt me-2"></i>Turno Asignado
+									<i class="fas fa-calendar-alt me-2"></i><span>Turno Asignado</span>
 								</h4>
 								<div th:if="${session.usuarioLogueado.fecha != null}">
 									<p style="margin: 5px 0; font-weight: 500;">
 										<strong>Fecha:</strong>
-										<span
-											th:text="${#temporals.format(session.usuarioLogueado.fecha, 'dd/MM/yyyy')}"></span>
+										<span th:text="${#temporals.format(session.usuarioLogueado.fecha, 'dd/MM/yyyy')}"></span>
 									</p>
 									<p style="margin: 5px 0; font-weight: 500;">
 										<strong>Horario:</strong>
@@ -107,16 +104,16 @@
 								</div>
 							</div>
 
-							<small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+							<small><span>Último acceso:</span> <span id="ultimo-acceso">Hoy</span></small>
 						</div>
 
 						<!-- BOTONES -->
 						<div class="account-actions" style="display:flex; gap:10px; margin-left:auto;">
 							<button type="button" id="btnEditProfile" class="dropdown-item">
-								<i class="fas fa-user-edit"></i> Editar Perfil
+								<i class="fas fa-user-edit"></i> <span>Editar Perfil</span>
 							</button>
 							<button type="button" id="btnChangePhoto" class="dropdown-item">
-								<i class="fas fa-camera"></i> Cambiar Foto
+								<i class="fas fa-camera"></i> <span>Cambiar Foto</span>
 							</button>
 						</div>
 					</div>
@@ -184,30 +181,49 @@
 			<span class="close-settings" id="closeSettings">&times;</span>
 			<h2><i class="fa-solid fa-sliders"></i> Configuración</h2>
 
-			<div class="form-group">
-				<label>Idioma</label>
-				<select>
-					<option>Español</option>
-					<option>Inglés</option>
-				</select>
-			</div>
-
+			<!-- Eliminado bloque de idioma -->
 
 			<div class="setting-item">
 				<label>
-					<i class="fa-solid fa-bell"></i> Notificaciones
+					<i class="fa-solid fa-bell"></i> <span>Notificaciones</span>
 					<input type="checkbox" id="notificacionesSwitch">
 				</label>
 			</div>
 
 			<div class="setting-item">
+				<label for="contrastRange">
+					<i class="fa-solid fa-circle-half-stroke"></i> <span>Contraste</span>
+				</label>
+				<div class="contrast-control">
+					<span>Bajo</span>
+					<input type="range" id="contrastRange" min="0" max="2" step="1">
+					<span>Alto</span>
+				</div>
+			</div>
+
+			<div class="setting-item">
 				<label>
-					<i class="fa-solid fa-text-height"></i> Tamaño de fuente
+					<i class="fa-solid fa-palette"></i> <span>Tema de colores</span>
+				</label>
+				<select id="themeSelect">
+					<option value="default">Morado / Turquesa (predeterminado)</option>
+					<option value="azul">Azules</option>
+					<option value="verde">Verdes</option>
+					<option value="rojo">Rojos</option>
+					<option value="dorado">Dorados</option>
+					<option value="rosa">Rosados</option>
+					<option value="gris">Grises</option>
+				</select>
+			</div>
+
+			<div class="setting-item">
+				<label>
+					<i class="fa-solid fa-text-height"></i> <span>Tamaño de fuente</span>
 				</label>
 				<select id="fontSizeSelect">
-					<option value="normal">Normal</option>
+					<option value="pequeno">Pequeño</option>
+					<option value="mediano">Mediano</option>
 					<option value="grande">Grande</option>
-					<option value="extra">Extra</option>
 				</select>
 			</div>
 			<button type="button" class="save-btn" id="saveSettingsBtn">Guardar cambios</button>
