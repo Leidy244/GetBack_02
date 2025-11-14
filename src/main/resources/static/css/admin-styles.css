@@ -37,19 +37,6 @@
 .dashboard-container .date-badge i { font-size: 0.95rem; opacity: 0.9; color: var(--text-secondary); }
 .dashboard-container .date-badge #dashboardDate { font-weight: 600; letter-spacing: .2px; }
  
-/* ===== VARIABLES CSS MEJORADAS ===== */
-:root {
-    /* Colores principales */
-    --primary-color: #701BA4;
-    --primary-light: #8d3bc5;
-    --primary-dark: #4d1373;
-    --secondary-color: #1AA1A3;
-    --accent-color: #FF6B6B;
-
-    /* Gradientes */
-    --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    --sidebar-gradient: linear-gradient(135deg, #22d3ee, #6E03AB);
-}
 
 /* ===== TEMAS DE COLOR DEL ADMIN (configuración independiente) ===== */
 body[data-admin-theme="azul"] {
@@ -58,6 +45,7 @@ body[data-admin-theme="azul"] {
     --primary-dark: #1E3A8A;
     --secondary-color: #0EA5E9;
     --primary-gradient: linear-gradient(135deg, #1D4ED8, #0EA5E9);
+	--sidebar-gradient: var(--primary-gradient); 
 }
 
 body[data-admin-theme="verde"] {
@@ -66,6 +54,7 @@ body[data-admin-theme="verde"] {
     --primary-dark: #064E3B;
     --secondary-color: #22C55E;
     --primary-gradient: linear-gradient(135deg, #065F46, #22C55E);
+	--sidebar-gradient: var(--primary-gradient); 
 }
 
 body[data-admin-theme="rojo"] {
@@ -74,6 +63,7 @@ body[data-admin-theme="rojo"] {
     --primary-dark: #7F1D1D;
     --secondary-color: #F97316;
     --primary-gradient: linear-gradient(135deg, #B91C1C, #F97316);
+	--sidebar-gradient: var(--primary-gradient); 
 }
 
 body[data-admin-theme="dorado"] {
@@ -82,6 +72,7 @@ body[data-admin-theme="dorado"] {
     --primary-dark: #78350F;
     --secondary-color: #FBBF24;
     --primary-gradient: linear-gradient(135deg, #92400E, #FBBF24);
+	--sidebar-gradient: var(--primary-gradient);  
 }
 
 body[data-admin-theme="rosa"] {
@@ -90,6 +81,7 @@ body[data-admin-theme="rosa"] {
     --primary-dark: #9D174D;
     --secondary-color: #F9A8D4;
     --primary-gradient: linear-gradient(135deg, #BE185D, #F9A8D4);
+	--sidebar-gradient: var(--primary-gradient);  
 }
 
 body[data-admin-theme="gris"] {
@@ -98,6 +90,7 @@ body[data-admin-theme="gris"] {
     --primary-dark: #374151;
     --secondary-color: #E5E7EB;
     --primary-gradient: linear-gradient(135deg, #4B5563, #9CA3AF);
+	--sidebar-gradient: var(--primary-gradient);  
 }
 
 /* Tamaño de fuente configurable del admin */
@@ -113,17 +106,30 @@ body.admin-font-large {
     font-size: 0.95rem;
 }
 
-/* Contraste del contenido del panel admin */
-body[data-admin-contrast="0"] .content-card {
-    filter: none;
+/* Contraste del contenido del panel admin (panel principal, secciones, tarjetas, tablas, modales) */
+body[data-admin-contrast="0"] .admin-main,
+body[data-admin-contrast="0"] .content-section,
+body[data-admin-contrast="0"] .content-card,
+body[data-admin-contrast="0"] .table-responsive,
+body[data-admin-contrast="0"] .modal-content {
+	filter: contrast(0.9) brightness(1) saturate(1);
+
 }
 
-body[data-admin-contrast="1"] .content-card {
-    filter: contrast(1.2) brightness(1.03);
+body[data-admin-contrast="1"] .admin-main,
+body[data-admin-contrast="1"] .content-section,
+body[data-admin-contrast="1"] .content-card,
+body[data-admin-contrast="1"] .table-responsive,
+body[data-admin-contrast="1"] .modal-content {
+	filter: none;
 }
 
-body[data-admin-contrast="2"] .content-card {
-    filter: contrast(1.4) brightness(1.06) saturate(1.08);
+body[data-admin-contrast="2"] .admin-main,
+body[data-admin-contrast="2"] .content-section,
+body[data-admin-contrast="2"] .content-card,
+body[data-admin-contrast="2"] .table-responsive,
+body[data-admin-contrast="2"] .modal-content {
+    filter: contrast(1.1) brightness(1.05) saturate(1.05);
 }
 
 :root {
@@ -136,7 +142,7 @@ body[data-admin-contrast="2"] .content-card {
 
     /* Gradientes */
     --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    --sidebar-gradient: linear-gradient(135deg, #22d3ee, #6E03AB);
+	--sidebar-gradient: var(--primary-gradient);
 
     /* Colores de texto */
     --text-primary: #2D3748;
@@ -342,6 +348,23 @@ body {
     z-index: 101;
     box-shadow: var(--shadow-xl);
     overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+/* Botón toggle sidebar en header (solo se muestra en pantallas pequeñas) */
+.sidebar-toggle {
+    display: none;
+    padding: 0.4rem 0.7rem;
+    margin-right: 0.75rem;
+    border-radius: 999px;
+    background: var(--primary-gradient);
+    color: #fff;
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar-toggle i {
+    font-size: 1rem;
 }
 
 .sidebar-header {
@@ -454,7 +477,7 @@ body {
 .sidebar-footer p {
     margin: 0;
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
+    color:#000 !important;
     font-weight: 500;
     letter-spacing: 0.4px;
 }
@@ -1487,13 +1510,26 @@ body {
     .sidebar.active {
         transform: translateX(0);
     }
+
     .admin-header {
         left: 0;
     }
+
     .admin-main {
         margin-left: 0;
         padding: 0.25rem 1rem;
     }
+
+    .header-container {
+        padding: 0 1rem;
+    }
+
+    .sidebar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .stats-grid.compact {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1504,6 +1540,28 @@ body {
     }
 }
 
+@media (max-width: 576px) {
+    .admin-header {
+        height: auto;
+    }
+
+    .header-container {
+        padding: 0.25rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .logo-container .logo {
+        font-size: 1.2rem;
+    }
+
+    .user-actions {
+        gap: 0.5rem;
+    }
+
+    .user-profile span {
+        display: none;
+    }
+}
 @media (max-width: 768px) {
     .stats-grid.compact {
         grid-template-columns: 1fr;
@@ -1533,6 +1591,28 @@ body {
     }
     .activity-icon.minimal {
         align-self: center;
+    }
+
+    /* Vista de productos: header y botones en columna en móviles */
+    .products-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .products-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Tabla de productos: permitir scroll horizontal limpio */
+    .products-table {
+        font-size: 0.8rem;
+    }
+
+    .products-table th,
+    .products-table td {
+        white-space: nowrap;
     }
 }
 
@@ -2762,10 +2842,10 @@ body {
 }
 
 .table thead th {
-    background-color: #6f42c1 !important; /* Morado Bootstrap elegante */
+    background-color: var(--primary-color) !important;
     color: #fff !important;
     vertical-align: middle;
-    border-bottom: 2px solid #5a32a3 !important; /* Un tono más oscuro para contraste */
+    border-bottom: 2px solid var(--primary-dark) !important;
 }
 
 

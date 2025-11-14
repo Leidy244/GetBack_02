@@ -17,6 +17,112 @@ const adminApp = {
 	},
 
 	/* -------------------------------
+	   APARIENCIA DEL PANEL ADMIN (TEMA / FUENTE / CONTRASTE)
+	--------------------------------*/
+	applyAdminFontSize(size) {
+		const sizes = {
+			'pequeno': '14px',
+			'mediano': '16px',
+			'grande': '18px'
+		};
+
+		if (sizes[size]) {
+			// Aplicar al root para que rem escale todo el panel
+			document.documentElement.style.fontSize = sizes[size];
+			// Compatibilidad con estilos heredados desde body
+			document.body.style.fontSize = sizes[size];
+		}
+	},
+
+	applyAdminTheme(theme) {
+		const body = document.body;
+		if (!body) return;
+
+		// "default" limpia el atributo para usar los valores por defecto de :root
+		if (!theme || theme === 'default') {
+			body.removeAttribute('data-admin-theme');
+			return;
+		}
+
+		body.setAttribute('data-admin-theme', theme);
+	},
+
+	applyAdminContrast(contrast) {
+		const body = document.body;
+		if (!body) return;
+
+		// valores esperados: '0', '1', '2'
+		if (contrast === undefined || contrast === null || contrast === '') {
+			body.removeAttribute('data-admin-contrast');
+			return;
+		}
+
+		body.setAttribute('data-admin-contrast', String(contrast));
+	},
+
+	setupAdminAppearanceSettings() {
+		// Cargar ajustes guardados al iniciar
+		let saved = {};
+		try {
+			saved = JSON.parse(localStorage.getItem('adminAppearanceSettings')) || {};
+		} catch (e) {
+			console.warn('No se pudieron cargar las preferencias de apariencia del admin', e);
+		}
+
+		// Aplicar inmediatamente lo guardado (si existe)
+		if (saved.fontSize) {
+			this.applyAdminFontSize(saved.fontSize);
+		}
+		if (saved.theme) {
+			this.applyAdminTheme(saved.theme);
+		}
+		if (saved.contrast !== undefined) {
+			this.applyAdminContrast(saved.contrast);
+		}
+
+		// Enlazar controles del modal si existen en la vista actual
+		const fontSizeSelect = document.getElementById('fontSizeSelect');
+		const themeSelect = document.getElementById('themeSelect');
+		const contrastRange = document.getElementById('contrastRange');
+		const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+
+		if (!saveSettingsBtn) {
+			return; // Estamos en otra sección sin el modal de perfil
+		}
+
+		// Sincronizar valores actuales de los controles con lo guardado
+		try {
+			const stored = JSON.parse(localStorage.getItem('adminAppearanceSettings')) || {};
+			if (fontSizeSelect && stored.fontSize) {
+				fontSizeSelect.value = stored.fontSize;
+			}
+			if (themeSelect && stored.theme) {
+				themeSelect.value = stored.theme;
+			}
+			if (contrastRange && stored.contrast !== undefined) {
+				contrastRange.value = stored.contrast;
+			}
+		} catch (_) { }
+
+		// Al guardar ajustes desde el modal, persistir todos los valores
+		saveSettingsBtn.addEventListener('click', () => {
+			const newSettings = {
+				fontSize: fontSizeSelect?.value || 'mediano',
+				theme: themeSelect?.value || 'default',
+				contrast: contrastRange?.value ?? '1'
+			};
+
+			// Aplicar inmediatamente
+			this.applyAdminFontSize(newSettings.fontSize);
+			this.applyAdminTheme(newSettings.theme);
+			this.applyAdminContrast(newSettings.contrast);
+
+			// Guardar para futuras sesiones
+			localStorage.setItem('adminAppearanceSettings', JSON.stringify(newSettings));
+		});
+	},
+
+	/* -------------------------------
 	   MODAL ÚNICO PARA PRODUCTOS
 	--------------------------------*/
 	setupProductModal() {
@@ -406,6 +512,15 @@ const adminApp = {
 		const logoutBtn = document.querySelector('.logout-btn');
 		if (logoutBtn) {
 			logoutBtn.addEventListener('click', () => this.logout());
+		}
+
+		// Toggle sidebar en pantallas pequeñas
+		const sidebarToggle = document.getElementById('sidebarToggle');
+		const sidebar = document.querySelector('.sidebar');
+		if (sidebarToggle && sidebar) {
+			sidebarToggle.addEventListener('click', () => {
+				sidebar.classList.toggle('active');
+			});
 		}
 
 		// Configurar todos los formularios

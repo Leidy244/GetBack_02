@@ -44,8 +44,8 @@
 
 [data-color="dorado"] {
 	--morado: #92400E; /* Dorado oscuro */
-	--turquesa: #D97706; /* Naranja dorado */
-	--rosado: #FCD34D; /* Dorado claro */
+	--turquesa: rgb(252, 190, 122); /* Naranja dorado */
+	--rosado: rgb(251, 172, 85); /* Dorado claro */
 	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
 }
 
@@ -1314,14 +1314,14 @@ html[style*="font-size: 14px"] #formFoto input {
 /* Nivel 0: sin cambios adicionales */
 [data-contrast="0"] .content-card,
 [data-contrast="0"] .settings-content {
-	filter: none;
+	filter: contrast(0.9) brightness(1) saturate(1);
 }
 
 /* Nivel 1: contraste medio, bien visible */
 [data-contrast="1"] .content-card,
 [data-contrast="1"] .settings-content {
 	/* Aumento claro de contraste y brillo */
-	filter: contrast(1.35) brightness(1.06);
+	filter: contrast(1.1) brightness(1.05) saturate(1.05);
 }
 
 /* Nivel 2: contraste muy alto, máximo */
@@ -1374,3 +1374,5 @@ html[style*="font-size: 14px"] #formFoto input {
 		/* Reducimos la sombra, pero no la eliminamos del todo para no romper la estética de los temas */
 		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
 	}
+	
+}
