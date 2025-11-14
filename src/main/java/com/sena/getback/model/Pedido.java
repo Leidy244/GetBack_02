@@ -18,9 +18,16 @@ public class Pedido {
     @Column(name = "estado_pago", length = 50)
     private String estadoPago;
 
+    @Column(name = "total")
+    private Double total;
+
     // ✅ Nuevo campo: fecha y hora de creación automática
     @Column(name = "fecha_hora_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaHoraCreacion;
+
+    // ✅ Campo adicional para compatibilidad con BD existente
+    @Column(name = "fechaCreacion", nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
 
     // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,7 +57,9 @@ public class Pedido {
 
     // ✅ Constructor: asigna fecha y hora automáticamente
     public Pedido() {
-        this.fechaHoraCreacion = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        this.fechaHoraCreacion = now;
+        this.fechaCreacion = now;
     }
 
     public Pedido(String comentario, Usuario usuario, Menu menu, Mesa mesa, Estado estado) {
@@ -59,7 +68,9 @@ public class Pedido {
         this.menu = menu;
         this.mesa = mesa;
         this.estado = estado;
-        this.fechaHoraCreacion = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        this.fechaHoraCreacion = now;
+        this.fechaCreacion = now;
     }
 
     // Getters y Setters
@@ -79,6 +90,7 @@ public class Pedido {
         this.comentario = comentario;
     }
 
+
     public String getEstadoPago() {
         return estadoPago;
     }
@@ -87,12 +99,28 @@ public class Pedido {
         this.estadoPago = estadoPago;
     }
 
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
     public LocalDateTime getFechaHoraCreacion() {
         return fechaHoraCreacion;
     }
 
     public void setFechaHoraCreacion(LocalDateTime fechaHoraCreacion) {
         this.fechaHoraCreacion = fechaHoraCreacion;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 
     public Usuario getUsuario() {

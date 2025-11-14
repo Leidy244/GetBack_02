@@ -16,6 +16,7 @@ public class Categoria {
     
     private String nombre;
     private String descripcion;
+    private String area; // Cocina o Bar
     
     // Constructores
     public Categoria() {
@@ -49,6 +50,14 @@ public class Categoria {
     
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
     
     @Override

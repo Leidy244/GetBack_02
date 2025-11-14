@@ -45,6 +45,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
+                        <th>Área</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -52,6 +53,7 @@
                     <tr th:each="categoria : ${categorias}" data-row="cat">
                         <td th:text="${categoria.id}">1</td>
                         <td><strong th:text="${categoria.nombre}">Categoría</strong></td>
+                        <td th:text="${categoria.area}">Cocina</td>
                         <td>
                             <div class="btn-group">
                                 <!-- Editar -->
@@ -102,6 +104,14 @@
                         <label class="form-label required">Nombre de Categoría</label>
                         <input type="text" name="nombre" class="form-control" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Área</label>
+                        <select name="area" class="form-select" required>
+                            <option value="" disabled selected>Selecciona área</option>
+                            <option value="Cocina">Cocina</option>
+                            <option value="Bar">Bar</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
@@ -129,6 +139,13 @@
                         <div class="mb-3">
                             <label class="form-label required">Nombre de Categoría</label>
                             <input type="text" name="nombre" th:value="${categoria.nombre}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">Área</label>
+                            <select name="area" class="form-select" required>
+                                <option value="Cocina" th:selected="${categoria.area} == 'Cocina'">Cocina</option>
+                                <option value="Bar" th:selected="${categoria.area} == 'Bar'">Bar</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
