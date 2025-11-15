@@ -56,6 +56,7 @@ public class MeseroController {
 		return "mesero/fusionMesas";
 	}
 
+
 	@GetMapping("/mesero/menu")
 	public String mesasMenu(@RequestParam(name = "mesa", required = false, defaultValue = "1") Integer mesaId,
 			Model model, HttpSession session) {

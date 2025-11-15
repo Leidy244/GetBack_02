@@ -31,63 +31,6 @@
                th:classappend="${activeSection == 'ventas-rapidas'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-bolt"></i> Ventas Rápidas
             </a>
-            
-            <!-- Gestión de Pedidos -->
-            <div class="sidebar-section-divider">Gestión de Pedidos</div>
-            
-            <a th:href="@{/caja(section='pedidos-activos')}" 
-               th:classappend="${activeSection == 'pedidos-activos'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-list"></i> Pedidos Activos
-            </a>
-            
-            <a th:href="@{/caja(section='pedidos-pendientes')}" 
-               th:classappend="${activeSection == 'pedidos-pendientes'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-clock"></i> Pedidos Pendientes
-            </a>
-            
-            <a th:href="@{/caja(section='pedidos-finalizados')}" 
-               th:classappend="${activeSection == 'pedidos-finalizados'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-check-circle"></i> Pedidos Completados
-            </a>
-            
-            <!-- Operaciones -->
-            <div class="sidebar-section-divider">Operaciones</div>
-            
-            <a th:href="@{/caja(section='devoluciones')}" 
-               th:classappend="${activeSection == 'devoluciones'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-undo"></i> Devoluciones
-            </a>
-            
-            <a th:href="@{/caja(section='productos-populares')}" 
-               th:classappend="${activeSection == 'productos-populares'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-chart-line"></i> Productos Populares
-            </a>
-            
-            <!-- Reportes y Cierre -->
-            <div class="sidebar-section-divider">Reportes y Cierre</div>
-            
-            <a th:href="@{/caja(section='reportes-diarios')}" 
-               th:classappend="${activeSection == 'reportes-diarios'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-chart-bar"></i> Reportes Diarios
-            </a>
-            
-            <a th:href="@{/caja(section='cierre-caja')}" 
-               th:classappend="${activeSection == 'cierre-caja'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-door-closed"></i> Cierre de Caja
-            </a>
-            
-            <!-- Configuración -->
-            <div class="sidebar-section-divider">Configuración</div>
-            
-            <a th:href="@{/caja(section='turnos')}" 
-               th:classappend="${activeSection == 'turnos'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-user-clock"></i> Turnos
-            </a>
-            
-            <a th:href="@{/caja(section='configuracion')}" 
-               th:classappend="${activeSection == 'configuracion'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-cog"></i> Configuración
-            </a>
         </nav>
         
         <div class="sidebar-footer">

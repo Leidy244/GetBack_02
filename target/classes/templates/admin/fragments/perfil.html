@@ -6,7 +6,13 @@
 
 		<!-- Header -->
 		<div class="section-header">
-			<h2><i class="fas fa-user-shield"></i> Perfil del Administrador</h2>
+			<h2>
+				<i class="fas fa-user-shield"></i>
+				<span>Perfil del Administrador</span>
+				<button type="button" class="admin-settings-btn" id="adminSettingsBtn" title="Configuración de apariencia">
+					<i class="fas fa-gear"></i>
+				</button>
+			</h2>
 		</div>
 
 		<!-- Información -->
@@ -48,8 +54,8 @@
 								</div>
 							</div>
 
-							<!-- FORMULARIO EDITAR PERFIL (inline) -->
-							<div id="editar-perfil" class="col-lg-4 col-md-6 col-12" style="display:none; min-width:420px;">
+							<!-- FORMULARIO EDITAR PERFIL  -->
+							<div id="editar-perfil" class="col-lg-4 col-md-6 col-12" style="display:none;">
 								<div class="content-card">
 									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i class="fas fa-user-edit"></i> Editar perfil</div>
 									<div class="card-body">
@@ -88,8 +94,8 @@
 								</div>
 							</div>
 
-							<!-- CAMBIAR FOTO (inline) -->
-							<div id="cambiar-foto" class="col-lg-4 col-md-6 col-12" style="display:none; min-width:420px;">
+							<!-- CAMBIAR FOTO  -->
+							<div id="cambiar-foto" class="col-lg-4 col-md-6 col-12" style="display:none;">
 								<div class="content-card">
 									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i class="fas fa-camera"></i> Cambiar Foto</div>
 									<div class="card-body">
@@ -119,50 +125,174 @@
 				</div>
 			</div>
 		</div>
+		
+		<!-- Modal de Configuración -->
+		<div class="adminsettings-modal" id="adminsettingsModal">
+
+			<div class="settings-content">
+				<span class="close-settings" id="closeSettings">&times;</span>
+				<h2><i class="fa-solid fa-sliders"></i> Configuración</h2>
+
+				<!-- Eliminado bloque de idioma -->
+
+				<div class="setting-item">
+					<label>
+						<i class="fa-solid fa-bell"></i> <span>Notificaciones</span>
+						<input type="checkbox" id="notificacionesSwitch">
+					</label>
+				</div>
+
+				<div class="setting-item">
+					<label for="contrastRange">
+						<i class="fa-solid fa-circle-half-stroke"></i> <span>Contraste</span>
+					</label>
+					<div class="contrast-control">
+						<span>Bajo</span>
+						<input type="range" id="contrastRange" min="0" max="2" step="1">
+						<span>Alto</span>
+					</div>
+				</div>
+
+				<div class="setting-item">
+					<label>
+						<i class="fa-solid fa-palette"></i> <span>Tema de colores</span>
+					</label>
+					<select id="themeSelect">
+						<option value="default">Morado / Turquesa (predeterminado)</option>
+						<option value="azul">Azules</option>
+						<option value="verde">Verdes</option>
+						<option value="rojo">Rojos</option>
+						<option value="dorado">Dorados</option>
+						<option value="rosa">Rosados</option>
+						<option value="gris">Grises</option>
+					</select>
+				</div>
+
+				<div class="setting-item">
+					<label>
+						<i class="fa-solid fa-text-height"></i> <span>Tamaño de fuente</span>
+					</label>
+					<select id="fontSizeSelect">
+						<option value="pequeno">Pequeño</option>
+						<option value="mediano">Mediano</option>
+						<option value="grande">Grande</option>
+					</select>
+				</div>
+				<button type="button" class="save-btn" id="saveSettingsBtn">Guardar cambios</button>
+			</div>
+		</div>
 
 		<!-- SCRIPT -->
 		<script>
-			document.addEventListener("DOMContentLoaded", () => {
-				const inputFoto = document.getElementById("inputFoto");
-				const nombreArchivo = document.getElementById("nombreArchivo");
-				const preview = document.getElementById("previewFoto");
-				const previewIniciales = document.getElementById("previewIniciales");
-				const btnShowEdit = document.getElementById("btnShowEdit");
-				const btnHideEdit = document.getElementById("btnHideEdit");
-				const btnShowPhoto = document.getElementById("btnShowPhoto");
-				const btnHidePhoto = document.getElementById("btnHidePhoto");
-				const boxEdit = document.getElementById("editar-perfil");
-				const boxPhoto = document.getElementById("cambiar-foto");
+		document.addEventListener("DOMContentLoaded", () => {
+		    const inputFoto        = document.getElementById("inputFoto");
+		    const nombreArchivo    = document.getElementById("nombreArchivo");
+		    const preview          = document.getElementById("previewFoto");
+		    const previewIniciales = document.getElementById("previewIniciales");
+		    const btnShowEdit      = document.getElementById("btnShowEdit");
+		    const btnHideEdit      = document.getElementById("btnHideEdit");
+		    const btnShowPhoto     = document.getElementById("btnShowPhoto");
+		    const btnHidePhoto     = document.getElementById("btnHidePhoto");
+		    const boxEdit          = document.getElementById("editar-perfil");
+		    const boxPhoto         = document.getElementById("cambiar-foto");
 
-				if (btnShowEdit && boxEdit) btnShowEdit.addEventListener('click', ()=>{
-                    const willShow = boxEdit.style.display==='none';
-                    boxPhoto.style.display = 'none';
-                    boxEdit.style.display = willShow ? 'block' : 'none';
-                });
-				if (btnHideEdit && boxEdit) btnHideEdit.addEventListener('click', ()=>{ boxEdit.style.display = 'none'; });
-				if (btnShowPhoto && boxPhoto) btnShowPhoto.addEventListener('click', ()=>{
-                    const willShow = boxPhoto.style.display==='none';
-                    boxEdit.style.display = 'none';
-                    boxPhoto.style.display = willShow ? 'block' : 'none';
-                });
-				if (btnHidePhoto && boxPhoto) btnHidePhoto.addEventListener('click', ()=>{ boxPhoto.style.display = 'none'; });
+		    // Editar perfil
+		    if (btnShowEdit && boxEdit && boxPhoto) {
+		        btnShowEdit.addEventListener('click', () => {
+		            const willShow = boxEdit.style.display === 'none' || boxEdit.style.display === '';
+		            boxPhoto.style.display = 'none';
+		            boxEdit.style.display = willShow ? 'block' : 'none';
+		        });
+		    }
+		    if (btnHideEdit && boxEdit) {
+		        btnHideEdit.addEventListener('click', () => {
+		            boxEdit.style.display = 'none';
+		        });
+		    }
 
-				if (inputFoto && nombreArchivo) {
-					inputFoto.addEventListener("change", () => {
-						const archivo = inputFoto.files[0];
-						nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
-						if (archivo) {
-							const url = URL.createObjectURL(archivo);
-							if (preview) { preview.src = url; preview.style.display = 'block'; }
-							if (previewIniciales) { previewIniciales.style.display = 'none'; }
-							const headerAvatar = document.querySelector('.admin-header .user-avatar .avatar-img');
-							if (headerAvatar) headerAvatar.src = url;
-						}
-					});
-				}
-			});
+		    // Cambiar foto
+		    if (btnShowPhoto && boxPhoto && boxEdit) {
+		        btnShowPhoto.addEventListener('click', () => {
+		            const willShow = boxPhoto.style.display === 'none' || boxPhoto.style.display === '';
+		            boxEdit.style.display = 'none';
+		            boxPhoto.style.display = willShow ? 'block' : 'none';
+		        });
+		    }
+		    if (btnHidePhoto && boxPhoto) {
+		        btnHidePhoto.addEventListener('click', () => {
+		            boxPhoto.style.display = 'none';
+		        });
+		    }
+
+		    // Preview de foto
+		    if (inputFoto && nombreArchivo) {
+		        inputFoto.addEventListener("change", () => {
+		            const archivo = inputFoto.files[0];
+		            nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
+
+		            if (archivo) {
+		                const url = URL.createObjectURL(archivo);
+		                if (preview) {
+		                    preview.src = url;
+		                    preview.style.display = 'block';
+		                }
+		                if (previewIniciales) {
+		                    previewIniciales.style.display = 'none';
+		                }
+		                const headerAvatar = document.querySelector('.admin-header .user-avatar .avatar-img');
+		                if (headerAvatar) {
+		                    headerAvatar.src = url;
+		                }
+		            }
+		        });
+		    }
+
+			// === Configuración: Modal de ajustes ===
+			const adminSettingsBtn = document.getElementById('adminSettingsBtn');
+			const adminSettingsModal = document.getElementById('adminsettingsModal');
+			const closeSettingsBtn = document.getElementById('closeSettings');
+
+			// Abrir modal al hacer clic en el engranaje
+			if (adminSettingsBtn && adminSettingsModal) {
+			    adminSettingsBtn.addEventListener('click', () => {
+			        adminSettingsModal.classList.add('show');
+			    });
+			}
+
+			// Cerrar modal al hacer clic en la X
+			if (closeSettingsBtn && adminSettingsModal) {
+			    closeSettingsBtn.addEventListener('click', () => {
+			        adminSettingsModal.classList.remove('show');
+			    });
+			}
+
+			// Cerrar modal al hacer clic fuera del contenido
+			if (adminSettingsModal) {
+			    adminSettingsModal.addEventListener('click', (e) => {
+			        if (e.target === adminSettingsModal) {
+			            adminSettingsModal.classList.remove('show');
+			        }
+			    });
+			}
+
+			// Guardar configuración (función básica)
+			const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+			if (saveSettingsBtn) {
+			    saveSettingsBtn.addEventListener('click', () => {
+			        if (typeof Swal !== 'undefined') {
+			            Swal.fire({
+			                icon: 'success',
+			                title: 'Ajustes guardados',
+			                text: 'Tus preferencias de apariencia se han aplicado correctamente.',
+			                showConfirmButton: false,
+			                timer: 1700
+			            });
+			        }
+			        adminSettingsModal.classList.remove('show');
+			    });
+			}
+		});
 		</script>
 	</section>
 </body>
-
 </html>

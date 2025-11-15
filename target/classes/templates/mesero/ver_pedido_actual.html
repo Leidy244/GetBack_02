@@ -93,7 +93,12 @@
         </footer>
     </div>
 
-    <script th:inline="javascript">
+	<script th:src="@{/js/ConfigMesero.js}" defer></script>
+    <script>
+        // Efecto adicional: hacer el overlay ligeramente interactivo
+
+
+  
         function volverAlMenu() {
             window.history.back();
         }
@@ -110,7 +115,6 @@
             const mesaId = /*[[${mesaId}]]*/ 1;
             window.location.href = '/mesero/menu?mesa=' + mesaId;
         }
-
         document.addEventListener('DOMContentLoaded', function() {
             // Establecer fecha y hora actual del equipo en el resumen del pedido
             const fechaSpan = document.getElementById('fechaHoraPedido');

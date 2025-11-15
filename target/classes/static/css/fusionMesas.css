@@ -1,5 +1,6 @@
 /* ===== VARIABLES GLOBALES ===== */
 :root {
+    /* Tema por defecto (morado/turquesa) */
     --primary: #701BA4;
     --primary-light: #8d3bc5;
     --primary-dark: #4d1373;
@@ -19,6 +20,49 @@
     --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
+/* ===== TEMAS POR data-color (controlados desde ConfigMesero.js) ===== */
+[data-color="azul"] {
+    --primary: #1D4ED8;           /* azul fuerte */
+    --primary-light: #3B82F6;     /* azul claro */
+    --primary-dark: #1E3A8A;      /* azul oscuro */
+    --accent: #0EA5E9;            /* celeste */
+}
+
+[data-color="verde"] {
+    --primary: #065F46;           /* verde oscuro */
+    --primary-light: #10B981;     /* verde esmeralda */
+    --primary-dark: #064E3B;      /* verde más profundo */
+    --accent: #22C55E;            /* verde brillante */
+}
+
+[data-color="rojo"] {
+    --primary: #B91C1C;           /* rojo intenso */
+    --primary-light: #F97373;     /* rojo claro */
+    --primary-dark: #7F1D1D;      /* rojo oscuro */
+    --accent: #F97316;            /* naranja para acento */
+}
+
+[data-color="dorado"] {
+    --primary: #92400E;           /* dorado oscuro */
+    --primary-light: #D97706;     /* dorado medio */
+    --primary-dark: #78350F;      /* ámbar profundo */
+    --accent: #FBBF24;            /* dorado claro */
+}
+
+[data-color="rosa"] {
+    --primary: #BE185D;           /* rosa fuerte */
+    --primary-light: #EC4899;     /* rosa claro */
+    --primary-dark: #9D174D;      /* rosa oscuro */
+    --accent: #F9A8D4;            /* rosa pastel */
+}
+
+[data-color="gris"] {
+    --primary: #4B5563;           /* gris oscuro */
+    --primary-light: #9CA3AF;     /* gris medio */
+    --primary-dark: #374151;      /* gris muy oscuro */
+    --accent: #E5E7EB;            /* gris claro para acento */
+}
+
 /* ===== RESET Y ESTILOS BASE ===== */
 * {
     margin: 0;
@@ -28,7 +72,6 @@
 }
 
 html {
-    font-size: 16px;
     scroll-behavior: smooth;
 }
 
@@ -566,6 +609,64 @@ nav {
     transform: translateX(0);
 }
 
+
+@media (max-width: 768px) {
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        height: 100vh;
+        background: var(--primary-dark);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        transition: right 0.3s ease;
+        padding-top: 80px;
+        z-index: 1000;
+    }
+
+    .nav-links.active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .mesas-container {
+        grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+
+    .mesas-container {
+        grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr));
+        gap: 0.9375rem;
+    }
+
+    .mesa {
+        padding: 0.9375rem;
+    }
+
+    .nav-links {
+        width: 85%;
+    }
+
 .notification.success {
     border-left-color: var(--success);
 }
@@ -576,7 +677,7 @@ nav {
 
 .notification.error {
     border-left-color: var(--error);
-}
+
 
 .notification-content {
     display: flex;
@@ -931,4 +1032,128 @@ nav {
         min-width: 44px;
         min-height: 44px;
     }
+}
+}
+}
+/* ===== DROPDOWN ADMINISTRADOR ===== */
+.user-dropdown {
+    position: relative;
+}
+
+.user-profile {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.6rem;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: 0.95rem;
+}
+
+.user-profile:hover {
+    background: linear-gradient(135deg, var(--primary-light), var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+}
+
+.dropdown-arrow {
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.user-profile.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.user-dropdown .dropdown-menu {
+    background: var(--surface);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0;
+    box-shadow: var(--shadow-hover);
+    min-width: 220px;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    list-style: none;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.25s ease-in-out;
+    z-index: 1500;
+}
+
+.user-dropdown .dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.user-dropdown .dropdown-item {
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+    margin: 0 0.5rem;
+    width: calc(100% - 1rem);
+}
+
+.user-dropdown .dropdown-item i {
+    font-size: 1rem;
+    color: var(--accent);
+    transition: var(--transition);
+    width: 20px;
+    text-align: center;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.user-dropdown .dropdown-item:hover i {
+    color: #fff;
+}
+
+.user-dropdown .dropdown-divider {
+    margin: 0.5rem 0;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.logout-btn {
+    width: calc(100% - 1rem);
+    margin: 0 0.5rem;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, var(--error), #d32f2f);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+}
+
+.logout-btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
 }

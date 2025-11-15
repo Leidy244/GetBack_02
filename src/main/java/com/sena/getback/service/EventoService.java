@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.stream.Collectors;
 
 @Service
 public class EventoService {
@@ -77,6 +80,19 @@ public class EventoService {
         return java.util.Arrays.stream(eventosPorMes)
                 .boxed()
                 .toList();
+    }
+
+    public List<Evento> findEventosUltimas24Horas() {
+        LocalDateTime limite = LocalDateTime.now().minusHours(24);
+
+        return eventoRepository.findAll().stream()
+                .filter(evento -> evento.getFecha() != null)
+                .filter(evento -> {
+                    LocalTime hora = evento.getHora() != null ? evento.getHora() : LocalTime.MIDNIGHT;
+                    LocalDateTime fechaHoraEvento = LocalDateTime.of(evento.getFecha(), hora);
+                    return fechaHoraEvento.isAfter(limite);
+                })
+                .collect(Collectors.toList());
     }
 
 }

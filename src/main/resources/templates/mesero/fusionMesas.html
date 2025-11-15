@@ -193,6 +193,23 @@
 <button id="back-to-top" title="Volver arriba"><i class="fas fa-chevron-up"></i></button>
 
 <script>
+	
+	
+	  document.addEventListener('DOMContentLoaded', function () {
+	    try {
+	      const saved = JSON.parse(localStorage.getItem('meseroSettings')) || {};
+	      const theme = saved.theme || 'default';
+
+	      if (theme && theme !== 'default') {
+	        document.documentElement.setAttribute('data-color', theme);
+	      } else {
+	        document.documentElement.removeAttribute('data-color');
+	      }
+	    } catch (e) {
+	      console.warn('No se pudo aplicar el tema del mesero en Fusion Mesas', e);
+	    }
+	  });
+
   function redirectMesa(mesaId, element) {
     const estado = element.getAttribute('data-estado');
     const numeroMesa = element.querySelector('.mesa-numero')?.textContent || 'Mesa';

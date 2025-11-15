@@ -232,9 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const quantity = parseInt(quantityInput.value);
                     if (quantity > 0) {
                         updateOrderItem(productId, productName, price, quantity);
-                        showNotification(`✅ Agregado: ${quantity} x ${productName}`);
+                        showNotification(` Agregado: ${quantity} x ${productName}`);
                     } else {
-                        showNotification('⚠️ Por favor selecciona al menos 1 cantidad', 'warning');
+                        showNotification('Por favor selecciona al menos 1 cantidad', 'warning');
                     }
                 });
             }
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
                 updateTotal();
                 
-                showNotification(`✅ Agregado: ${newQuantity} x ${productName}`);
+                showNotification(` Agregado: ${newQuantity} x ${productName}`);
                 
                 // Update the quantity input
                 const quantityInput = product.querySelector('.quantity-input');

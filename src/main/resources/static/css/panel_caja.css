@@ -46,7 +46,7 @@
     --transition-fast: all 0.15s ease;
 
     /* Dimensiones */
-    --sidebar-width: 280px;
+    --sidebar-width: 260px;
     --header-height: 80px;
     --container-max-width: 1200px;
 }
@@ -276,6 +276,7 @@ body.caja-theme {
     color: var(--text-primary);
     line-height: 1.6;
     font-weight: 400;
+    font-size: 0.85rem;
     overflow-x: hidden;
     width: 100%;
     min-height: 100vh;
@@ -318,27 +319,36 @@ body.caja-theme {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .caja-sidebar-header img.logo-image {
-    width: 180px;
-    height: 120px;
+    max-width: 180px;
+    max-height: 120px;
     object-fit: contain;
     border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+}
+
+.caja-sidebar-header img.logo-image:hover {
+    transform: scale(1.05);
 }
 
 .caja-sidebar-title {
     color: white;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    margin: 0;
+    margin: 0.2rem 0 0.1rem;
+    letter-spacing: 0.8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .caja-navigation-text {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.8rem;
     margin: 0;
+    font-weight: 500;
+    letter-spacing: 0.4px;
 }
 
 .sidebar-section {
@@ -358,6 +368,8 @@ body.caja-theme {
     border-radius: var(--border-radius-sm);
     transition: var(--transition);
     font-weight: 500;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
 }
 
 .sidebar-section .nav-link:hover {
