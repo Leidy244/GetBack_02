@@ -308,10 +308,23 @@ body {
     gap: 12px;
     position: sticky;
     bottom: 0;
+    align-items: stretch;
+}
+
+.footer > button,
+.footer > form {
+    flex: 1;
+}
+
+.footer > form {
+    display: flex;
+}
+
+.footer > form .btn {
+    width: 100%;
 }
 
 .btn {
-    flex: 1;
     padding: 14px;
     border: none;
     border-radius: 10px;
@@ -323,6 +336,7 @@ body {
     gap: 10px;
     transition: all 0.2s;
     font-size: 0.95rem;
+    height: 100%;
 }
 
 .btn i {
@@ -364,6 +378,7 @@ body {
     font-size: 0.9rem;
     border-radius: 6px;
     gap: 6px;
+    height: 100%;
 }
 
 .btn-editar:hover {

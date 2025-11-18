@@ -23,6 +23,8 @@ public class Evento {
 
     private String imagen;
 
+    private String estado = "ACTIVO";
+
     // Constructor vacío
     public Evento() {}
 
@@ -33,6 +35,7 @@ public class Evento {
         this.fecha = fecha;
         this.hora = hora;
         this.imagen = imagen;
+        this.estado = "ACTIVO";
     }
 
     // Getters y setters
@@ -76,5 +79,13 @@ public class Evento {
     }
     public void setImagen(String imagen) {
         this.imagen = imagen;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 }

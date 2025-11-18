@@ -31,6 +31,16 @@
                th:classappend="${activeSection == 'ventas-rapidas'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-bolt"></i> Ventas Rápidas
             </a>
+
+            <a th:href="@{/caja(section='pagos')}" 
+               th:classappend="${activeSection == 'pagos'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-credit-card"></i> Pagos
+            </a>
+
+            <a th:href="@{/caja(section='historial-pagos')}" 
+               th:classappend="${activeSection == 'historial-pagos'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-receipt"></i> Historial de Pagos
+            </a>
         </nav>
         
         <div class="sidebar-footer">

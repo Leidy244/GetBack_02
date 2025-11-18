@@ -41,7 +41,7 @@ public class PedidoController {
         Pedido pedido = (id != null) ? pedidoService.findById(id) : new Pedido();
         if (pedido == null) pedido = new Pedido();
 
-        pedido.setComentario(comentario);
+        pedido.setOrden(comentario);
         pedido.setEstadoPago(estadoPago);
 
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);

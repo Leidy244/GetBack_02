@@ -39,7 +39,7 @@
         <button class="menu-toggle" id="menu-toggle" aria-label="Menú">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="user-dropdown">
+        <div class="user-dropdown" th:if="${esAdmin}">
           <button class="user-profile" id="userDropdown">
             <i class="fas fa-user-circle"></i>
             <span>Mesero</span>
@@ -294,20 +294,35 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     const toast = document.getElementById('welcome-toast');
+    const closeBtn = document.querySelector('.close-toast');
+
     if (toast) {
-      toast.style.display = 'flex';
-      setTimeout(() => toast.classList.add('show'), 500);
-      document.querySelector('.close-toast').addEventListener('click', () => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.style.display = 'none', 500);
-      });
-      setTimeout(() => {
-        if (toast.classList.contains('show')) {
-          toast.classList.remove('show');
-          setTimeout(() => toast.style.display = 'none', 500);
+      const alreadyShown = sessionStorage.getItem('welcomeToastShown') === 'true';
+
+      if (alreadyShown) {
+        toast.style.display = 'none';
+      } else {
+        toast.style.display = 'flex';
+        setTimeout(() => toast.classList.add('show'), 500);
+
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            sessionStorage.setItem('welcomeToastShown', 'true');
+            toast.classList.remove('show');
+            setTimeout(() => toast.style.display = 'none', 500);
+          });
         }
-      }, 5000);
+
+        setTimeout(() => {
+          if (toast.classList.contains('show')) {
+            sessionStorage.setItem('welcomeToastShown', 'true');
+            toast.classList.remove('show');
+            setTimeout(() => toast.style.display = 'none', 500);
+          }
+        }, 5000);
+      }
     }
+
     initFilters();
   });
 </script>

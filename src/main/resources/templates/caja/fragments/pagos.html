@@ -1,6 +1,76 @@
-<!-- templates/caja/fragments/modals.html -->
-<div th:fragment="modals">
-    <!-- Modal de Pago reutilizado para Pagos e Historial de Pagos -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="pagos">
+    <div class="section-header">
+        <h2><i class="fas fa-credit-card"></i> Pagos de Pedidos</h2>
+        <div class="acciones-pedidos">
+            <button class="btn btn-primary">
+                <i class="fas fa-sync"></i> Actualizar lista
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container mb-4">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Mesa</th>
+                    <th>Detalle</th>
+                    <th>Total</th>
+                    <th>Estado pago</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="pago, iStat : ${pagosPendientes}">
+                    <td th:text="${iStat.index + 1}">1</td>
+                    <td>
+                        <strong th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</strong>
+                        <br>
+                        <small th:text="${pago.fechaCreacion}">2025-11-12 18:30</small>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"
+                                th:attr="data-pedido-id=${pago.id}, 
+                                         data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
+                                         data-total=${pago.total},
+                                         data-detalle=${pago.orden}">
+                            <span class="d-inline-block text-truncate detalle-resumen-text" style="max-width: 320px;">
+                                Ver detalle del pedido
+                            </span>
+                        </button>
+                    </td>
+                    <td th:text="${#strings.concat('$', #numbers.formatDecimal(pago.total, 0, 'POINT', 0, 'POINT'))}">$0</td>
+                    <td>
+                        <span class="badge bg-warning"
+                              th:text="${pago.estado != null ? pago.estado.nombreEstado : 'PENDIENTE'}">PENDIENTE</span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-success btn-sm btn-abrir-modal-pago"
+                                th:attr="data-pedido-id=${pago.id}, 
+                                         data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
+                                         data-total=${pago.total},
+                                         data-detalle=${pago.orden}">
+                            <i class="fas fa-money-bill-wave"></i> Cobrar
+                        </button>
+                    </td>
+                </tr>
+
+                <tr th:if="${pagosPendientes == null or #lists.isEmpty(pagosPendientes)}">
+                    <td colspan="6" class="text-center py-4">
+                        <i class="fas fa-check-circle" style="font-size:2rem; color: var(--success-color);"></i>
+                        <p class="mt-2 mb-0">No hay pedidos pendientes de pago.</p>
+                        <small class="text-muted">Los pedidos aparecerán aquí cuando estén listos para ser cobrados.</small>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Modal de Pago -->
     <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -24,7 +94,7 @@
                                         Consumo bar / restaurante
                                     </div>
                                     <hr>
-                                    <h5 class="text-primary"><strong>Total a pagar: <span id="modal-total">$0</span></strong></h5>
+                                    <h5 class="text-primary"><strong>Total a pagar: <span id="modal-total">$0.00</span></strong></h5>
                                 </div>
                             </div>
                         </div>
@@ -71,3 +141,5 @@
         </div>
     </div>
 </div>
+</body>
+</html>

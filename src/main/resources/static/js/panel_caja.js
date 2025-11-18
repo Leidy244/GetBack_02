@@ -15,6 +15,9 @@ class PanelCaja {
         this.actualizarCarrito();
         this.restoreTheme(); // Restaurar tema al inicializar
         this.hidePreloader();
+
+        // Inicializar orden del historial de pagos si existe
+        this.setupHistorialOrden();
     }
 
     setupEventListeners() {
@@ -35,8 +38,6 @@ class PanelCaja {
             pestana.addEventListener('click', this.cambiarMetodoPago.bind(this));
         });
 
-        document.getElementById('monto-recibido')?.addEventListener('input', this.calcularCambio.bind(this));
-
         // Inicio de caja
         document.getElementById('form-inicio-caja')?.addEventListener('submit', this.iniciarCaja.bind(this));
 
@@ -44,12 +45,244 @@ class PanelCaja {
         const darkModeToggle = document.getElementById("darkModeToggle");
         if (darkModeToggle) {
             darkModeToggle.addEventListener("click", () => this.toggleDarkMode());
-        }
+        };
 
         // Configuración del tema desde el formulario
         const temaSelect = document.getElementById('tema');
         if (temaSelect) {
             temaSelect.addEventListener('change', (e) => this.cambiarTemaDesdeConfiguracion(e.target.value));
+        }
+
+        // Pagos de pedidos (sección Pagos)
+        this.setupPagosSection();
+    }
+
+    // Ordenar historial de pagos (más reciente / más viejo)
+    setupHistorialOrden() {
+        const selectOrden = document.getElementById('historial-orden');
+        const tabla = document.getElementById('tabla-historial-pagos');
+        if (!selectOrden || !tabla) return;
+
+        const cuerpo = tabla.querySelector('tbody');
+        if (!cuerpo) return;
+
+        const ordenar = () => {
+            const filas = Array.from(cuerpo.querySelectorAll('tr'));
+            const modo = selectOrden.value; // 'reciente' o 'viejo'
+
+            filas.sort((a, b) => {
+                const fa = new Date(a.getAttribute('data-fecha')).getTime() || 0;
+                const fb = new Date(b.getAttribute('data-fecha')).getTime() || 0;
+                return modo === 'reciente' ? fb - fa : fa - fb;
+            });
+
+            // Reinsertar filas en el nuevo orden y actualizar el índice #
+            filas.forEach((tr, idx) => {
+                const celdaIndice = tr.querySelector('td');
+                if (celdaIndice) celdaIndice.textContent = (idx + 1).toString();
+                cuerpo.appendChild(tr);
+            });
+        };
+
+        // Orden inicial
+        ordenar();
+        // Orden al cambiar el select
+        selectOrden.addEventListener('change', ordenar);
+    }
+
+    // ===== PAGOS DE PEDIDOS (SECCIÓN PAGOS) =====
+    setupPagosSection() {
+        const botonesAbrirModal = document.querySelectorAll('.btn-abrir-modal-pago');
+        const botonesVerDetalle = document.querySelectorAll('.ver-detalle-pago');
+        const modalRecibido = document.getElementById('modal-recibido');
+        const modalCambio = document.getElementById('modal-cambio');
+        const btnConfirmarPago = document.getElementById('btn-confirmar-pago');
+        const modalInfo = document.getElementById('modal-info');
+        const modalError = document.getElementById('modal-error');
+
+        // Helper: formatear montos sin decimales, con separador de miles usando punto (7.000, 70.000)
+        const formatearMonto = (valor) => {
+            const numero = Number(valor);
+            if (!Number.isFinite(numero)) return valor;
+            const entero = Math.round(numero);
+            return entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        };
+
+        // Helper: formatear detalle legible a partir del JSON de orden
+        const formatearDetalle = (detalleJson) => {
+            if (!detalleJson) return 'Sin detalle';
+            try {
+                const data = JSON.parse(detalleJson);
+                const items = Array.isArray(data.items) ? data.items : [];
+                if (items.length === 0) return 'Sin items en el pedido';
+
+                return items.map(item => {
+                    const cantidad = item.cantidad ?? 0;
+                    const nombre = item.productoNombre ?? 'Producto';
+                    const subtotal = item.subtotal ?? 0;
+
+                    // Quitar los decimales (.00) en la visualización del subtotal
+                    const subtotalNumber = Number(subtotal);
+                    const subtotalFormateado = Number.isFinite(subtotalNumber)
+                        ? subtotalNumber.toString()
+                        : subtotal;
+
+                    return `${cantidad}x ${nombre} - $${subtotalFormateado}`;
+                }).join('\n');
+            } catch (e) {
+                console.error('No se pudo parsear el detalle del pedido:', e);
+                return detalleJson;
+            }
+        };
+
+        // Aplicar resumen legible en la tabla para cada botón de detalle
+        botonesVerDetalle.forEach(btn => {
+            const detalle = btn.getAttribute('data-detalle');
+            const resumenCompleto = formatearDetalle(detalle);
+            const resumenLinea = resumenCompleto.split('\n').join(' • ');
+
+            // Tooltip al pasar el mouse
+            btn.title = resumenCompleto;
+
+            // Texto visible en la tabla (resumen corto)
+            const spanTexto = btn.querySelector('.detalle-resumen-text');
+            if (spanTexto) {
+                // Limitar longitud para que no rompa el diseño
+                spanTexto.textContent = resumenLinea.length > 80
+                    ? resumenLinea.substring(0, 77) + '...'
+                    : resumenLinea;
+            }
+        });
+
+        // Abrir modal de pago (desde la sección Pagos - pendientes)
+        botonesAbrirModal.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pedidoId = btn.getAttribute('data-pedido-id');
+                const mesa = btn.getAttribute('data-mesa');
+                const total = parseFloat(btn.getAttribute('data-total'));
+
+                const detalle = btn.getAttribute('data-detalle');
+
+                // Llenar datos del modal
+                document.getElementById('modal-mesa').textContent = mesa;
+                const detalleFormateado = formatearDetalle(detalle);
+                // Usar <br> para que cada producto se muestre en una línea separada
+                document.getElementById('modal-detalle').innerHTML = detalleFormateado.replace(/\n/g, '<br>');
+
+                // Total sin .00 si es entero
+                document.getElementById('modal-total').textContent = `$${formatearMonto(total)}`;
+
+                document.getElementById('modal-pedido-id').value = pedidoId;
+
+                // Limpiar campos
+                modalRecibido.value = '';
+                modalRecibido.readOnly = false;
+                modalCambio.value = '$0';
+                modalCambio.readOnly = true;
+                btnConfirmarPago.disabled = true;
+                modalInfo.style.display = 'block';
+                modalError.style.display = 'none';
+
+                // Asegurar que el botón de confirmar sea visible en modo cobro
+                btnConfirmarPago.style.display = 'inline-block';
+
+                // Abrir modal
+                const modal = new bootstrap.Modal(document.getElementById('modalPago'));
+                modal.show();
+            });
+        });
+
+        // Abrir modal de detalle en modo solo lectura desde el historial de pagos
+        botonesVerDetalle.forEach(btn => {
+            const origen = btn.getAttribute('data-origen');
+            if (origen === 'historial') {
+                btn.addEventListener('click', () => {
+                    const mesa = btn.getAttribute('data-mesa');
+                    const total = parseFloat(btn.getAttribute('data-total')) || 0;
+                    const detalle = btn.getAttribute('data-detalle');
+                    const recibidoAttr = btn.getAttribute('data-recibido');
+                    const cambioAttr = btn.getAttribute('data-cambio');
+
+                    let recibido = recibidoAttr ? parseFloat(recibidoAttr) : NaN;
+                    let cambio = cambioAttr ? parseFloat(cambioAttr) : NaN;
+
+                    // Si no tenemos monto recibido pero sí cambio, intentar reconstruirlo
+                    if (!Number.isFinite(recibido) && Number.isFinite(cambio)) {
+                        recibido = total + cambio;
+                    }
+
+                    // Si no tenemos cambio pero sí monto recibido, calcular cambio
+                    if (!Number.isFinite(cambio) && Number.isFinite(recibido)) {
+                        cambio = recibido - total;
+                    }
+
+                    document.getElementById('modal-mesa').textContent = mesa;
+                    const detalleFormateado = formatearDetalle(detalle);
+                    document.getElementById('modal-detalle').innerHTML = detalleFormateado.replace(/\n/g, '<br>');
+
+                    document.getElementById('modal-total').textContent = `$${formatearMonto(total)}`;
+
+                    // Mostrar montos en modo solo lectura (si existen)
+                    if (Number.isFinite(recibido)) {
+                        modalRecibido.value = formatearMonto(recibido);
+                    } else {
+                        modalRecibido.value = '';
+                    }
+                    modalRecibido.readOnly = true;
+                    if (Number.isFinite(cambio)) {
+                        modalCambio.value = `$${formatearMonto(cambio)}`;
+                    } else {
+                        modalCambio.value = '$0';
+                    }
+
+                    modalCambio.readOnly = true;
+
+                    modalInfo.style.display = 'none';
+                    modalError.style.display = 'none';
+
+                    // Ocultar botón de confirmar en modo historial
+                    btnConfirmarPago.disabled = true;
+                    btnConfirmarPago.style.display = 'none';
+
+                    const modal = new bootstrap.Modal(document.getElementById('modalPago'));
+                    modal.show();
+                });
+            }
+        });
+
+        // Calcular cambio en tiempo real en el modal
+        if (modalRecibido) {
+            modalRecibido.addEventListener('input', () => {
+                const totalElement = document.getElementById('modal-total');
+                // El texto puede venir como "$7.000", eliminamos $ y puntos antes de parsear
+                const total = parseFloat(totalElement.textContent.replace('$', '').replace(/\./g, '')) || 0;
+
+                const recibido = parseFloat(modalRecibido.value) || 0;
+
+                if (recibido > 0) {
+                    modalInfo.style.display = 'none';
+                    
+                    if (recibido >= total) {
+                        const cambio = recibido - total;
+                        modalCambio.value = `$${formatearMonto(cambio)}`;
+
+                        modalError.style.display = 'none';
+                        btnConfirmarPago.disabled = false;
+                        
+                        // Actualizar campo oculto
+                        document.getElementById('modal-monto-recibido-hidden').value = recibido.toFixed(2);
+                    } else {
+                        modalCambio.value = '$0.00';
+                        modalError.style.display = 'block';
+                        btnConfirmarPago.disabled = true;
+                    }
+                } else {
+                    modalCambio.value = '$0.00';
+                    modalInfo.style.display = 'block';
+                    modalError.style.display = 'none';
+                    btnConfirmarPago.disabled = true;
+                }
+            });
         }
     }
 
