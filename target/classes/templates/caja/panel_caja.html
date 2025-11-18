@@ -82,6 +82,16 @@
 				<div th:case="'ventas-rapidas'" class="content-section">
 					<div th:replace="~{caja/fragments/ventas-rapidas :: ventas-rapidas}"></div>
 				</div>
+				
+				<!-- Pagos de pedidos/compras -->
+				<div th:case="'pagos'" class="content-section">
+					<div th:replace="~{caja/fragments/pagos :: pagos}"></div>
+				</div>
+				
+				<!-- Historial de pagos -->
+				<div th:case="'historial-pagos'" class="content-section">
+					<div th:replace="~{caja/fragments/historial-pagos :: historial-pagos}"></div>
+				</div>
 
 				<!-- Sección por defecto (Inicio Caja) -->
 				<div th:case="*" class="content-section">

@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.stream.Collectors;
 
 @Service
 public class EventoService {
@@ -56,6 +59,20 @@ public class EventoService {
             eventoRepository.deleteById(id);
         }
     }
+
+    public void toggleEventoEstado(Long id) {
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+
+        String actual = evento.getEstado();
+        if (actual == null || actual.equalsIgnoreCase("ACTIVO")) {
+            evento.setEstado("INACTIVO");
+        } else {
+            evento.setEstado("ACTIVO");
+        }
+
+        eventoRepository.save(evento);
+    }
  // Contar todos los eventos registrados
     public long count() {
         return eventoRepository.count();
@@ -77,6 +94,20 @@ public class EventoService {
         return java.util.Arrays.stream(eventosPorMes)
                 .boxed()
                 .toList();
+    }
+
+    public List<Evento> findEventosUltimas24Horas() {
+        LocalDateTime limite = LocalDateTime.now().minusHours(24);
+
+        return eventoRepository.findAll().stream()
+                .filter(evento -> evento.getFecha() != null)
+                .filter(evento -> "ACTIVO".equalsIgnoreCase(evento.getEstado()))
+                .filter(evento -> {
+                    LocalTime hora = evento.getHora() != null ? evento.getHora() : LocalTime.MIDNIGHT;
+                    LocalDateTime fechaHoraEvento = LocalDateTime.of(evento.getFecha(), hora);
+                    return fechaHoraEvento.isAfter(limite);
+                })
+                .collect(Collectors.toList());
     }
 
 }

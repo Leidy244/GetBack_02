@@ -232,9 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const quantity = parseInt(quantityInput.value);
                     if (quantity > 0) {
                         updateOrderItem(productId, productName, price, quantity);
-                        showNotification(`✅ Agregado: ${quantity} x ${productName}`);
+                        showNotification(` Agregado: ${quantity} x ${productName}`);
                     } else {
-                        showNotification('⚠️ Por favor selecciona al menos 1 cantidad', 'warning');
+                        showNotification('Por favor selecciona al menos 1 cantidad', 'warning');
                     }
                 });
             }
@@ -267,9 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Helper: formatear montos sin .00, con separador de miles usando punto
+    const formatMonto = (valor) => {
+        const numero = Number(valor) || 0;
+        const entero = Math.round(numero);
+        return entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
     const updateTotal = () => {
         if (pedidoTotalValue) {
-            pedidoTotalValue.textContent = `$${totalOrder.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+            pedidoTotalValue.textContent = `$${formatMonto(totalOrder)}`;
         }
     };
 
@@ -299,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
                 updateTotal();
                 
-                showNotification(`✅ Agregado: ${newQuantity} x ${productName}`);
+                showNotification(` Agregado: ${newQuantity} x ${productName}`);
                 
                 // Update the quantity input
                 const quantityInput = product.querySelector('.quantity-input');
@@ -423,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
             summaryHTML += `
                 <div class="order-item">
                     <span class="item-name">${item.quantity} x ${item.name}</span>
-                    <span class="item-subtotal">$${(item.subtotal).toFixed(2)}</span>
+                    <span class="item-subtotal">$${formatMonto(item.subtotal)}</span>
                 </div>
             `;
         });
@@ -431,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryHTML += `
                 </div>
                 <div class="order-total-modal">
-                    <strong>Total: $${totalOrder.toFixed(2)}</strong>
+                    <strong>Total: $${formatMonto(totalOrder)}</strong>
                 </div>
             </div>
         `;

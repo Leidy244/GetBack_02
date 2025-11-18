@@ -1,0 +1,52 @@
+# General
+actions.save=Guardar cambios
+lang.es=Español
+lang.en=Inglés
+
+# Nav / Header
+mesero.profile.title=Perfil del Mesero
+nav.takeOrder=Tomar Pedido
+nav.stats=Estadísticas
+nav.history=Historial
+nav.settings=Configuración
+nav.logout=Cerrar sesión
+
+# Settings modal
+settings.title=Configuración
+settings.language=Idioma
+settings.notifications=Notificaciones
+settings.fontSize=Tamaño de fuente
+font.small=Pequeño
+font.medium=Mediano
+font.large=Grande
+
+# FusionMesas
+mesas.title=Mesas | GETBACK
+mesas.welcome=¡Bienvenido al Sistema!
+mesas.subtitle=Gestor de Mesas - Get Back
+mesas.filters.all=Todas
+mesas.filters.available=Disponibles
+mesas.filters.occupied=Ocupadas
+mesas.zones.tarima=Tarima
+mesas.zones.barra=Barra
+mesas.zones.fumadores=Fumadores
+mesas.zones.mezzanine=Mezzanine
+mesas.backToTop=Volver arriba
+
+# FusionMesero (menú por mesa)
+menu.title=Menú Pedidos - Mesa
+menu.search.placeholder=Buscar producto...
+menu.filter.all=Todos
+menu.add=Agregar
+menu.send=Enviar Pedido
+menu.backToTables=Volver a Mesas
+
+# Ver Pedido Actual
+order.summary.title=Resumen del Pedido
+order.detail.title=Detalle del Pedido
+order.total.subtotal=Subtotal
+order.total.tax=IGV (18%)
+order.total.total=TOTAL
+order.btn.back=Volver al Menú
+order.btn.cancel=Cancelar Pedido
+order.btn.send=Enviar a Cocina

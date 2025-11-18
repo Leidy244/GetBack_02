@@ -49,6 +49,17 @@ public class EventoController {
 		return "redirect:/admin/eventos";
 	}
 
+	@GetMapping("/toggle-estado/{id}")
+	public String toggleEstadoEvento(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+		try {
+			eventoService.toggleEventoEstado(id);
+			redirectAttributes.addFlashAttribute("success", "Estado del evento actualizado correctamente");
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "Error al actualizar estado del evento");
+		}
+		return "redirect:/admin/eventos";
+	}
+
 	// Editar evento existente
 	@PostMapping("/editar/{id}")
 	public String editarEvento(@PathVariable Long id, @ModelAttribute Evento evento,

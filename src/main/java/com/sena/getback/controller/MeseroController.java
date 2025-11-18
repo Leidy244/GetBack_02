@@ -40,6 +40,9 @@ public class MeseroController {
 	@GetMapping("/mesero")
 	public String mesas(Model model, HttpSession session) {
 		try {
+			// Sincronizar estados de las mesas con los pedidos pendientes/pagados
+			pedidoService.sincronizarEstadoMesas();
+
 			var mesas = mesaService.findAll();
 			var ubicaciones = locationService.findAll(); // ← AÑADIDO: Carga las ubicaciones
 			
@@ -48,6 +51,12 @@ public class MeseroController {
 			model.addAttribute("totalMesas", mesas.size());
 			model.addAttribute("mesasDisponibles", mesas.stream().filter(m -> "DISPONIBLE".equals(m.getEstado())).count());
 			model.addAttribute("mesasOcupadas", mesas.stream().filter(m -> "OCUPADA".equals(m.getEstado())).count());
+			
+			Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+			boolean esAdmin = usuario != null && usuario.getRol() != null && usuario.getRol().getNombre() != null
+					&& "ADMIN".equalsIgnoreCase(usuario.getRol().getNombre());
+			model.addAttribute("esAdmin", esAdmin);
+			
 			// limpiar borrador al regresar a la vista de mesas
 			clearDraft(session);
 		} catch (Exception e) {
@@ -55,6 +64,7 @@ public class MeseroController {
 		}
 		return "mesero/fusionMesas";
 	}
+
 
 	@GetMapping("/mesero/menu")
 	public String mesasMenu(@RequestParam(name = "mesa", required = false, defaultValue = "1") Integer mesaId,
@@ -115,10 +125,10 @@ public class MeseroController {
 			// Cargar borrador si existe (tiene prioridad para vista de confirmacion)
 			sessionDraft(model, mesaId, session);
 			boolean hasDraft = Boolean.TRUE.equals(model.getAttribute("hasDraft"));
-
-			if (!hasDraft && pedido != null && pedido.getComentario() != null && !pedido.getComentario().isEmpty()) {
+			
+			if (!hasDraft && pedido != null && pedido.getOrden() != null && !pedido.getOrden().isEmpty()) {
 				try {
-					Map<String, Object> itemsMap = procesarItemsPedido(pedido.getComentario());
+					Map<String, Object> itemsMap = procesarItemsPedido(pedido.getOrden());
 					model.addAttribute("itemsMap", itemsMap);
 				} catch (Exception e) {
 					model.addAttribute("error", "Error al procesar los items del pedido");
@@ -203,6 +213,19 @@ public class MeseroController {
             e.printStackTrace();
             return "redirect:/mesero/menu?mesa=" + mesaId + "&error=" + e.getMessage();
         }
+    }
+
+    // Cargar un pedido existente como borrador para editarlo en fusionMesero
+    @PostMapping("/pedidos/editar")
+    public String editarPedido(@RequestParam Integer mesaId, HttpSession session) {
+        Pedido pedido = pedidoService.obtenerPedidoActivoPorMesa(mesaId);
+        if (pedido != null) {
+            session.setAttribute("draftMesaId", mesaId);
+            session.setAttribute("draftItemsJson", pedido.getOrden());
+            session.setAttribute("draftComentarios", null);
+            session.setAttribute("draftTotal", pedido.getTotal());
+        }
+        return "redirect:/mesero/menu?mesa=" + mesaId;
     }
 
     // Carga borrador en el modelo si existe

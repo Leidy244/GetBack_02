@@ -15,21 +15,40 @@
         
 
 		<!-- Subtítulo con botones -->
-		<div class="events-header d-flex justify-content-between align-items-center mb-4" style="margin-left: 0;">
-		    <h4 class="section-subtitle mb-0 d-flex align-items-center" style="margin-left: 0;">
-		        <span>Lista de Eventos</span>
-		        <span class="badge bg-primary ms-2" th:text="${eventos.size()}"></span>
-		    </h4>
-		    <div class="d-flex gap-2">
-		        <a th:href="@{/cliente}" target="_blank" 
-		           class="btn btn-success rounded-4 px-3 py-2" title="Ver en Cliente">
-		            <i class="fas fa-eye me-1"></i> Ver en Cliente
-		        </a>
-		        <button class="btn btn-primary rounded-4 px-3 py-2" 
-		                data-bs-toggle="modal" data-bs-target="#eventModalNew">
-		            <i class="fas fa-plus me-2"></i> Agregar Evento
-		        </button>
-		    </div>
+		<div class="events-header mb-3">
+			<div class="d-flex justify-content-between align-items-center mb-2">
+				<h4 class="section-subtitle mb-0">
+					Lista de Eventos
+					<span class="badge bg-primary" th:text="${eventos.size()}"></span>
+				</h4>
+				<div class="d-flex gap-2">
+					<a th:href="@{/cliente}" target="_blank" 
+					   class="btn btn-success rounded-pill shadow-sm px-3" title="Ver en Cliente">
+						<i class="fas fa-eye me-1"></i> Ver en Cliente
+					</a>
+					<button class="btn btn-primary rounded-pill shadow-sm px-3" 
+					        data-bs-toggle="modal" data-bs-target="#eventModalNew">
+						<i class="fas fa-plus me-2"></i> Agregar Evento
+					</button>
+				</div>
+			</div>
+			<div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+				<div class="d-flex flex-wrap gap-2 align-items-center" style="flex:1; min-width:260px;">
+					<div class="input-group" style="max-width: 320px;">
+						<span class="input-group-text"><i class="fas fa-search"></i></span>
+						<input type="text" id="eventAdminFilterInput" class="form-control" placeholder="Filtrar eventos...">
+					</div>
+					<div class="d-flex align-items-center gap-2">
+						<label for="eventStatusFilter" class="form-label mb-0">Estado:</label>
+						<select id="eventStatusFilter" class="form-select form-select-sm" style="min-width: 150px;">
+							<option value="ALL">Todos</option>
+							<option value="ACTIVO">Activos</option>
+							<option value="INACTIVO">Inactivos</option>
+						</select>
+					</div>
+				</div>
+				<div id="eventsPagination" class="btn-group" role="group" aria-label="Paginación"></div>
+			</div>
 		</div>
 
 
@@ -43,11 +62,13 @@
                         <th>Fecha</th>
                         <th>Hora</th>
                         <th>Imagen</th>
+                        <th>Estado</th>
+                        <th>Activar<br>Desactivar</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="evento : ${eventos}">
+                <tbody id="eventsTableBody">
+                    <tr th:each="evento : ${eventos}" data-row th:attr="data-status=${evento.estado}">
                         <td th:text="${evento.id}"></td>
                         <td><strong th:text="${evento.titulo}"></strong></td>
                         <td th:text="${#temporals.format(evento.fecha, 'dd/MM/yyyy')}"></td>
@@ -55,6 +76,17 @@
                         <td>
                             <img th:src="${evento.imagen}" alt="Imagen evento"
                                  class="rounded shadow-sm" style="max-height:60px; max-width:80px;">
+                        </td>
+                        <td>
+                            <span th:class="${evento.estado} == 'ACTIVO' ? 'badge bg-success' : 'badge bg-danger'"
+                                  th:text="${evento.estado}"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/eventos/toggle-estado/{id}(id=${evento.id})}"
+                               th:class="${evento.estado} == 'ACTIVO' ? 'btn btn-secondary btn-sm rounded-pill px-3' : 'btn btn-success btn-sm rounded-pill px-3'"
+                               th:title="${evento.estado} == 'ACTIVO' ? 'Desactivar' : 'Activar'">
+                                <i th:class="${evento.estado} == 'ACTIVO' ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
+                            </a>
                         </td>
                         <td>
                             <div class="d-inline-flex gap-2 justify-content-center">
@@ -207,6 +239,89 @@
         </div>
     </div>
 
+	<script>
+		(function(){
+		  const run = () => {
+		    const tbody = document.getElementById('eventsTableBody');
+		    const filterInput = document.getElementById('eventAdminFilterInput');
+		    const statusSelect = document.getElementById('eventStatusFilter');
+		    const pager = document.getElementById('eventsPagination');
+		    const pageSize = 4;
+		    let rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
+		    let emptyRow = tbody ? tbody.querySelector('tr:not([data-row])') : null;
+		    let filtered = rows.slice();
+		    let page = 1;
+
+		    function getText(r){
+		      const tds = r.querySelectorAll('td');
+		      const id = tds[0] ? (tds[0].innerText || '') : '';
+		      const title = tds[1] ? (tds[1].innerText || '') : '';
+		      const date = tds[2] ? (tds[2].innerText || '') : '';
+		      const time = tds[3] ? (tds[3].innerText || '') : '';
+		      return (id + ' ' + title + ' ' + date + ' ' + time).toLowerCase();
+		    }
+
+		    function render(){
+		      rows.forEach(r => r.style.display = 'none');
+		      if (emptyRow) emptyRow.style.display = filtered.length ? 'none' : '';
+		      const total = filtered.length;
+		      const pages = Math.max(1, Math.ceil(total / pageSize));
+		      page = Math.min(page, pages);
+		      const start = (page - 1) * pageSize;
+		      const end = start + pageSize;
+		      filtered.slice(start, end).forEach(r => r.style.display = '');
+		      renderPager(pages, total);
+		    }
+
+		    function renderPager(pages, total){
+		      if (!pager) return;
+		      pager.innerHTML = '';
+		      if (total <= pageSize) return;
+
+		      const prev = document.createElement('button');
+		      prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
+		      prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
+		      pager.appendChild(prev);
+
+		      for (let i = 1; i <= pages; i++){
+		        const b = document.createElement('button');
+		        b.type = 'button'; b.className = 'btn ' + (i===page ? 'btn-primary' : 'btn-outline-secondary');
+		        b.textContent = i;
+		        b.onclick = () => { page = i; render(); };
+		        pager.appendChild(b);
+		      }
+
+		      const next = document.createElement('button');
+		      next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
+		      next.disabled = page >= pages; next.onclick = () => { page++; render(); };
+		      pager.appendChild(next);
+		    }
+
+		    function applyFilter(){
+		      const q = (filterInput?.value || '').toLowerCase().trim();
+		      const status = (statusSelect?.value || 'ALL');
+		      filtered = rows.filter(r => {
+		        const textMatch = !q || getText(r).includes(q);
+		        const rowStatus = r.getAttribute('data-status') || '';
+		        const statusMatch = status === 'ALL' || rowStatus === status;
+		        return textMatch && statusMatch;
+		      });
+		      page = 1; render();
+		    }
+
+		    if (filterInput) filterInput.addEventListener('input', applyFilter);
+		    if (statusSelect) statusSelect.addEventListener('change', applyFilter);
+		    render();
+		  };
+		  if (document.readyState === 'loading') {
+		    document.addEventListener('DOMContentLoaded', run);
+		  } else {
+		    run();
+		  }
+		})();
+	</script>
+
 </section>
+
 </body>
 </html>

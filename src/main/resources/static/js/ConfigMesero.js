@@ -61,26 +61,38 @@ function loadCurrentSettings() {
 	const savedSettings = JSON.parse(localStorage.getItem('meseroSettings')) || {};
 	const fontSizeSelect = document.getElementById("fontSizeSelect");
 	const notificacionesSwitch = document.getElementById("notificacionesSwitch");
+	const themeSelect = document.getElementById("themeSelect");
+	const contrastRange = document.getElementById("contrastRange");
 
 	if (fontSizeSelect && savedSettings.fontSize) {
 		fontSizeSelect.value = savedSettings.fontSize;
 	}
 
-
 	if (notificacionesSwitch && savedSettings.notificaciones !== undefined) {
 		notificacionesSwitch.checked = savedSettings.notificaciones;
+	}
+
+	if (themeSelect && savedSettings.theme) {
+		themeSelect.value = savedSettings.theme;
+	}
+
+	if (contrastRange && savedSettings.contrastLevel !== undefined) {
+		contrastRange.value = savedSettings.contrastLevel;
 	}
 }
 
 // === APLICAR TAMAÑO DE FUENTE ===
 function applyFontSize(size) {
 	const sizes = {
-		'normal': '16px',
-		'grande': '18px',
-		'extra': '20px'
+		'pequeno': '14px',
+		'mediano': '16px',
+		'grande': '18px'
 	};
 
 	if (sizes[size]) {
+		// Aplicar al root (html) para que rem escale todo el sitio
+		document.documentElement.style.fontSize = sizes[size];
+		// Mantener en body por compatibilidad con estilos heredados
 		document.body.style.fontSize = sizes[size];
 	}
 }
@@ -93,13 +105,39 @@ if (saveBtn) {
 	});
 }
 
+function applyTheme(theme) {
+	if (theme && theme !== 'default') {
+		// Usamos un atributo específico para colores para no romper data-theme="dark"
+		// que se usa para el modo oscuro.
+		// Por ejemplo: data-color="azul" o data-color="verde".
+		document.documentElement.setAttribute('data-color', theme);
+	} else {
+		// Tema por defecto: quitamos el atributo para usar los colores base de :root
+		document.documentElement.removeAttribute('data-color');
+	}
+}
+
+function applyContrastLevel(level) {
+	// level: 0 (bajo), 1 (medio), 2 (alto)
+	if (level === undefined || level === null) {
+		document.documentElement.removeAttribute('data-contrast');
+		return;
+	}
+	const normalized = String(level);
+	document.documentElement.setAttribute('data-contrast', normalized);
+}
+
 function guardarConfiguracion() {
 	const fontSizeSelect = document.getElementById("fontSizeSelect");
 	const notificacionesSwitch = document.getElementById("notificacionesSwitch");
+	const themeSelect = document.getElementById("themeSelect");
+	const contrastRange = document.getElementById("contrastRange");
 
 	const settings = {
 		fontSize: fontSizeSelect?.value || 'normal',
-		notificaciones: notificacionesSwitch?.checked || false
+		notificaciones: notificacionesSwitch?.checked || false,
+		theme: themeSelect?.value || 'default',
+		contrastLevel: contrastRange ? parseInt(contrastRange.value, 10) : 0
 	};
 
 	// Aplicar cambios inmediatamente
@@ -107,12 +145,43 @@ function guardarConfiguracion() {
 		applyFontSize(settings.fontSize);
 	}
 
+	if (themeSelect) {
+		applyTheme(settings.theme);
+	}
+
+	applyContrastLevel(settings.contrastLevel);
+
 	// Guardar en localStorage
 	localStorage.setItem('meseroSettings', JSON.stringify(settings));
 
 	// Mostrar confirmación y cerrar
 	mostrarToast("Configuración guardada correctamente");
 	cerrarModal();
+}
+
+// === UTILIDADES DE CONFIGURACIÓN ===
+function loadSavedSettings() {
+	try {
+		const saved = JSON.parse(localStorage.getItem('meseroSettings')) || {};
+		if (saved.fontSize) {
+			applyFontSize(saved.fontSize);
+		}
+		if (saved.theme) {
+			applyTheme(saved.theme);
+		}
+		if (saved.contrastLevel !== undefined) {
+			applyContrastLevel(saved.contrastLevel);
+		}
+	} catch (e) {
+		console.warn('No se pudieron cargar las configuraciones del mesero', e);
+	}
+}
+
+function syncDarkMode() {
+	const theme = localStorage.getItem('theme');
+	if (theme === 'dark') {
+		document.documentElement.setAttribute('data-theme', 'dark');
+	}
 }
 
 // === TOAST FLOTANTE ===
@@ -248,27 +317,31 @@ if (form) {
 
 // --- Activar/desactivar modo oscuro ---
 const toggle = document.getElementById('darkModeToggle');
-const icon = toggle.querySelector('i');
+const icon = toggle?.querySelector('i');
 
 // Verifica si el usuario ya tenía modo oscuro activado
 if (localStorage.getItem('theme') === 'dark') {
 	document.documentElement.setAttribute('data-theme', 'dark');
-	icon.classList.replace('fa-moon', 'fa-sun');
+	if (icon) {
+		icon.classList.replace('fa-moon', 'fa-sun');
+	}
 }
 
 // Al hacer clic en el botón
-toggle.addEventListener('click', () => {
-	const currentTheme = document.documentElement.getAttribute('data-theme');
-	if (currentTheme === 'dark') {
-		document.documentElement.removeAttribute('data-theme');
-		icon.classList.replace('fa-sun', 'fa-moon');
-		localStorage.setItem('theme', 'light');
-	} else {
-		document.documentElement.setAttribute('data-theme', 'dark');
-		icon.classList.replace('fa-moon', 'fa-sun');
-		localStorage.setItem('theme', 'dark');
-	}
-});
+if (toggle) {
+	toggle.addEventListener('click', () => {
+		const currentTheme = document.documentElement.getAttribute('data-theme');
+		if (currentTheme === 'dark') {
+			document.documentElement.removeAttribute('data-theme');
+			if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+			localStorage.setItem('theme', 'light');
+		} else {
+			document.documentElement.setAttribute('data-theme', 'dark');
+			if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+			localStorage.setItem('theme', 'dark');
+		}
+	});
+}
 
 // === ConfigMesero.js ===
 

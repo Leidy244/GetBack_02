@@ -13,19 +13,18 @@ public class Pedido {
     private Integer id;
 
     @Lob
-    private String comentario;
-
-    @Column(name = "estado_pago", length = 50)
-    private String estadoPago;
+    @Column(name = "orden", columnDefinition = "LONGTEXT")
+    private String orden;
 
     @Column(name = "total")
     private Double total;
 
-    // ✅ Nuevo campo: fecha y hora de creación automática
-    @Column(name = "fecha_hora_creacion", nullable = false, updatable = false)
-    private LocalDateTime fechaHoraCreacion;
+    @Column(name = "monto_recibido")
+    private Double montoRecibido;
 
-    // ✅ Campo adicional para compatibilidad con BD existente
+    @Column(name = "cambio")
+    private Double cambio;
+
     @Column(name = "fechaCreacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
@@ -55,22 +54,18 @@ public class Pedido {
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Factura factura;
 
-    // ✅ Constructor: asigna fecha y hora automáticamente
+    // ✅ Constructor: asigna fecha de creación automáticamente
     public Pedido() {
-        LocalDateTime now = LocalDateTime.now();
-        this.fechaHoraCreacion = now;
-        this.fechaCreacion = now;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
-    public Pedido(String comentario, Usuario usuario, Menu menu, Mesa mesa, Estado estado) {
-        this.comentario = comentario;
+    public Pedido(String orden, Usuario usuario, Menu menu, Mesa mesa, Estado estado) {
+        this.orden = orden;
         this.usuario = usuario;
         this.menu = menu;
         this.mesa = mesa;
         this.estado = estado;
-        LocalDateTime now = LocalDateTime.now();
-        this.fechaHoraCreacion = now;
-        this.fechaCreacion = now;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     // Getters y Setters
@@ -82,21 +77,12 @@ public class Pedido {
         this.id = id;
     }
 
-    public String getComentario() {
-        return comentario;
+    public String getOrden() {
+        return orden;
     }
 
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
-    }
-
-
-    public String getEstadoPago() {
-        return estadoPago;
-    }
-
-    public void setEstadoPago(String estadoPago) {
-        this.estadoPago = estadoPago;
+    public void setOrden(String orden) {
+        this.orden = orden;
     }
 
     public Double getTotal() {
@@ -107,12 +93,20 @@ public class Pedido {
         this.total = total;
     }
 
-    public LocalDateTime getFechaHoraCreacion() {
-        return fechaHoraCreacion;
+    public Double getMontoRecibido() {
+        return montoRecibido;
     }
 
-    public void setFechaHoraCreacion(LocalDateTime fechaHoraCreacion) {
-        this.fechaHoraCreacion = fechaHoraCreacion;
+    public void setMontoRecibido(Double montoRecibido) {
+        this.montoRecibido = montoRecibido;
+    }
+
+    public Double getCambio() {
+        return cambio;
+    }
+
+    public void setCambio(Double cambio) {
+        this.cambio = cambio;
     }
 
     public LocalDateTime getFechaCreacion() {

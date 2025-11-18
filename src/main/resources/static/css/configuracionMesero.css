@@ -2,7 +2,7 @@
 /* === VARIABLES GLOBALES Y RESET === */
 /* ========================================= */
 :root {
-	/* Colores principales */
+	/* Colores principales (tema por defecto) */
 	--morado: #701BA4;
 	--turquesa: #1AA1A3;
 	--rosado: #FF6B6B;
@@ -20,20 +20,60 @@
 	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
 }
 
+/* Temas de color adicionales controlados por data-color en <html> */
+[data-color="azul"] {
+	--morado: #1D4ED8; /* Azul fuerte */
+	--turquesa: #0EA5E9; /* Celeste */
+	--rosado: #F97316; /* Naranja como color de acento */
+	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
+[data-color="verde"] {
+	--morado: #065F46; /* Verde oscuro */
+	--turquesa: #10B981; /* Verde esmeralda */
+	--rosado: #FBBF24; /* Amarillo como acento */
+	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
+[data-color="rojo"] {
+	--morado: #B91C1C; /* Rojo intenso */
+	--turquesa: #F97373; /* Rojo claro/rosado para contraste */
+	--rosado: #FACC15; /* Amarillo para acento */
+	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
+[data-color="dorado"] {
+	--morado: #92400E; /* Dorado oscuro */
+	--turquesa: rgb(252, 190, 122); /* Naranja dorado */
+	--rosado: rgb(251, 172, 85); /* Dorado claro */
+	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
+[data-color="rosa"] {
+	--morado: #BE185D; /* Rosa fuerte */
+	--turquesa: #EC4899; /* Rosa claro */
+	--rosado: #F9A8D4; /* Rosa pastel */
+	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
+[data-color="gris"] {
+	--morado: #4B5563; /* Gris oscuro */
+	--turquesa: #9CA3AF; /* Gris medio */
+	--rosado: #E5E7EB; /* Gris muy claro para acentos */
+	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
+}
+
 /* ========================================= */
 /* === MODO OSCURO === */
 /* ========================================= */
 [data-theme="dark"],
 .dark-mode {
-	--morado: #8d3bc5;
-	--turquesa: #22d3ee;
-	--rosado: #FF6B6B;
+	/* No tocamos --morado, --turquesa, --rosado ni --gradiente para permitir temas de color */
 	--fondo-claro: #1A1A1A;
 	--fondo-card: rgba(255, 255, 255, 0.08);
 	--texto: #FFFFFF;
 	--texto-secundario: #B0B0B0;
 	--sombra: 0 8px 24px rgba(0, 0, 0, 0.4);
-	--gradiente: linear-gradient(135deg, var(--morado), var(--turquesa));
 }
 
 /* ========================================= */
@@ -1202,32 +1242,93 @@ body[style*="font-size: 18px"] #formFoto input {
 	padding: 1rem 1.1rem;
 }
 
-/* Tamaño Extra Grande */
-body[style*="font-size: 20px"] {
-	font-size: 20px;
+/* Tamaño Extra Grande (22px) */
+body[style*="font-size: 22px"],
+html[style*="font-size: 22px"] {
+	font-size: 22px;
 }
 
-body[style*="font-size: 20px"] .header h2 {
+body[style*="font-size: 22px"] .header h2,
+html[style*="font-size: 22px"] .header h2 {
 	font-size: calc(1.6rem * 1.25);
 }
 
-body[style*="font-size: 20px"] .nav-btn {
+body[style*="font-size: 22px"] .nav-btn,
+html[style*="font-size: 22px"] .nav-btn {
 	font-size: calc(1rem * 1.25);
 	padding: 0.8rem 1.4rem;
 }
 
-body[style*="font-size: 20px"] .user-details h3 {
+body[style*="font-size: 22px"] .user-details h3,
+html[style*="font-size: 22px"] .user-details h3 {
 	font-size: calc(2rem * 1.25);
 }
 
-body[style*="font-size: 20px"] .user-details p {
+body[style*="font-size: 22px"] .user-details p,
+html[style*="font-size: 22px"] .user-details p {
 	font-size: calc(1.05rem * 1.25);
 }
 
-body[style*="font-size: 20px"] #formEditar input,
-body[style*="font-size: 20px"] #formFoto input {
+body[style*="font-size: 22px"] #formEditar input,
+html[style*="font-size: 22px"] #formEditar input,
+body[style*="font-size: 22px"] #formFoto input,
+html[style*="font-size: 22px"] #formFoto input {
 	font-size: calc(1rem * 1.25);
 	padding: 1.1rem 1.2rem;
+}
+
+/* Tamaño Pequeño (14px) */
+body[style*="font-size: 14px"],
+html[style*="font-size: 14px"] {
+	font-size: 14px;
+}
+
+body[style*="font-size: 14px"] .nav-btn,
+html[style*="font-size: 14px"] .nav-btn {
+	font-size: 0.95rem;
+	padding: 0.6rem 1.1rem;
+}
+
+body[style*="font-size: 14px"] .user-details h3,
+html[style*="font-size: 14px"] .user-details h3 {
+	font-size: 1.8rem;
+}
+
+body[style*="font-size: 14px"] .user-details p,
+html[style*="font-size: 14px"] .user-details p {
+	font-size: 0.95rem;
+}
+
+body[style*="font-size: 14px"] #formEditar input,
+html[style*="font-size: 14px"] #formEditar input,
+body[style*="font-size: 14px"] #formFoto input,
+html[style*="font-size: 14px"] #formFoto input {
+	font-size: 0.95rem;
+	padding: 0.85rem 1rem;
+}
+
+/* ========================================= */
+/* Contraste configurable por el mesero (0=bajo, 1=medio, 2=alto)
+   Usamos filtros sobre el body para que funcione con cualquier tema y modo oscuro. */
+
+/* Nivel 0: sin cambios adicionales */
+[data-contrast="0"] .content-card,
+[data-contrast="0"] .settings-content {
+	filter: contrast(0.9) brightness(1) saturate(1);
+}
+
+/* Nivel 1: contraste medio, bien visible */
+[data-contrast="1"] .content-card,
+[data-contrast="1"] .settings-content {
+	/* Aumento claro de contraste y brillo */
+	filter: contrast(1.1) brightness(1.05) saturate(1.05);
+}
+
+/* Nivel 2: contraste muy alto, máximo */
+[data-contrast="2"] .content-card,
+[data-contrast="2"] .settings-content {
+	/* Contraste y saturación fuertes, para una diferencia muy marcada */
+	filter: contrast(1.7) brightness(1.1) saturate(1.15);
 }
 
 /* ========================================= */
@@ -1245,7 +1346,7 @@ body[style*="font-size: 20px"] #formFoto input {
 	}
 }
 
-/* Alto contraste */
+/* Alto contraste automático del sistema */
 @media (prefers-contrast: high) {
 	:root {
 		--texto: #000000;
@@ -1258,4 +1359,20 @@ body[style*="font-size: 20px"] #formFoto input {
 	.dropdown-item {
 		border: 2px solid rgba(255, 255, 255, 0.3);
 	}
+
+	[data-contrast="2"] .nav-btn,
+	[data-contrast="2"] .btn,
+	[data-contrast="2"] .dropdown-item,
+	[data-contrast="2"] .setting-item {
+		border-width: 2px;
+		border-style: solid;
+		border-color: var(--texto);
+	}
+
+	[data-contrast="2"] .header,
+	[data-contrast="2"] .content-card {
+		/* Reducimos la sombra, pero no la eliminamos del todo para no romper la estética de los temas */
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+	}
+	
 }
