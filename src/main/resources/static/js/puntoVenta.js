@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let carrito = [];
 
-    // 🧱 Renderizar el carrito
+    // Renderizar el carrito
     function renderCarrito() {
         carritoContainer.innerHTML = '';
 
@@ -32,13 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarTotal();
     }
 
-    // 💰 Total del carrito
+    //  Total del carrito
     function actualizarTotal() {
         const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
         totalCarrito.textContent = total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' });
     }
 
-    // 🟢 Agregar productos
+    // Agregar productos
     document.addEventListener('click', (e) => {
         if (e.target.closest('.btn-agregar')) {
             const card = e.target.closest('.producto-card');
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ➕➖ y 🗑️ dentro del carrito
+    //dentro del carrito
     carritoContainer.addEventListener('click', (e) => {
         const index = e.target.dataset.index;
         if (e.target.classList.contains('btn-sumar')) {
@@ -71,13 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCarrito();
     });
 
-    // 🚮 Vaciar carrito
+    // Vaciar carrito
     btnVaciar.addEventListener('click', () => {
         carrito = [];
         renderCarrito();
     });
 });
-// 🔍 --- FILTRO DE BÚSQUEDA ---
+// --- FILTRO DE BÚSQUEDA ---
 const inputBusqueda = document.getElementById('buscar-productos');
 const btnBuscar = document.getElementById('btn-buscar');
 
@@ -97,8 +97,8 @@ function filtrarProductos() {
     });
 }
 
-// 🔹 Filtra mientras escribe
+// Filtra mientras escribe
 inputBusqueda.addEventListener('input', filtrarProductos);
 
-// 🔹 O al hacer clic en el botón de buscar
+//  O al hacer clic en el botón de buscar
 btnBuscar.addEventListener('click', filtrarProductos);

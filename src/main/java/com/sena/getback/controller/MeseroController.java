@@ -3,6 +3,7 @@ package com.sena.getback.controller;
 import com.sena.getback.service.MenuService;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.model.Pedido;
+import com.sena.getback.model.Mesa;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
 import com.sena.getback.service.LocationService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -162,6 +164,39 @@ public class MeseroController {
         }
     }
 
+    @GetMapping("/mesero/pedido/resumen")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> obtenerResumenPedidoMesa(@RequestParam("mesaId") Integer mesaId) {
+        Map<String, Object> res = new HashMap<>();
+        try {
+            Mesa mesa = mesaService.findById(mesaId).orElse(null);
+            Pedido pedidoActivo = pedidoService.obtenerPedidoActivoPorMesa(mesaId);
+
+            res.put("mesaId", mesaId);
+            res.put("mesaNumero", mesa != null ? mesa.getNumero() : null);
+
+            if (pedidoActivo != null) {
+                res.put("tienePedidoActivo", true);
+                res.put("pedidoActivoId", pedidoActivo.getId());
+                res.put("total", pedidoActivo.getTotal());
+                res.put("fechaCreacion", pedidoActivo.getFechaCreacion());
+                res.put("ordenJson", pedidoActivo.getOrden());
+            } else {
+                res.put("tienePedidoActivo", false);
+            }
+
+            List<Pedido> historial = pedidoService.obtenerHistorialPedidosPorMesa(mesaId);
+            res.put("historial", historial);
+
+            res.put("success", true);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            res.put("success", false);
+            res.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(res);
+        }
+    }
+
     // Guarda borrador en sesión para confirmar en vista
     @PostMapping("/pedidos/preparar")
     @ResponseBody
@@ -216,17 +251,32 @@ public class MeseroController {
     }
 
     // Cargar un pedido existente como borrador para editarlo en fusionMesero
-    @PostMapping("/pedidos/editar")
-    public String editarPedido(@RequestParam Integer mesaId, HttpSession session) {
-        Pedido pedido = pedidoService.obtenerPedidoActivoPorMesa(mesaId);
-        if (pedido != null) {
-            session.setAttribute("draftMesaId", mesaId);
-            session.setAttribute("draftItemsJson", pedido.getOrden());
-            session.setAttribute("draftComentarios", null);
-            session.setAttribute("draftTotal", pedido.getTotal());
-        }
-        return "redirect:/mesero/menu?mesa=" + mesaId;
-    }
+	@PostMapping("/pedidos/editar")
+	public String editarPedido(@RequestParam Integer mesaId, HttpSession session) {
+	    Pedido pedido = pedidoService.obtenerPedidoActivoPorMesa(mesaId);
+	    if (pedido != null) {
+	        session.setAttribute("draftMesaId", mesaId);
+	        session.setAttribute("draftItemsJson", pedido.getOrden());
+	        String draftComentarios = null;
+	        try {
+	            // 1) Intentar usar el campo dedicado en la entidad
+	            if (pedido.getComentariosGenerales() != null && !pedido.getComentariosGenerales().trim().isEmpty()) {
+	                draftComentarios = pedido.getComentariosGenerales().trim();
+	            } else if (pedido.getOrden() != null && !pedido.getOrden().isEmpty()) {
+	                // 2) Si no hay en la entidad, intentar leer desde el JSON almacenado en orden
+	                ObjectMapper mapper = new ObjectMapper();
+	                Map<String, Object> json = mapper.readValue(pedido.getOrden(), Map.class);
+	                Object c = json.get("comentarios");
+	                if (c instanceof String && !((String) c).trim().isEmpty()) {
+	                    draftComentarios = ((String) c).trim();
+	                }
+	            }
+	        } catch (Exception ignored) {}
+	        session.setAttribute("draftComentarios", draftComentarios);
+	        session.setAttribute("draftTotal", pedido.getTotal());
+	    }
+	    return "redirect:/mesero/menu?mesa=" + mesaId;
+	}
 
     // Carga borrador en el modelo si existe
     private void sessionDraft(Model model, Integer mesaId, HttpSession session) {

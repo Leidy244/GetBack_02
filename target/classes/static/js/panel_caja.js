@@ -111,27 +111,89 @@ class PanelCaja {
         // Helper: formatear detalle legible a partir del JSON de orden
         const formatearDetalle = (detalleJson) => {
             if (!detalleJson) return 'Sin detalle';
+
+            // Si ya viene como texto plano legible (sin estructura JSON clara), lo mostramos tal cual
+            const trimmed = String(detalleJson).trim();
+            if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+                return trimmed;
+            }
+
             try {
                 const data = JSON.parse(detalleJson);
-                const items = Array.isArray(data.items) ? data.items : [];
-                if (items.length === 0) return 'Sin items en el pedido';
 
-                return items.map(item => {
-                    const cantidad = item.cantidad ?? 0;
-                    const nombre = item.productoNombre ?? 'Producto';
-                    const subtotal = item.subtotal ?? 0;
+                // Soportar formatos:
+                // 1) Array directo de items: [{...}]
+                // 2) Objeto con propiedad items: { items: [...] }
+                // 3) Objeto legacy con solo comentarios u otros campos
+                let items = [];
+                let comentarios = '';
 
-                    // Quitar los decimales (.00) en la visualización del subtotal
-                    const subtotalNumber = Number(subtotal);
-                    const subtotalFormateado = Number.isFinite(subtotalNumber)
-                        ? subtotalNumber.toString()
-                        : subtotal;
+                if (Array.isArray(data)) {
+                    // Caso: la orden es directamente un array de items
+                    items = data;
+                } else if (data && typeof data === 'object') {
+                    let rawItems = data.items;
 
-                    return `${cantidad}x ${nombre} - $${subtotalFormateado}`;
-                }).join('\n');
+                    // Caso normal: { items: [...] }
+                    if (Array.isArray(rawItems)) {
+                        items = rawItems;
+                    }
+
+                    // Caso anidado: { items: { items:[...], total:... } }
+                    if (!items.length && rawItems && typeof rawItems === 'object' && Array.isArray(rawItems.items)) {
+                        items = rawItems.items;
+                    }
+
+                    // Caso donde items viene como string JSON
+                    if (!items.length && typeof rawItems === 'string') {
+                        try {
+                            const parsed = JSON.parse(rawItems);
+                            if (Array.isArray(parsed)) {
+                                items = parsed;
+                            } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.items)) {
+                                items = parsed.items;
+                            }
+                        } catch (ignored) {}
+                    }
+
+                    if (typeof data.comentarios === 'string') {
+                        comentarios = data.comentarios.trim();
+                    }
+                }
+
+                // Si hay items, formatearlos
+                if (items.length > 0) {
+                    const lineas = items.map(item => {
+                        const cantidad = item.cantidad ?? item.quantity ?? 0;
+                        const nombre = item.productoNombre ?? item.name ?? 'Producto';
+                        const subtotal = item.subtotal ?? (item.precio ?? item.price ?? 0) * (cantidad || 1);
+
+                        const subtotalNumber = Number(subtotal);
+                        const subtotalFormateado = Number.isFinite(subtotalNumber)
+                            ? subtotalNumber.toString()
+                            : String(subtotal);
+
+                        return `${cantidad}x ${nombre} - $${subtotalFormateado}`;
+                    });
+
+                    // Si también hay comentarios, agregarlos como última línea
+                    if (comentarios) {
+                        lineas.push(`Notas: ${comentarios}`);
+                    }
+
+                    return lineas.join('\n');
+                }
+
+                // Sin items pero con comentarios: mostrar al menos las notas
+                if (comentarios) {
+                    return `Notas: ${comentarios}`;
+                }
+
+                // Último recurso: devolver el JSON "bonito" para no perder información
+                return JSON.stringify(data, null, 2);
             } catch (e) {
                 console.error('No se pudo parsear el detalle del pedido:', e);
-                return detalleJson;
+                return trimmed || 'Sin detalle';
             }
         };
 
