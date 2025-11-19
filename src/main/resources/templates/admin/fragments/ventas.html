@@ -85,16 +85,81 @@
             margin-bottom: 20px;
             color: #dee2e6;
         }
+
+        /* Modal Detalle de Venta – estilo profesional, sin degradados */
+        #modalDetalleVenta .modal-content {
+            border: 1px solid #eaeaea;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        #modalDetalleVenta .modal-header,
+        #modalDetalleVenta .modal-footer {
+            background: #ffffff;
+            border-color: #eaeaea;
+        }
+        #modalDetalleVenta .modal-title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        #modalDetalleVenta .card {
+            border: 1px solid #eaeaea;
+            box-shadow: none;
+            border-radius: 8px;
+        }
+        #modalDetalleVenta .card-header {
+            background: #f3f4f6;
+            border-bottom: 1px solid #eaeaea;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        #modalDetalleVenta .card-header h6 {
+            margin: 0;
+            font-weight: 600;
+            color: #334155;
+        }
+        #modalDetalleVenta .list-group-item {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+        #modalDetalleVenta .list-group-item:last-child {
+            border-bottom: 0;
+        }
+        #modalDetalleVenta .badge.bg-secondary {
+            background-color: #64748b !important;
+        }
+        #modalDetalleVenta .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        #modalDetalleVenta .btn-outline-primary {
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
     </style>
 </head>
 <body>
     <section th:fragment="ventas" class="content-section">
+        <!-- Estilos locales del fragmento (override) -->
+        <style>
+          #modalDetalleVenta .modal-content { border:1px solid #eaeaea; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+          #modalDetalleVenta .modal-header, #modalDetalleVenta .modal-footer { background:#ffffff; border-color:#eaeaea; }
+          #modalDetalleVenta .modal-title { font-weight:600; color:#1f2937; }
+          #modalDetalleVenta .card { border:1px solid #eaeaea; box-shadow:none; border-radius:8px; }
+          #modalDetalleVenta .card-header { background:#f3f4f6; border-bottom:1px solid #eaeaea; border-radius:8px 8px 0 0 !important; }
+          #modalDetalleVenta .card-header h6 { margin:0; font-weight:600; color:#334155; }
+          #modalDetalleVenta .list-group-item { background:transparent; border:0; border-bottom:1px dashed #e5e7eb; }
+          #modalDetalleVenta .list-group-item:last-child { border-bottom:0; }
+          #modalDetalleVenta .badge.bg-secondary { background-color:#64748b !important; }
+          #modalDetalleVenta .btn-primary { background-color:#0d6efd; border-color:#0d6efd; }
+          #modalDetalleVenta .btn-outline-primary { border-color:#0d6efd; color:#0d6efd; }
+        </style>
+
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="h4 mb-0 text-gray-800"><i class="fas fa-history me-2"></i>Historial de Ventas</h2>
                 <div class="btn-group">
-                    <button class="btn btn-primary" th:disabled="${facturas.empty}"><i class="fas fa-file-export me-1"></i> Exportar</button>
-                    <button class="btn btn-outline-primary" th:disabled="${facturas.empty}"><i class="fas fa-print me-1"></i> Imprimir</button>
+                    <button id="btn-exportar-ventas" class="btn btn-primary" th:disabled="${facturas.empty}"><i class="fas fa-file-export me-1"></i> Exportar</button>
+                    <button id="btn-imprimir-tabla" class="btn btn-outline-primary" th:disabled="${facturas.empty}"><i class="fas fa-print me-1"></i> Imprimir</button>
                 </div>
             </div>
             
@@ -227,7 +292,8 @@
                                     th:data-metodo="${factura.metodoPago}"
                                     th:data-factura="${factura.numeroFactura}"
                                     th:data-cliente="${factura.clienteNombre != null ? factura.clienteNombre.toLowerCase() : ''}"
-                                    th:data-mesa="${factura.numeroMesa}">
+                                    th:data-mesa="${factura.numeroMesa}"
+                                    th:data-orden="${(factura.pedido != null and factura.pedido.orden != null) ? factura.pedido.orden : ''}">
                                     <td th:text="${factura.numeroFactura}">FAC-00125</td>
                                     <td th:text="${#temporals.format(factura.fechaEmision, 'dd/MM/yyyy HH:mm')}">15/05/2025 14:30</td>
                                     <td th:text="${factura.clienteNombre}">Juan Pérez</td>
@@ -242,8 +308,8 @@
                                         <span th:if="${factura.estadoPago == 'CANCELADO'}" class="badge bg-danger">CANCELADO</span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-print"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary btn-detalle" title="Ver detalle"><i class="fas fa-eye"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-imprimir" title="Imprimir"><i class="fas fa-print"></i></button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -252,10 +318,62 @@
                 </div>
             </div>
         </div>
-    </section>
+        
+        <!-- Modal Detalle de Venta -->
+        <div class="modal fade" id="modalDetalleVenta" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2"><i class="fas fa-receipt"></i><span>Detalle de Venta</span></h5>
+                <div class="ms-auto text-muted small" id="det-fecha-hdr">-</div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <div class="card">
+                      <div class="card-header">
+                        <h6 class="mb-0">Información</h6>
+                      </div>
+                      <div class="card-body">
+                        <p class="mb-1"><strong>Factura:</strong> <span id="det-numero">-</span></p>
+                        
+                        <p class="mb-1"><strong>Cliente:</strong> <span id="det-cliente">-</span></p>
+                        <p class="mb-1"><strong>Mesa:</strong> <span id="det-mesa">-</span></p>
+                        <p class="mb-1"><strong>Método de pago:</strong> <span id="det-metodo">-</span></p>
+                        <p class="mb-1"><strong>Estado:</strong> <span id="det-estado" class="badge bg-secondary">-</span></p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="card">
+                      <div class="card-header">
+                        <h6 class="mb-0">Resumen</h6>
+                      </div>
+                      <div class="card-body">
+                        <ul id="det-items-list" class="list-group list-group-flush mb-2"></ul>
+                        <div class="d-flex justify-content-between mb-1"><span>Subtotal</span><strong id="det-subtotal">$0.00</strong></div>
+                        <div class="d-flex justify-content-between mb-1"><span>Descuento</span><strong id="det-descuento">$0.00</strong></div>
+                        <div class="d-flex justify-content-between mt-2"><span>Total</span><strong id="det-total" class="text-primary">$0.00</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" id="btn-imprimir-modal" class="btn btn-primary"><i class="fas fa-print me-1"></i> Imprimir</button>
+                <button type="button" id="btn-descargar-pdf" class="btn btn-outline-primary"><i class="fas fa-file-pdf me-1"></i> Descargar PDF</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+        <!-- Librerías y scripts del módulo -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.3/dist/jspdf.plugin.autotable.min.js"></script>
+        <script th:inline="none">
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('ventas-filtros-form');
             const fechaInicioInput = document.getElementById('filtro-fecha-inicio');
@@ -267,9 +385,7 @@
             const mesaInput = document.getElementById('filtro-mesa');
 
             function aplicarFiltros(event) {
-                if (event) {
-                    event.preventDefault();
-                }
+                if (event) event.preventDefault();
 
                 const fechaInicio = fechaInicioInput.value;
                 const fechaFin = fechaFinInput.value;
@@ -332,6 +448,378 @@
                         }
                     }
                 });
+
+            // Helpers
+            const fmt = (n) => {
+                const x = Number(n ?? 0);
+                return x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            };
+            const parseMoney = (raw) => {
+                if (raw == null) return 0;
+                let s = String(raw);
+                // quitar símbolos excepto separadores
+                s = s.replace(/[^0-9.,-]/g, '');
+                // si la coma parece ser el separador decimal (caso es_CO y similares)
+                const lastComma = s.lastIndexOf(',');
+                const lastDot = s.lastIndexOf('.');
+                if (lastComma > lastDot) {
+                    // miles con punto, decimales con coma -> normalizar a punto
+                    s = s.replace(/\./g, '').replace(/,/g, '.');
+                } else {
+                    // miles con coma, decimales con punto o solo miles con coma
+                    s = s.replace(/,/g, '');
+                }
+                const num = Number(s);
+                return isNaN(num) ? 0 : num;
+            };
+            const parseOrden = (ordenStr) => {
+                if (!ordenStr) return [];
+                try {
+                    // Si empieza con { o [, intentar parsear directo
+                    let raw = ordenStr;
+                    const first = raw.trim().charAt(0);
+                    if (first !== '{' && first !== '[') {
+                        // intentar Base64 -> texto
+                        try { raw = atob(raw); } catch (_) {}
+                    }
+                    const data = JSON.parse(raw);
+
+                    // Caso 1: array directo
+                    if (Array.isArray(data)) return data;
+                    // Caso 2: objeto con items como array
+                    if (data && Array.isArray(data.items)) return data.items;
+                    // Caso 3: items es un objeto con propiedad items (anidado)
+                    if (data && data.items && typeof data.items === 'object' && Array.isArray(data.items.items)) {
+                        return data.items.items;
+                    }
+                    // Caso 4: items es string JSON
+                    if (data && typeof data.items === 'string') {
+                        try {
+                            let inner = data.items;
+                            const ch = inner.trim().charAt(0);
+                            if (ch !== '{' && ch !== '[') {
+                                try { inner = atob(inner); } catch (_) {}
+                            }
+                            const parsed = JSON.parse(inner);
+                            if (Array.isArray(parsed)) return parsed;
+                            if (parsed && Array.isArray(parsed.items)) return parsed.items;
+                        } catch (ignored) {}
+                    }
+                } catch (e) {}
+                return [];
+            };
+
+            const extraFromItem = (it) => {
+                const parts = [];
+                const campos = ['notas','nota','comentarios','mods','modificadores','adiciones','observaciones'];
+                campos.forEach(k => { if (it && it[k]) parts.push(String(it[k])); });
+                return parts.join(' · ');
+            };
+
+            // Detalle por fila
+            const modalEl = document.getElementById('modalDetalleVenta');
+            const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+            let ultimoContexto = null; // guarda datos actuales para imprimir desde el modal
+
+            document.querySelectorAll('.btn-detalle').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    const tr = ev.currentTarget.closest('tr');
+                    if (!tr) return;
+                    const numero = tr.getAttribute('data-factura') || '';
+                    const fecha = tr.children[1]?.textContent?.trim() || '';
+                    const cliente = tr.children[2]?.textContent?.trim() || '';
+                    const mesa = tr.getAttribute('data-mesa') || '';
+                    const subtotalVal = parseMoney(tr.children[4]?.textContent || '0');
+                    const descuentoVal = parseMoney(tr.children[5]?.textContent || '0');
+                    const totalVal = parseMoney(tr.children[6]?.textContent || '0');
+
+                    const metodo = tr.getAttribute('data-metodo') || tr.children[7]?.textContent?.trim() || '';
+                    const estado = tr.getAttribute('data-estado') || '';
+                    const orden = tr.getAttribute('data-orden') || '';
+                    const items = parseOrden(orden);
+                    let comentariosGenerales = '';
+                    try {
+                        const root = JSON.parse(orden);
+                        if (root && !Array.isArray(root) && root.comentarios) comentariosGenerales = String(root.comentarios);
+                    } catch(_) {}
+
+                    // Poblar modal
+                    document.getElementById('det-numero').textContent = numero;
+                    const fechaHdr = document.getElementById('det-fecha-hdr');
+                    if (fechaHdr) fechaHdr.textContent = fecha;
+
+                    document.getElementById('det-cliente').textContent = cliente || '—';
+                    document.getElementById('det-mesa').textContent = mesa || '—';
+                    document.getElementById('det-metodo').textContent = metodo || '—';
+                    const estEl = document.getElementById('det-estado');
+                    estEl.textContent = estado || '—';
+                    estEl.className = 'badge ' + (estado === 'PAGADO' ? 'bg-success' : estado === 'PENDIENTE' ? 'bg-warning text-dark' : 'bg-danger');
+                    document.getElementById('det-subtotal').textContent = `$${fmt(subtotalVal)}`;
+                    document.getElementById('det-descuento').textContent = `$${fmt(descuentoVal)}`;
+                    document.getElementById('det-total').textContent = `$${fmt(totalVal)}`;
+
+                    const ul = document.getElementById('det-items-list');
+                    if (ul) {
+                        ul.innerHTML = '';
+                        items.forEach(it => {
+                            const nombre = it.productoNombre || it.nombre || it.producto || it.name || 'Item';
+                            const cantidad = Math.max(1, Number(it.cantidad || it.quantity || it.qty || 1));
+                            const precio = Number(it.precio || it.price || 0);
+                            const total = cantidad * precio;
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item px-0 py-1 d-flex justify-content-between align-items-center';
+                            li.innerHTML = `<span>${nombre} <span class="text-muted">x${cantidad}</span></span><strong>$${fmt(total)}</strong>`;
+                            ul.appendChild(li);
+                        });
+                    }
+
+                    const comentariosEl = document.getElementById('det-comentarios');
+                    if (comentariosEl) {
+                        if (comentariosGenerales) {
+                            comentariosEl.style.display = '';
+                            comentariosEl.textContent = `Comentarios generales: ${comentariosGenerales}`;
+                        } else {
+                            comentariosEl.style.display = 'none';
+                            comentariosEl.textContent = '';
+                        }
+                    }
+
+                    ultimoContexto = { numero, fecha, cliente, mesa, metodo, estado, items, subtotal: subtotalVal, descuento: descuentoVal, total: totalVal };
+                    if (modal) modal.show();
+                });
+            });
+
+            // Imprimir por fila (térmica 58mm)
+            function imprimirTicket(ctx) {
+                const w = window.open('', '_blank');
+                const rows = (ctx.items || []).map(it => {
+                    const nombre = (it.productoNombre || it.nombre || it.producto || it.name || 'Item');
+                    const cantidad = Number(it.cantidad || it.quantity || it.qty || 1);
+                    const precio = Number(it.precio || it.price || 0);
+                    const importe = cantidad * precio;
+                    const notas = extraFromItem(it);
+                    return `
+                        <tr><td colspan="4"><strong>${nombre}</strong></td></tr>
+                        <tr><td colspan="2" class="text-start">x${cantidad} @ $${fmt(precio)}</td><td colspan="2" class="text-end">$${fmt(importe)}</td></tr>
+                        ${notas ? `<tr><td colspan="4" class="text-muted small">Notas: ${notas}</td></tr>` : ''}
+                    `;
+                }).join('');
+                const html = `
+                <html>
+                  <head>
+                    <title>Ticket ${ctx.numero || ''}</title>
+                    <meta charset="utf-8" />
+                    <style>
+                      @page { size: 58mm auto; margin: 5mm; }
+                      body{font-family: 'Courier New', monospace; width: 58mm; margin: 0 auto;}
+                      h2{margin:0 0 4px 0; font-size: 14px;}
+                      .muted{color:#666;font-size:10px}
+                      table{width:100%; border-collapse:collapse;}
+                      th,td{padding:3px 0; border-bottom:1px dashed #ccc; font-size:11px}
+                      .text-end{text-align:right}
+                      .text-center{text-align:center}
+                      hr{border:none; border-top:1px dashed #ccc; margin:6px 0}
+                    </style>
+                  </head>
+                  <body>
+                    <div style="text-align:center; margin-bottom:6px;">
+                      <h2>GET BACK</h2>
+                      <div class="muted">Ticket de Venta</div>
+                    </div>
+                    <div class="muted">Factura: ${ctx.numero || ''} | Mesa: ${ctx.mesa || '—'} | ${ctx.fecha || ''}</div>
+                    <div class="muted">Cliente: ${ctx.cliente || '—'} | Pago: ${ctx.metodo || '—'} | Estado: ${ctx.estado || '—'}</div>
+                    <hr>
+                    <table>
+                      <thead><tr><th colspan="4" class="text-start">Detalle</th></tr></thead>
+                      <tbody>${rows}</tbody>
+                    </table>
+                    <div class="text-end" style="margin-top:6px;">
+                      <div>Subtotal: <strong>$${fmt(ctx.subtotal)}</strong></div>
+                      <div>Descuento: <strong>$${fmt(ctx.descuento)}</strong></div>
+                      <div>Total: <strong>$${fmt(ctx.total)}</strong></div>
+                    </div>
+                    <p style="text-align:center; margin-top:8px;">¡Gracias por su compra!</p>
+                  </body>
+                </html>`;
+                w.document.write(html);
+
+                w.document.close();
+                w.focus();
+                w.print();
+            }
+
+            document.querySelectorAll('.btn-imprimir').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    const tr = ev.currentTarget.closest('tr');
+                    if (!tr) return;
+                    const ctx = {
+                        numero: tr.getAttribute('data-factura') || '',
+                        fecha: tr.children[1]?.textContent?.trim() || '',
+                        cliente: tr.children[2]?.textContent?.trim() || '',
+                        mesa: tr.getAttribute('data-mesa') || '',
+                        metodo: tr.getAttribute('data-metodo') || tr.children[7]?.textContent?.trim() || '',
+                        estado: tr.getAttribute('data-estado') || '',
+                        items: parseOrden(tr.getAttribute('data-orden') || ''),
+                        subtotal: parseMoney(tr.children[4]?.textContent || '0'),
+                        descuento: parseMoney(tr.children[5]?.textContent || '0'),
+                        total: parseMoney(tr.children[6]?.textContent || '0'),
+                    };
+
+                    imprimirTicket(ctx);
+                });
+            });
+
+            const btnImprimirModal = document.getElementById('btn-imprimir-modal');
+            if (btnImprimirModal) {
+                btnImprimirModal.addEventListener('click', () => {
+                    if (ultimoContexto) imprimirTicket(ultimoContexto);
+                });
+            }
+
+            // Descargar ticket como PDF (58mm)
+            function descargarTicketPDF(ctx) {
+                const { jsPDF } = window.jspdf || {};
+                if (!jsPDF) {
+                    alert('No se pudo cargar jsPDF');
+                    return;
+                }
+                // 58mm de ancho, fuente monoespaciada
+                const doc = new jsPDF({ unit: 'mm', format: [58, 200] });
+                doc.setFont('courier', 'normal');
+                doc.setFontSize(11);
+                doc.text('GET BACK', 29, 6, { align: 'center' });
+                doc.setFontSize(9);
+                doc.text('Ticket de Venta', 29, 10, { align: 'center' });
+
+                const linea1 = `Factura: ${ctx.numero || ''}  Mesa: ${ctx.mesa || '—'}`;
+                const linea2 = `Cliente: ${ctx.cliente || '—'}`;
+                const linea3 = `Pago: ${ctx.metodo || '—'}  Estado: ${ctx.estado || '—'}`;
+                doc.text(linea1, 2, 16);
+                doc.text(linea2, 2, 20);
+                doc.text(linea3, 2, 24);
+
+                let y = 28;
+                const maxW = 56; // ancho útil aproximado
+                const items = ctx.items || [];
+                items.forEach(it => {
+                    const nombre = String(it.productoNombre || it.nombre || it.producto || it.name || 'Item');
+                    const cantidad = Number(it.cantidad || it.quantity || it.qty || 1);
+                    const precio = Number(it.precio || it.price || 0);
+                    const importe = (cantidad * precio);
+                    const notas = extraFromItem(it);
+
+                    // Nombre en negrilla ligera
+                    doc.setFontSize(9);
+                    doc.text(nombre.substring(0, 40), 2, y);
+                    y += 4;
+
+                    // Línea de cantidad, precio e importe (importe a la derecha)
+                    const linea = `x${cantidad} @ $${precio.toFixed(2)}`;
+                    doc.text(linea, 2, y);
+                    const importeStr = `$${importe.toFixed(2)}`;
+                    const iw = doc.getTextWidth(importeStr);
+                    doc.text(importeStr, 2 + maxW - iw, y);
+                    y += 4;
+
+                    if (notas) {
+                        doc.setFontSize(8);
+                        const wrapped = doc.splitTextToSize(`Notas: ${notas}`, maxW);
+                        doc.text(wrapped, 2, y);
+                        y += wrapped.length * 3.5 + 1;
+                    }
+                });
+
+                // Totales
+                y += 2;
+                doc.setFontSize(9);
+                doc.text(`Subtotal: $${fmt(ctx.subtotal)}`, 2, y); y += 4;
+                doc.text(`Descuento: $${fmt(ctx.descuento)}`, 2, y); y += 4;
+                doc.text(`Total: $${fmt(ctx.total)}`, 2, y);
+
+                doc.save(`ticket_${(ctx.numero||'').replace(/\W+/g,'_')}.pdf`);
+            }
+
+            const btnDescargarPdf = document.getElementById('btn-descargar-pdf');
+            if (btnDescargarPdf) {
+                btnDescargarPdf.addEventListener('click', () => {
+                    if (ultimoContexto) descargarTicketPDF(ultimoContexto);
+                });
+            }
+
+            // Imprimir tabla completa
+            const btnImprimirTabla = document.getElementById('btn-imprimir-tabla');
+            if (btnImprimirTabla) {
+                btnImprimirTabla.addEventListener('click', () => {
+                    const tabla = document.querySelector('.card-body .table-responsive').innerHTML;
+                    const w = window.open('', '_blank');
+                    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Historial de Ventas</title><style>body{font-family:Arial,sans-serif;padding:16px} table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #eee}</style></head><body>${tabla}</body></html>`);
+                    w.document.close();
+                    w.focus();
+                    w.print();
+                });
+            }
+
+            // Exportar a PDF (Historial)
+            const btnExportar = document.getElementById('btn-exportar-ventas');
+            if (btnExportar) {
+                btnExportar.addEventListener('click', async () => {
+                    const { jsPDF } = window.jspdf || {};
+                    if (!jsPDF || !window.jspdf || !('autoTable' in (jsPDF.API || {}))) {
+                        alert('No se pudo cargar el generador de PDF. Verifique su conexión.');
+                        return;
+                    }
+                    const doc = new jsPDF('l', 'pt', 'a4'); // horizontal para más columnas
+
+                    const rows = Array.from(document.querySelectorAll('table.table tbody tr'))
+                        .filter(tr => tr.querySelector('td')) // omitir fila de empty-state
+                        .filter(tr => tr.style.display !== 'none') // respetar filtros actuales
+                        .map(tr => {
+                            const tds = tr.querySelectorAll('td');
+                            return [
+                                tds[0]?.textContent?.trim() || '', // factura
+                                tds[1]?.textContent?.trim() || '', // fecha
+                                tds[2]?.textContent?.trim() || '', // cliente
+                                tds[3]?.textContent?.trim() || '', // mesa
+                                tds[4]?.textContent?.trim() || '', // subtotal
+                                tds[5]?.textContent?.trim() || '', // descuento
+                                tds[6]?.textContent?.trim() || '', // total
+                                tds[7]?.textContent?.trim() || '', // método
+                                (tr.getAttribute('data-estado') || tds[8]?.innerText?.trim() || ''), // estado
+                            ];
+                        });
+
+                    const fecha = new Date();
+                    const titulo = 'Historial de Ventas';
+                    doc.setFontSize(16);
+                    doc.text(titulo, 40, 40);
+                    doc.setFontSize(10);
+                    doc.text(`Generado: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`, 40, 58);
+
+                    doc.autoTable({
+                        head: [[
+                            '# Factura','Fecha','Cliente','Mesa','Subtotal','Descuento','Total','Método','Estado'
+                        ]],
+                        body: rows,
+                        startY: 70,
+                        styles: { fontSize: 9 },
+                        headStyles: { fillColor: [78, 115, 223] },
+                        theme: 'striped',
+                        columnStyles: {
+                            0: { cellWidth: 100 },
+                            1: { cellWidth: 120 },
+                            2: { cellWidth: 160 },
+                            3: { cellWidth: 60, halign: 'center' },
+                            4: { cellWidth: 90, halign: 'right' },
+                            5: { cellWidth: 90, halign: 'right' },
+                            6: { cellWidth: 90, halign: 'right' },
+                            7: { cellWidth: 100 },
+                            8: { cellWidth: 90 }
+                        }
+                    });
+
+                    doc.save(`historial_ventas_${fecha.toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`);
+                });
+            }
         });
     </script>
 </body>

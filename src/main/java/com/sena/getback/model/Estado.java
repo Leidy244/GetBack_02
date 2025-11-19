@@ -73,8 +73,8 @@ public class Estado {
     public List<Mesa> getMesas() { return mesas; }
     public void setMesas(List<Mesa> mesas) { this.mesas = mesas; }
 
-    public List<Factura> getFacturas() { return facturas; } // ← NUEVO GETTER
-    public void setFacturas(List<Factura> facturas) { this.facturas = facturas; } // ← NUEVO SETTER
+    public List<Factura> getFacturas() { return facturas; } 
+    public void setFacturas(List<Factura> facturas) { this.facturas = facturas; } 
 
     @Override
     public String toString() {

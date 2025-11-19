@@ -79,6 +79,7 @@ public class PedidoService {
             // Crear un objeto que contenga tanto los items como los comentarios
             String combinedData = "{\"items\":" + itemsJson + ",\"comentarios\":\"" + comentarios.replace("\"", "\\\"") + "\"}";
             pedido.setOrden(combinedData);
+            pedido.setComentariosGenerales(comentarios.trim());
         } else {
             pedido.setOrden(itemsJson);
         }
@@ -108,6 +109,11 @@ public class PedidoService {
     // Obtener historial por mesa
     public List<Pedido> obtenerHistorialPorMesa(Integer mesaId) {
         return pedidoRepository.findByMesaId(mesaId);
+    }
+
+    // Wrapper usado por controladores para mantener compatibilidad de nombre
+    public List<Pedido> obtenerHistorialPedidosPorMesa(Integer mesaId) {
+        return obtenerHistorialPorMesa(mesaId);
     }
 
     public long contarPedidosPendientes() {

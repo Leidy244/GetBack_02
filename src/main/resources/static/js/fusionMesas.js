@@ -50,7 +50,7 @@ const mesasData = {
     ]
 };
 
-// Elementos del DOM
+// Elementos del DOM (script legacy para prototipo de mesas)
 const menuToggle = document.getElementById('menu-toggle');
 const navLinks = document.getElementById('nav-links');
 const welcomeToast = document.getElementById('welcome-toast');
@@ -58,6 +58,13 @@ const closeToastBtn = document.querySelector('.close-toast');
 const backToTopBtn = document.getElementById('back-to-top');
 const mesasContainer = document.getElementById('mesas-container');
 const zonaTitulo = document.getElementById('zona-titulo');
+
+// Si no existe el contenedor legacy de mesas, no ejecutamos el resto de este script
+if (!mesasContainer || !zonaTitulo) {
+    // Este JS sólo se usaba en el diseño antiguo; en la nueva vista las mesas
+    // se renderizan desde el servidor, así que es seguro salir aquí.
+    console.debug('fusionMesas.js: sin #mesas-container, se omite lógica legacy.');
+} else {
 
 let zonaActual = 'tarima'; // Establecer la zona inicial
 
@@ -96,6 +103,7 @@ backToTopBtn.addEventListener('click', () => {
 function renderMesas(mesas) {
     mesasContainer.innerHTML = '';
     mesas.forEach(mesa => {
+
         const mesaDiv = document.createElement('div');
         mesaDiv.classList.add('mesa', mesa.estado);
         mesaDiv.dataset.mesa = mesa.numero;
@@ -103,7 +111,7 @@ function renderMesas(mesas) {
         // Hacer la mesa clickeable
         mesaDiv.style.cursor = 'pointer';
         mesaDiv.addEventListener('click', () => {
-            redirectMesa(mesa.numero);
+            redirectMesaLegacy(mesa.numero);
         });
         
         mesaDiv.innerHTML = `
@@ -151,8 +159,10 @@ document.querySelectorAll('.filter-btn-status').forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     handleFilter();
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     const userDropdownBtn = document.getElementById("userDropdown");
+
     const dropdownMenu = document.querySelector(".user-dropdown .dropdown-menu");
 
     // Toggle al hacer click en "Administrador"
@@ -176,3 +186,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+} // fin if mesasContainer

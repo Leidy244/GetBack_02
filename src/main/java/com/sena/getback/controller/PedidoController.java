@@ -32,17 +32,21 @@ public class PedidoController {
     @PostMapping("/guardar")
     public String guardar(@RequestParam(required = false) Integer id,
                           @RequestParam(required = false) String comentario,
-                          @RequestParam(required = false) String estadoPago,
                           @RequestParam Long usuarioId,
                           @RequestParam Long menuId,
                           @RequestParam Integer mesaId,
                           @RequestParam Integer estadoId,
                           RedirectAttributes redirect) {
-        Pedido pedido = (id != null) ? pedidoService.findById(id) : new Pedido();
-        if (pedido == null) pedido = new Pedido();
 
-        pedido.setOrden(comentario);
-        pedido.setEstadoPago(estadoPago);
+        Pedido pedido = (id != null) ? pedidoService.findById(id) : new Pedido();
+        if (pedido == null) {
+            pedido = new Pedido();
+        }
+
+        // En este flujo de administración usamos el campo "orden" para guardar un comentario simple
+        if (comentario != null && !comentario.isBlank()) {
+            pedido.setOrden(comentario.trim());
+        }
 
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
         Menu menu = menuRepository.findById(menuId).orElse(null);

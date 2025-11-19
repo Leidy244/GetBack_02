@@ -3,6 +3,7 @@ package com.sena.getback.controller;
 import com.sena.getback.service.MenuService;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.model.Pedido;
+import com.sena.getback.model.Mesa;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
 import com.sena.getback.service.LocationService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -154,6 +156,39 @@ public class MeseroController {
             res.put("success", true);
             res.put("message", "Pedido creado");
             res.put("pedidoId", pedido != null ? pedido.getId() : null);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            res.put("success", false);
+            res.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(res);
+        }
+    }
+
+    @GetMapping("/mesero/pedido/resumen")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> obtenerResumenPedidoMesa(@RequestParam("mesaId") Integer mesaId) {
+        Map<String, Object> res = new HashMap<>();
+        try {
+            Mesa mesa = mesaService.findById(mesaId).orElse(null);
+            Pedido pedidoActivo = pedidoService.obtenerPedidoActivoPorMesa(mesaId);
+
+            res.put("mesaId", mesaId);
+            res.put("mesaNumero", mesa != null ? mesa.getNumero() : null);
+
+            if (pedidoActivo != null) {
+                res.put("tienePedidoActivo", true);
+                res.put("pedidoActivoId", pedidoActivo.getId());
+                res.put("total", pedidoActivo.getTotal());
+                res.put("fechaCreacion", pedidoActivo.getFechaCreacion());
+                res.put("ordenJson", pedidoActivo.getOrden());
+            } else {
+                res.put("tienePedidoActivo", false);
+            }
+
+            List<Pedido> historial = pedidoService.obtenerHistorialPedidosPorMesa(mesaId);
+            res.put("historial", historial);
+
+            res.put("success", true);
             return ResponseEntity.ok(res);
         } catch (Exception e) {
             res.put("success", false);

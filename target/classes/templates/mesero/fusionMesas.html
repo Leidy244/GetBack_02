@@ -40,7 +40,7 @@
           <i class="fas fa-bars"></i>
         </button>
         <div class="user-dropdown" th:if="${esAdmin}">
-          <button class="user-profile" id="userDropdown">
+          <button class="user-profile" id="userDropdown" type="button">
             <i class="fas fa-user-circle"></i>
             <span>Mesero</span>
             <i class="dropdown-arrow fas fa-chevron-down"></i>
@@ -190,25 +190,49 @@
   </div>
 </main>
 
+<!-- Modal Pedido Mesa Ocupada -->
+<div id="modal-pedido-mesa" class="modal-pedido" style="display:none;">
+  <div class="modal-pedido-content">
+    <div class="modal-pedido-header">
+      <h2 id="modal-mesa-titulo">Mesa</h2>
+      <button type="button" id="modal-pedido-close" class="modal-pedido-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-pedido-body">
+      <div id="modal-pedido-resumen" class="modal-pedido-resumen">
+        <!-- Se llena por JS -->
+      </div>
+      <div id="modal-pedido-historial" class="modal-pedido-historial">
+        <!-- Historial de pedidos por mesa -->
+      </div>
+    </div>
+    <div class="modal-pedido-footer">
+      <form id="form-editar-pedido" th:action="@{/pedidos/editar}" method="post">
+        <input type="hidden" name="mesaId" id="modal-mesa-id" />
+        <button type="submit" class="btn-agregar-productos">
+          <i class="fas fa-plus"></i> Agregar productos al pedido
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <button id="back-to-top" title="Volver arriba"><i class="fas fa-chevron-up"></i></button>
 
 <script>
-	
-	
-	  document.addEventListener('DOMContentLoaded', function () {
-	    try {
-	      const saved = JSON.parse(localStorage.getItem('meseroSettings')) || {};
-	      const theme = saved.theme || 'default';
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      const saved = JSON.parse(localStorage.getItem('meseroSettings')) || {};
+      const theme = saved.theme || 'default';
 
-	      if (theme && theme !== 'default') {
-	        document.documentElement.setAttribute('data-color', theme);
-	      } else {
-	        document.documentElement.removeAttribute('data-color');
-	      }
-	    } catch (e) {
-	      console.warn('No se pudo aplicar el tema del mesero en Fusion Mesas', e);
-	    }
-	  });
+      if (theme && theme !== 'default') {
+        document.documentElement.setAttribute('data-color', theme);
+      } else {
+        document.documentElement.removeAttribute('data-color');
+      }
+    } catch (e) {
+      console.warn('No se pudo aplicar el tema del mesero en Fusion Mesas', e);
+    }
+  });
 
   function redirectMesa(mesaId, element) {
     const estado = element.getAttribute('data-estado');
@@ -224,10 +248,116 @@
         window.location.href = `/mesero/menu?mesa=${mesaId}`;
       }, 800);
     } else {
-      showNotification(`${numeroMesa} está ocupada. No se puede tomar pedidos.`, 'warning');
-      element.style.animation = 'shake 0.5s ease-in-out';
-      setTimeout(() => element.style.animation = '', 500);
+      abrirModalPedidoMesa(mesaId, numeroMesa, element);
     }
+  }
+
+  function abrirModalPedidoMesa(mesaId, numeroMesa, element) {
+    const modal = document.getElementById('modal-pedido-mesa');
+    const titulo = document.getElementById('modal-mesa-titulo');
+    const resumenDiv = document.getElementById('modal-pedido-resumen');
+    const historialDiv = document.getElementById('modal-pedido-historial');
+    const mesaIdInput = document.getElementById('modal-mesa-id');
+    const btnClose = document.getElementById('modal-pedido-close');
+
+    if (!modal || !resumenDiv || !historialDiv || !mesaIdInput) {
+      showNotification(`${numeroMesa} está ocupada, pero no se pudo abrir el detalle.`, 'error');
+      return;
+    }
+
+    titulo.textContent = numeroMesa;
+    mesaIdInput.value = mesaId;
+    resumenDiv.innerHTML = '<p>Cargando información del pedido...</p>';
+    historialDiv.innerHTML = '';
+
+    modal.style.display = 'flex';
+
+    if (btnClose) {
+      btnClose.onclick = () => {
+        modal.style.display = 'none';
+      };
+    }
+
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+
+    fetch(`/mesero/pedido/resumen?mesaId=${mesaId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          resumenDiv.innerHTML = `<p>No se pudo cargar el pedido: ${data.message || ''}</p>`;
+          return;
+        }
+
+        if (data.tienePedidoActivo) {
+          const fecha = data.fechaCreacion ? new Date(data.fechaCreacion).toLocaleString() : '';
+
+          let itemsHtml = '';
+          if (data.ordenJson) {
+            try {
+              const raw = JSON.parse(data.ordenJson);
+              const items = raw.items || raw; // por si se guarda directo el array
+              if (Array.isArray(items)) {
+                itemsHtml = items.map(it => {
+                  const nombre = it.productoNombre || it.name || 'Producto';
+                  const cant = it.cantidad || it.quantity || 1;
+                  const precio = it.precio || it.price || 0;
+                  const subtotal = it.subtotal || (precio * cant) || 0;
+                  return `<li>
+                    <span class="prod-nombre">${nombre}</span>
+                    <span class="prod-cant">x${cant}</span>
+                    <span class="prod-subtotal">$${subtotal.toFixed(2)}</span>
+                  </li>`;
+                }).join('');
+              }
+            } catch (e) {
+              console.error('Error parseando ordenJson', e);
+            }
+          }
+
+          let productosSection = '';
+          if (itemsHtml) {
+            productosSection = `
+              <h4>Productos</h4>
+              <ul class="lista-productos-pedido">${itemsHtml}</ul>
+            `;
+          }
+
+          resumenDiv.innerHTML = `
+            <div class="pedido-activo-resumen">
+              <h3>Pedido activo</h3>
+              <p><strong>ID:</strong> ${data.pedidoActivoId}</p>
+              <p><strong>Total:</strong> $${data.total != null ? data.total.toFixed(2) : '0.00'}</p>
+              <p><strong>Creado:</strong> ${fecha}</p>
+              ${productosSection}
+            </div>
+          `;
+
+        } else {
+          resumenDiv.innerHTML = '<p>No hay pedido activo para esta mesa.</p>';
+        }
+
+        if (Array.isArray(data.historial) && data.historial.length > 0) {
+          const items = data.historial.map(p => {
+            const fechaP = p.fechaCreacion ? new Date(p.fechaCreacion).toLocaleString() : '';
+            const totalP = p.total != null ? p.total.toFixed(2) : '0.00';
+            return `<li><span>#${p.id}</span> <span>${fechaP}</span> <span>$${totalP}</span></li>`;
+          }).join('');
+          historialDiv.innerHTML = `
+            <h3>Historial de pedidos</h3>
+            <ul class="lista-historial-pedidos">${items}</ul>
+          `;
+        } else {
+          historialDiv.innerHTML = '<p>Sin historial de pedidos para esta mesa.</p>';
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        resumenDiv.innerHTML = '<p>Error al cargar la información del pedido.</p>';
+      });
   }
 
   function showNotification(message, type = 'info') {
@@ -324,8 +454,36 @@
     }
 
     initFilters();
+
+    // Dropdown de usuario (Mesero / Admin / Caja / Cerrar sesión)
+    const userDropdownBtn = document.getElementById('userDropdown');
+    const dropdownMenu = document.querySelector('.user-dropdown .dropdown-menu');
+
+    if (userDropdownBtn && dropdownMenu) {
+      userDropdownBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+        userDropdownBtn.classList.toggle('active');
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!dropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+          dropdownMenu.classList.remove('show');
+          userDropdownBtn.classList.remove('active');
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          dropdownMenu.classList.remove('show');
+          userDropdownBtn.classList.remove('active');
+        }
+      });
+    }
   });
 </script>
+
 <script th:src="@{/js/fusionMesas.js}" defer></script>
 </body>
 </html>

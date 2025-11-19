@@ -25,6 +25,9 @@ public class Pedido {
     @Column(name = "cambio")
     private Double cambio;
 
+    @Column(name = "comentarios_generales")
+    private String comentariosGenerales;
+
     @Column(name = "fechaCreacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
@@ -54,7 +57,7 @@ public class Pedido {
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Factura factura;
 
-    // ✅ Constructor: asigna fecha de creación automáticamente
+
     public Pedido() {
         this.fechaCreacion = LocalDateTime.now();
     }
@@ -107,6 +110,14 @@ public class Pedido {
 
     public void setCambio(Double cambio) {
         this.cambio = cambio;
+    }
+
+    public String getComentariosGenerales() {
+        return comentariosGenerales;
+    }
+
+    public void setComentariosGenerales(String comentariosGenerales) {
+        this.comentariosGenerales = comentariosGenerales;
     }
 
     public LocalDateTime getFechaCreacion() {
