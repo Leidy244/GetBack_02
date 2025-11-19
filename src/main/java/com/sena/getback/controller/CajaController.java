@@ -97,6 +97,10 @@ public class CajaController {
                     .limit(5)
                     .collect(Collectors.toList());
             model.addAttribute("actividadReciente", actividadReciente);
+
+            // Pedidos de BAR para mostrar en cards en el inicio
+            model.addAttribute("pedidosPendientesBar", pedidoService.obtenerPedidosPendientesBar());
+            model.addAttribute("pedidosPagadosBar", pedidoService.obtenerPedidosPagadosBar());
         }
 
         if ("punto-venta".equals(activeSection)) {
@@ -127,5 +131,11 @@ public class CajaController {
         return "redirect:/caja?section=pagos";
     }
 
+    @PostMapping("/marcar-completado")
+    public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId) {
+        // Marcar como pagado sin gestionar aquí el monto recibido (flujo rápido desde inicio-caja)
+        pedidoService.marcarPedidoComoPagado(pedidoId, null);
+        return "redirect:/caja";
+    }
 
 }

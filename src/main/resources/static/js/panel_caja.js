@@ -55,6 +55,8 @@ class PanelCaja {
 
         // Pagos de pedidos (sección Pagos)
         this.setupPagosSection();
+        // Cards de pedidos (inicio caja)
+        this.setupPedidosCards();
     }
 
     // Ordenar historial de pagos (más reciente / más viejo)
@@ -346,6 +348,20 @@ class PanelCaja {
                 }
             });
         }
+    }
+
+    // Cards de pedidos (colapsables en inicio-caja)
+    setupPedidosCards() {
+        const toggles = document.querySelectorAll('.pedido-card .pedido-toggle, .pedido-card .pedido-toggle-btn');
+        if (!toggles || toggles.length === 0) return;
+
+        toggles.forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                const card = e.currentTarget.closest('.pedido-card');
+                if (!card) return;
+                card.classList.toggle('collapsed');
+            });
+        });
     }
 
     /* ===== FUNCIONALIDADES MODO OSCURO ===== */

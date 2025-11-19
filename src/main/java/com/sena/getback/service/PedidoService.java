@@ -160,6 +160,26 @@ public class PedidoService {
                 .toList();
     }
 
+    // Obtener pedidos PENDIENTES solo del área BAR (para panel de inicio de caja)
+    public List<Pedido> obtenerPedidosPendientesBar() {
+        return obtenerPedidosPendientes().stream()
+                .filter(p -> p.getMenu() != null
+                        && p.getMenu().getCategoria() != null
+                        && p.getMenu().getCategoria().getArea() != null
+                        && "BAR".equalsIgnoreCase(p.getMenu().getCategoria().getArea()))
+                .toList();
+    }
+
+    // Obtener pedidos PAGADOS solo del área BAR (para panel de inicio de caja)
+    public List<Pedido> obtenerPedidosPagadosBar() {
+        return obtenerPedidosPagados().stream()
+                .filter(p -> p.getMenu() != null
+                        && p.getMenu().getCategoria() != null
+                        && p.getMenu().getCategoria().getArea() != null
+                        && "BAR".equalsIgnoreCase(p.getMenu().getCategoria().getArea()))
+                .toList();
+    }
+
     // Marcar un pedido como PAGADO y registrar datos de pago (monto recibido y cambio),
     // además de liberar la mesa si ya no quedan pedidos pendientes en esa mesa
     // y generar una Factura asociada para el historial de ventas del admin
