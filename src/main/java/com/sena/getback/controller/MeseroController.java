@@ -14,9 +14,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -180,13 +181,31 @@ public class MeseroController {
                 res.put("pedidoActivoId", pedidoActivo.getId());
                 res.put("total", pedidoActivo.getTotal());
                 res.put("fechaCreacion", pedidoActivo.getFechaCreacion());
-                res.put("ordenJson", pedidoActivo.getOrden());
+
+                String ordenRaw = pedidoActivo.getOrden();
+                if (ordenRaw != null && !ordenRaw.trim().isEmpty()) {
+                    res.put("ordenJson", ordenRaw);
+                } else {
+                    res.put("ordenJson", null);
+                }
             } else {
                 res.put("tienePedidoActivo", false);
+                res.put("ordenJson", null);
             }
 
+            // Historial ligero para evitar grafos enormes de Hibernate
             List<Pedido> historial = pedidoService.obtenerHistorialPedidosPorMesa(mesaId);
-            res.put("historial", historial);
+            List<Map<String, Object>> historialLigero = new ArrayList<>();
+            if (historial != null) {
+                for (Pedido p : historial) {
+                    Map<String, Object> h = new HashMap<>();
+                    h.put("id", p.getId());
+                    h.put("total", p.getTotal());
+                    h.put("fechaCreacion", p.getFechaCreacion());
+                    historialLigero.add(h);
+                }
+            }
+            res.put("historial", historialLigero);
 
             res.put("success", true);
             return ResponseEntity.ok(res);
