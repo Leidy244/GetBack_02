@@ -653,7 +653,6 @@ nav {
 }
 
 @media (max-width: 480px) {
-
     .mesas-container {
         grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr));
         gap: 0.9375rem;
@@ -667,38 +666,39 @@ nav {
         width: 85%;
     }
 
-.notification.success {
-    border-left-color: var(--success);
-}
+    .notification.success {
+        border-left-color: var(--success);
+    }
 
-.notification.warning {
-    border-left-color: var(--warning);
-}
+    .notification.warning {
+        border-left-color: var(--warning);
+    }
 
-.notification.error {
-    border-left-color: var(--error);
+    .notification.error {
+        border-left-color: var(--error);
+    }
 
+    .notification-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 
-.notification-content {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
+    .notification i {
+        font-size: 1.2rem;
+    }
 
-.notification i {
-    font-size: 1.2rem;
-}
+    .notification.success i {
+        color: var(--success);
+    }
 
-.notification.success i {
-    color: var(--success);
-}
+    .notification.warning i {
+        color: var(--warning);
+    }
 
-.notification.warning i {
-    color: var(--warning);
-}
-
-.notification.error i {
-    color: var(--error);
+    .notification.error i {
+        color: var(--error);
+    }
 }
 
 /* ===== BOTÓN VOLVER ARRIBA ===== */
@@ -1203,8 +1203,7 @@ nav {
         min-height: 44px;
     }
 }
-}
-}
+
 /* ===== DROPDOWN ADMINISTRADOR ===== */
 .user-dropdown {
     position: relative;
