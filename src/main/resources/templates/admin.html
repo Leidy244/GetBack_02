@@ -13,7 +13,7 @@
 
 </head>
 
-<body>
+<body class="admin-panel">
 	<div id="preloader">
 		<div class="loader"></div>
 	</div>
@@ -131,29 +131,10 @@
 	<!-- SweetAlert2 -->
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-	<!-- Flash messages -> SweetAlert2 -->
-	<script th:if="${success != null}" th:inline="javascript">
-		// Eliminar alerts Bootstrap para evitar duplicados
-		document.querySelectorAll('.alert.alert-success').forEach(a => a.remove());
-		Swal.fire({
-			icon: 'success',
-			title: 'Guardado con éxito',
-			text: /*[[${success}]]*/ '',
-			showConfirmButton: false,
-			timer: 1800
-		});
-	</script>
-	<script th:if="${error != null}" th:inline="javascript">
-		// Eliminar alerts Bootstrap para evitar duplicados
-		document.querySelectorAll('.alert.alert-danger').forEach(a => a.remove());
-		Swal.fire({
-			icon: 'error',
-			title: 'Ocurrió un error',
-			text: /*[[${error}]]*/ '',
-			confirmButtonText: 'Entendido'
-		});
-	</script>
-	
+	<!-- Contenedores ocultos para mensajes flash; la lógica de SweetAlert2 vive en admin.js -->
+	<div id="flash-success" th:if="${success != null}" th:data-message="${success}" style="display:none"></div>
+	<div id="flash-error" th:if="${error != null}" th:data-message="${error}" style="display:none"></div>
+
 </body>
 
 </html>

@@ -26,11 +26,6 @@
                 <i class="fas fa-cash-register"></i> Punto de Venta
             </a>
             
-            <a th:href="@{/caja(section='ventas-rapidas')}" 
-               th:classappend="${activeSection == 'ventas-rapidas'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-bolt"></i> Ventas Rápidas
-            </a>
-
             <a th:href="@{/caja(section='pagos')}" 
                th:classappend="${activeSection == 'pagos'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-credit-card"></i> Pagos
@@ -40,11 +35,11 @@
                th:classappend="${activeSection == 'historial-pagos'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-receipt"></i> Historial de Pagos
             </a>
-
-<a th:href="@{/caja(section='configuracion')}" 
-   th:classappend="${activeSection == 'configuracion'} ? 'nav-link active' : 'nav-link'">
-    <i class="fas fa-gear"></i> Configuración
-</a>
+            
+            <a th:href="@{/caja(section='corte-caja')}" 
+               th:classappend="${activeSection == 'corte-caja'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-balance-scale"></i> Inicio / Cierre de caja
+            </a>
         </nav>
         
         <div class="sidebar-footer">

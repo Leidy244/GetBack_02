@@ -85,6 +85,129 @@
     --primary-gradient: linear-gradient(135deg, #A82A2A, #401070);
 }
 
+[data-theme="dark"] body.caja-theme {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .caja-header {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .caja-sidebar {
+    background: var(--sidebar-gradient);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .caja-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="dark"] .caja-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+[data-theme="dark"] .caja-sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .recent-activity,
+[data-theme="dark"] .table-container,
+[data-theme="dark"] .form-container,
+[data-theme="dark"] .panel-productos,
+[data-theme="dark"] .panel-carrito {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .stat-info h3,
+[data-theme="dark"] .activity-content p,
+[data-theme="dark"] .nombre-producto,
+[data-theme="dark"] .precio-item,
+[data-theme="dark"] .total-carrito {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .stat-info p,
+[data-theme="dark"] .stat-info small,
+[data-theme="dark"] .activity-content small,
+[data-theme="dark"] .stock-producto {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .table th {
+    background: var(--primary-dark);
+    color: #fff;
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .table td {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table tr:hover td {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	color: var(--text-white);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+	color: var(--text-white);
+}
+
+[data-theme="dark"] .filtro-categoria {
+    color: var(--text-white);
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .filtro-categoria.activo,
+[data-theme="dark"] .filtro-categoria:hover {
+    background: var(--primary-color);
+    color: var(--text-white);
+    border-color: var(--primary-color);
+}
+
+/* ===== BOTONES PESTAÑA PAGO EN MODO OSCURO ===== */
+[data-theme="dark"] .pestana-pago {
+    color: var(--text-white);
+    background: transparent;
+}
+
+[data-theme="dark"] .pestana-pago.active,
+[data-theme="dark"] .pestana-pago:hover {
+    color: var(--text-white);
+    border-bottom-color: var(--primary-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .pestana-pago:not(.active) {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .pestana-pago:not(.active):hover {
+    color: var(--text-white);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 /* ===== BOTÓN MODO OSCURO FLOTANTE ===== */
 .dark-mode-toggle {
     position: fixed;
@@ -465,6 +588,12 @@ body.caja-theme {
     position: relative;
 }
 
+.stat-card-link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
 .stat-card::before {
     content: '';
     position: absolute;
@@ -772,7 +901,6 @@ body.caja-theme {
 .acciones-productos,
 .acciones-turnos,
 .acciones-reportes,
-.acciones-ventas-rapidas,
 .acciones-pedidos {
     display: flex;
     gap: 1rem;
@@ -1181,17 +1309,6 @@ body.caja-theme {
 }
 
 /* ==========================
-   VENTAS RÁPIDAS Y PEDIDOS
-=========================== */
-.ventas-rapidas-container {
-    background: var(--bg-primary);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
-}
-
-.acciones-pedidos {
     display: flex;
     gap: 1rem;
     margin-bottom: 1.5rem;

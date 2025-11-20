@@ -58,6 +58,8 @@ class PanelCaja {
 
         // Cards de pedidos (inicio caja)
         this.setupPedidosCards();
+        // Corte de caja (inicio/cierre de caja)
+        this.setupCorteCaja();
     }
 
     // Ordenar historial de pagos (más reciente / más viejo)
@@ -365,14 +367,39 @@ class PanelCaja {
         });
     }
 
+    // Inicio / Cierre de caja: cálculo de base y retiro estimado
+    setupCorteCaja() {
+        const corteContainer = document.querySelector('.form-container.mt-4');
+        if (!corteContainer) return;
+
+        const ingresosAttr = corteContainer.getAttribute('data-ingresos-dia');
+        const ingresosDia = parseFloat(ingresosAttr) || 0;
+
+        const inputBase = document.getElementById('baseSiguienteDia');
+        const inputRetiro = document.getElementById('retiroEstimado');
+        const btnCalcular = document.getElementById('btnCalcularCorte');
+
+        if (!inputBase || !inputRetiro || !btnCalcular) return;
+
+        const calcular = () => {
+            const base = parseFloat(inputBase.value) || 0;
+            let retiro = ingresosDia - base;
+            if (retiro < 0) retiro = 0;
+            inputRetiro.value = retiro.toFixed(2);
+        };
+
+        btnCalcular.addEventListener('click', calcular);
+        inputBase.addEventListener('input', calcular);
+    }
+
     /* ===== FUNCIONALIDADES MODO OSCURO ===== */
     toggleDarkMode() {
-        const body = document.body;
-        const currentTheme = body.getAttribute("data-theme");
+        const root = document.documentElement;
+        const currentTheme = root.getAttribute("data-theme");
         const icon = document.querySelector("#darkModeToggle i");
         
         if (currentTheme === "dark") {
-            body.removeAttribute("data-theme");
+            root.removeAttribute("data-theme");
             if (icon) {
                 icon.className = "fas fa-moon";
                 icon.title = "Activar modo oscuro";
@@ -381,7 +408,7 @@ class PanelCaja {
             this.showNotification("Modo claro activado", "success");
             this.actualizarSelectTema('claro');
         } else {
-            body.setAttribute("data-theme", "dark");
+            root.setAttribute("data-theme", "dark");
             if (icon) {
                 icon.className = "fas fa-sun";
                 icon.title = "Activar modo claro";
@@ -396,11 +423,11 @@ class PanelCaja {
     }
 
     cambiarTemaDesdeConfiguracion(tema) {
-        const body = document.body;
+        const root = document.documentElement;
         const icon = document.querySelector("#darkModeToggle i");
         
         if (tema === "oscuro") {
-            body.setAttribute("data-theme", "dark");
+            root.setAttribute("data-theme", "dark");
             if (icon) {
                 icon.className = "fas fa-sun";
                 icon.title = "Activar modo claro";
@@ -408,7 +435,7 @@ class PanelCaja {
             localStorage.setItem("caja-theme", "dark");
             this.showNotification("Modo oscuro activado", "success");
         } else {
-            body.removeAttribute("data-theme");
+            root.removeAttribute("data-theme");
             if (icon) {
                 icon.className = "fas fa-moon";
                 icon.title = "Activar modo oscuro";
@@ -432,14 +459,14 @@ class PanelCaja {
         const icon = document.querySelector("#darkModeToggle i");
         
         if (savedTheme === "dark") {
-            document.body.setAttribute("data-theme", "dark");
+            document.documentElement.setAttribute("data-theme", "dark");
             if (icon) {
                 icon.className = "fas fa-sun";
                 icon.title = "Activar modo claro";
             }
             this.actualizarSelectTema('oscuro');
         } else {
-            document.body.removeAttribute("data-theme");
+            document.documentElement.removeAttribute("data-theme");
             if (icon) {
                 icon.className = "fas fa-moon";
                 icon.title = "Activar modo oscuro";
