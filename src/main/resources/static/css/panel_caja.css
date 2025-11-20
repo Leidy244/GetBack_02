@@ -463,7 +463,6 @@ body.caja-theme {
     transition: var(--transition);
     border: 1px solid var(--border-color);
     position: relative;
-    overflow: hidden;
 }
 
 .stat-card::before {
@@ -781,6 +780,151 @@ body.caja-theme {
     flex-wrap: wrap;
 }
 
+.card-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    padding: 1.25rem 1rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    position: relative;
+}
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+}
+
+/* ==========================
+   CARDS DE PEDIDOS (INICIO CAJA)
+=========================== */
+
+.pedidos-section {
+    margin-bottom: 2rem;
+}
+
+.pedidos-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pedidos-section-title i {
+    color: var(--primary-color);
+}
+
+.pedidos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.pedido-card {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.pedido-card-pendiente {
+    border-left: 4px solid var(--warning-color);
+}
+
+.pedido-card-completado {
+    border-left: 4px solid var(--success-color);
+}
+
+.pedido-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    background: var(--bg-secondary);
+}
+
+.pedido-mesa {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-right: 0.5rem;
+}
+
+.pedido-fecha {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.pedido-total {
+    font-weight: 700;
+    color: var(--primary-color);
+    white-space: nowrap;
+}
+
+.pedido-toggle-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pedido-card-body {
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pedido-detalle-resumen {
+    margin-bottom: 0.5rem;
+}
+
+.pedido-acciones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pedidos-empty {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: var(--text-secondary);
+}
+
+.pedidos-empty i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--border-color);
+}
+
+/* Estado colapsado de la card */
+.pedido-card.collapsed .pedido-card-body {
+    display: none;
+}
+
+.pedido-card.collapsed .pedido-toggle-btn i {
+    transform: rotate(0deg);
+}
+
+.pedido-card:not(.collapsed) .pedido-toggle-btn i {
+    transform: rotate(180deg);
+}
+
 /* ==========================
    ESTILOS PARA PUNTO DE VENTA
 =========================== */
@@ -1052,6 +1196,220 @@ body.caja-theme {
     gap: 1rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+}
+
+/* ==========================
+   ANALÍTICAS Y GRÁFICAS (ESTILO ADMIN)
+=========================== */
+
+/* Fila que contiene gráficas y actividad reciente */
+.analytics-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+/* Contenedor principal de gráficas */
+.charts-section {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    min-height: auto;
+}
+
+.charts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.charts-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.charts-header h3 i {
+    color: var(--primary-color);
+}
+
+/* Filtros de tipo de gráfica */
+.chart-filters {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chart-filter-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.chart-filter-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.chart-filter-btn.active {
+    background: var(--primary-gradient);
+    border-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Contenedores de cada grupo de gráficas */
+.charts-container {
+    display: none;
+}
+
+.charts-container.active {
+    display: block;
+    animation: fadeInUp 0.4s ease;
+}
+
+/* Grid interno de tarjetas de gráfica */
+.charts-grid {
+    display: block;
+}
+
+.chart-card {
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+}
+
+.chart-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-title i {
+    color: var(--primary-color);
+}
+
+/* Tamaño de los canvas de gráficas (igual que admin) */
+.dashboard-container .chart-canvas {
+    width: 95% !important;
+    height: 320px !important;
+    max-height: 320px !important;
+}
+
+/* ==========================
+   ACTIVIDAD RECIENTE (ESTILO ADMIN)
+=========================== */
+
+.activity-section {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.activity-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.activity-header h3 i {
+    color: var(--primary-color);
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    border-left: 3px solid var(--primary-color);
+    transition: var(--transition);
+}
+
+.activity-item:hover {
+    background: var(--bg-secondary);
+    transform: translateX(4px);
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #fff;
+    background: var(--primary-gradient);
+    flex-shrink: 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.6;
+    color: var(--primary-color);
+}
+
+.empty-state h4 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    font-size: 0.85rem;
 }
 
 /* ==========================

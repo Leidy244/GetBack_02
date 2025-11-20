@@ -325,19 +325,4 @@ public class MeseroController {
 	public String mostrarConfiguracion() {
 		return "mesero/configuracion";
 	}
-
-	@GetMapping("/PerfilMesero")
-	public String perfilMesero(HttpSession session, Model model) {
-		Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-		if (usuario == null) {
-			return "redirect:/login";
-		}
-		model.addAttribute("usuario", usuario);
-		return "mesero/configuracion";
-	}
-
-	@GetMapping("/configuracionMesero")
-	public String mostrarConfiguracionMesero() {
-		return "configuracion";
-	}
 }

@@ -224,4 +224,95 @@ public class PerfilesController {
 		return "redirect:/configuracion";
 	}
 
+	// CONFIGURACION DEL CAJERO
+
+		@PostMapping("/actualizar-datos-caja")
+		public String actualizarPerfilCajero(@ModelAttribute Usuario adminActualizado, HttpSession session,
+				RedirectAttributes redirectAttrs) {
+			try {
+				// Obtener el usuario logueado desde la sesión
+				Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+				if (usuarioLogueado == null) {
+					redirectAttrs.addFlashAttribute("error", "Sesión expirada. Por favor inicia sesión de nuevo.");
+					return "redirect:/caja?section=configuracion";
+				}
+
+				// Actualizar los campos que vienen del formulario
+				if (adminActualizado.getNombre() != null && !adminActualizado.getNombre().isEmpty()) {
+					usuarioLogueado.setNombre(adminActualizado.getNombre());
+				}
+				if (adminActualizado.getApellido() != null && !adminActualizado.getApellido().isEmpty()) {
+					usuarioLogueado.setApellido(adminActualizado.getApellido());
+				}
+				if (adminActualizado.getCorreo() != null && !adminActualizado.getCorreo().isEmpty()) {
+					usuarioLogueado.setCorreo(adminActualizado.getCorreo());
+				}
+				if (adminActualizado.getDireccion() != null) {
+					usuarioLogueado.setDireccion(adminActualizado.getDireccion());
+				}
+				if (adminActualizado.getTelefono() != null) {
+					usuarioLogueado.setTelefono(adminActualizado.getTelefono());
+				}
+				if (adminActualizado.getClave() != null && !adminActualizado.getClave().isEmpty()) {
+					usuarioLogueado.setClave(adminActualizado.getClave());
+				}
+
+				// Guardar cambios en la BD
+				usuarioService.updateUser(usuarioLogueado);
+
+				// Actualizar la sesión con el usuario modificado
+				session.setAttribute("usuarioLogueado", usuarioLogueado);
+
+				redirectAttrs.addFlashAttribute("success", "Perfil actualizado correctamente");
+
+			} catch (Exception e) {
+				redirectAttrs.addFlashAttribute("error", "Error al actualizar perfil: " + e.getMessage());
+			}
+
+			return "redirect:/caja?section=configuracion";
+		}
+
+		/** ACTUALIZAR FOTO */
+		@PostMapping("/actualizar-foto-caja")
+		public String actualizarFotoCajero(@RequestParam("id") Long id, @RequestParam("foto") MultipartFile foto,
+				RedirectAttributes redirectAttrs, HttpSession session) {
+
+			try {
+				// Buscar el usuario
+				Usuario caja = usuarioRepository.findById(id)
+						.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+				// Validar que el archivo no esté vacío
+				if (foto.isEmpty()) {
+					redirectAttrs.addFlashAttribute("error", "Por favor seleccione una foto");
+					return "redirect:/caja?section=configuracion";
+				}
+
+				// Eliminar foto anterior si existe
+				if (caja.getFoto() != null && !caja.getFoto().isEmpty()) {
+					try {
+						uploadFileService.deleteImage(caja.getFoto());
+					} catch (Exception e) {
+						System.err.println("⚠️ No se pudo borrar la foto anterior: " + e.getMessage());
+					}
+				}
+
+				// Guardar nueva imagen
+				String fileName = uploadFileService.saveImages(foto, caja.getNombre());
+				caja.setFoto(fileName);
+				usuarioRepository.save(caja);
+
+				session.setAttribute("usuarioLogueado", caja);
+
+				redirectAttrs.addFlashAttribute("success", "Foto actualizada correctamente");
+
+			} catch (IOException e) {
+				redirectAttrs.addFlashAttribute("error", "Error al guardar la foto: " + e.getMessage());
+			} catch (Exception e) {
+				redirectAttrs.addFlashAttribute("error", "Error al actualizar foto: " + e.getMessage());
+			}
+
+			return "redirect:/caja?section=configuracion";
+		}
+
 }

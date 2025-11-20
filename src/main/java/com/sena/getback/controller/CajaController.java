@@ -2,6 +2,7 @@ package com.sena.getback.controller;
 
 import com.sena.getback.model.Factura;
 import com.sena.getback.model.Pedido;
+import com.sena.getback.model.Usuario;
 import com.sena.getback.repository.FacturaRepository;
 import com.sena.getback.repository.PedidoRepository;
 import com.sena.getback.repository.UsuarioRepository;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -97,6 +100,10 @@ public class CajaController {
                     .limit(5)
                     .collect(Collectors.toList());
             model.addAttribute("actividadReciente", actividadReciente);
+
+            // Pedidos de BAR para mostrar en cards en el inicio
+            model.addAttribute("pedidosPendientesBar", pedidoService.obtenerPedidosPendientesBar());
+            model.addAttribute("pedidosPagadosBar", pedidoService.obtenerPedidosPagadosBar());
         }
 
         if ("punto-venta".equals(activeSection)) {
@@ -127,5 +134,12 @@ public class CajaController {
         return "redirect:/caja?section=pagos";
     }
 
-
+    @PostMapping("/marcar-completado")
+    public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId) {
+        // Marcar como pagado sin gestionar aquí el monto recibido (flujo rápido desde inicio-caja)
+        pedidoService.marcarPedidoComoPagado(pedidoId, null);
+        return "redirect:/caja";
+    }
+ 
 }
+

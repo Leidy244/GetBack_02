@@ -530,6 +530,283 @@ body[data-theme="dark"][data-admin-contrast="2"] {
   font-size: 0.98rem;
 }
 
+/* ===== ESTILOS GENERALES PARA BOTONES ===== */
+.btn, .dropdown-item, .btnArchivo, .btnGuardarFoto, .btnCancelarFoto {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+/* ===== BOTONES PRINCIPALES ===== */
+.btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* ===== BOTONES GHOST/SECUNDARIOS ===== */
+.btn.ghost {
+    background: transparent;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
+.btn.ghost:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+/* ===== BOTONES DROPDOWN ITEM ===== */
+.dropdown-item {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    padding: 12px 24px;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #ee7df7 0%, #f34158 100%);
+    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+    transform: translateY(-2px);
+}
+
+.dropdown-item:active {
+    transform: translateY(0);
+}
+
+.dropdown-item i {
+    font-size: 16px;
+}
+
+/* ===== BOTÓN PARA SUBIR ARCHIVOS ===== */
+.btnArchivo {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    font-weight: 600;
+}
+
+.btnArchivo:hover {
+    background: linear-gradient(135deg, #3a9df8 0%, #00d9e6 100%);
+    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    transform: translateY(-2px);
+}
+
+/* ===== BOTÓN GUARDAR FOTO ===== */
+.btnGuardarFoto {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btnGuardarFoto:hover {
+    background: linear-gradient(135deg, #0da271 0%, #047852 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+.btnGuardarFoto:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== BOTÓN CANCELAR FOTO ===== */
+.btnCancelarFoto {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btnCancelarFoto:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-2px);
+}
+
+/* ===== ESTILOS PARA EL NOMBRE DEL ARCHIVO ===== */
+.nombre-archivo {
+    margin-left: 15px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    color: #6c757d;
+    font-size: 14px;
+    font-style: italic;
+    min-width: 200px;
+    display: inline-block;
+}
+
+.nombre-archivo::before {
+    content: "📄 ";
+    margin-right: 5px;
+}
+
+/* ===== CONTENEDOR DE ACCIONES DE CUENTA ===== */
+.account-actions {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.account-actions .dropdown-item {
+    white-space: nowrap;
+    min-width: 140px;
+    justify-content: center;
+}
+
+/* ===== ESTILOS PARA EL FORMULARIO ===== */
+#formEditar, #formFoto {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== ESTILOS PARA LOS INPUTS DEL FORMULARIO ===== */
+#formEditar input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+#formEditar input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#formEditar label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+/* ===== ESTILOS RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .account-actions {
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .account-actions .dropdown-item {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .btn, .dropdown-item, .btnArchivo, .btnGuardarFoto, .btnCancelarFoto {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .nombre-archivo {
+        display: block;
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ===== ESTADOS DE DESHABILITADO ===== */
+.btn:disabled, .dropdown-item:disabled, .btnArchivo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ===== EFECTO DE CARGA ===== */
+.btn.loading, .dropdown-item.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading::after, .dropdown-item.loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== ESTILOS PARA EL INPUT FILE OCULTO ===== */
+#inputFoto {
+    display: none;
+}
+
+/* ===== EFECTO DE PULSO PARA BOTONES PRINCIPALES ===== */
+.dropdown-item:focus, .btn:focus, .btnArchivo:focus {
+    outline: none;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
   .user-display {
