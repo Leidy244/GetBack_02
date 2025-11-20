@@ -222,76 +222,77 @@ body.admin-font-large {
 
 /* ===== CONTRASTE MODO CLARO ===== */
 
-/* 0: bajo */
+/* 0: BAJO - EXTREMADAMENTE suave, casi sin contraste */
 body:not([data-theme="dark"])[data-admin-contrast="0"] {
-	--bg-primary: #FDFDFE;
-	--bg-secondary: #F6F7FB;
-	--bg-tertiary: #ECEFF4;
-	--text-primary: #747C8C;  
-	--text-secondary: #B0B8C5; 
-	--border-color: #E5E9F0;
+	--bg-primary: #FFFFFF;
+	--bg-secondary: #FFFFFF;
+	--bg-tertiary: #F9FAFB;
+	--text-primary: #4A5568;
+	/* más oscuro, muy legible */
+	--text-secondary: #718096;
+	/* gris medio (letra pequeña) */
+	--text-light: #A0AEC0;
+	/* gris claro */
+	--border-color: #E5E7EB;
 }
 
-/* 1: normal */
+/* 1: NORMAL - Contraste estándar */
 body:not([data-theme="dark"])[data-admin-contrast="1"] {
 	--bg-primary: #FFFFFF;
-	--bg-secondary: #F7FAFC;
-	--bg-tertiary: #EDF2F7;
-
-	--text-primary: #2D3748;
-	--text-secondary: #718096;
-
-	--border-color: #E2E8F0;
+	--bg-secondary: #F8F9FA;
+	--bg-tertiary: #E9ECEF;
+	--text-primary: #212529;
+	--text-secondary: #6C757D;
+	--border-color: #DEE2E6;
 }
 
-/* 2: muy alto*/
+/* 2: MUY ALTO - Contraste extremo */
 body:not([data-theme="dark"])[data-admin-contrast="2"] {
-	--bg-primary: #E5E7EB;  
-	--bg-secondary: #D1D5DB;
-	--bg-tertiary: #9CA3AF;
-
-	--text-primary: #020617;  
-	--text-secondary: #111827;
-
-	--border-color: #111827;
+	--bg-primary: #FFFFFF;
+	--bg-secondary: #FFFFFF;
+	--bg-tertiary: #F0F0F0;
+	--text-primary: #000000;
+	--text-secondary: #333333;
+	--border-color: #000000;
 }
+
 /* ===== CONTRASTE MODO OSCURO ===== */
 
+/* 0: BAJO - EXTREMADAMENTE suave en oscuro */
 body[data-theme="dark"][data-admin-contrast="0"] {
-	
-	/* 0: bajo*/
-	--bg-primary: #21242A;
-	--bg-secondary: #1A1D23;
-	--bg-tertiary: #151820;
-	--text-primary: #C4CBD8;
-	--text-secondary: #8B939F;
-	--border-color: #2C3038;
+	--bg-primary: #2A2E38;
+	/* Oscuro muy suave */
+	--bg-secondary: #272B34;
+	--bg-tertiary: #242831;
+	--text-primary: #8C929E;
+	/* Gris medio-bajo, poco contraste */
+	--text-secondary: #6A707D;
+	--text-light: #5A606D;
+	--border-color: #3A3E48;
+	/* Casi igual al fondo */
 }
 
-/* 1: normal */
+/* 1: NORMAL - Oscuro estándar */
 body[data-theme="dark"][data-admin-contrast="1"] {
 	--bg-primary: #1A1A1A;
-	--bg-secondary: #1A1A1A;
-	--bg-tertiary: #1A1A1A;
-
+	--bg-secondary: #151515;
+	--bg-tertiary: #101010;
 	--text-primary: #FFFFFF;
-	--text-secondary: #B0B0B0;
-	--text-light: #808080;
-
-	--border-color: #333333;
+	--text-secondary: #CCCCCC;
+	--text-light: #999999;
+	--border-color: #404040;
 }
 
-/* 2: muy alto  */
+/* 2: MUY ALTO - Contraste extremo en oscuro */
 body[data-theme="dark"][data-admin-contrast="2"] {
-	--bg-primary: #020617;   /* casi negro azulado */
+	--bg-primary: #000000;
 	--bg-secondary: #000000;
-	--bg-tertiary: #0B1120;
-
-	--text-primary: #F9FAFB; /* casi blanco */
-	--text-secondary: #E5E7EB;
-
-	--border-color: #F9FAFB;
+	--bg-tertiary: #0A0A0A;
+	--text-primary: #FFFFFF;
+	--text-secondary: #FFFFFF;
+	--border-color: #FFFFFF;
 }
+
 /* ===== RESET MEJORADO ===== */
 * {
 	margin: 0;

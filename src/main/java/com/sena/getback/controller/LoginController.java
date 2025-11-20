@@ -48,8 +48,8 @@ public class LoginController {
 	                            return "redirect:/admin";
 	                        case "MESERO":
 	                            return "redirect:/configuracion";
-	                        case "COCINERO":
-	                            return "redirect:/cocina";
+	                        case "CAJA":
+	                            return "redirect:/caja";
 	                        default:
 	                            return "redirect:/";
 	                    }

@@ -41,11 +41,8 @@ class PanelCaja {
         // Inicio de caja
         document.getElementById('form-inicio-caja')?.addEventListener('submit', this.iniciarCaja.bind(this));
 
-        // Modo oscuro
-        const darkModeToggle = document.getElementById("darkModeToggle");
-        if (darkModeToggle) {
-            darkModeToggle.addEventListener("click", () => this.toggleDarkMode());
-        };
+        // Botón modo oscuro
+        document.getElementById('darkModeToggle')?.addEventListener('click', this.toggleDarkMode.bind(this));
 
         // Configuración del tema desde el formulario
         const temaSelect = document.getElementById('tema');
@@ -55,6 +52,9 @@ class PanelCaja {
 
         // Pagos de pedidos (sección Pagos)
         this.setupPagosSection();
+
+        // Efectivo - calcular cambio en tiempo real
+        document.getElementById('monto-recibido')?.addEventListener('input', this.calcularCambio.bind(this));
     }
 
     // Ordenar historial de pagos (más reciente / más viejo)
@@ -356,17 +356,26 @@ class PanelCaja {
         
         if (currentTheme === "dark") {
             body.removeAttribute("data-theme");
-            if (icon) icon.className = "fas fa-moon";
+            if (icon) {
+                icon.className = "fas fa-moon";
+                icon.title = "Activar modo oscuro";
+            }
             localStorage.setItem("caja-theme", "light");
             this.showNotification("Modo claro activado", "success");
             this.actualizarSelectTema('claro');
         } else {
             body.setAttribute("data-theme", "dark");
-            if (icon) icon.className = "fas fa-sun";
+            if (icon) {
+                icon.className = "fas fa-sun";
+                icon.title = "Activar modo claro";
+            }
             localStorage.setItem("caja-theme", "dark");
             this.showNotification("Modo oscuro activado", "success");
             this.actualizarSelectTema('oscuro');
         }
+        
+        // Forzar actualización de estilos
+        this.forceStyleUpdate();
     }
 
     cambiarTemaDesdeConfiguracion(tema) {
@@ -375,15 +384,23 @@ class PanelCaja {
         
         if (tema === "oscuro") {
             body.setAttribute("data-theme", "dark");
-            if (icon) icon.className = "fas fa-sun";
+            if (icon) {
+                icon.className = "fas fa-sun";
+                icon.title = "Activar modo claro";
+            }
             localStorage.setItem("caja-theme", "dark");
             this.showNotification("Modo oscuro activado", "success");
         } else {
             body.removeAttribute("data-theme");
-            if (icon) icon.className = "fas fa-moon";
+            if (icon) {
+                icon.className = "fas fa-moon";
+                icon.title = "Activar modo oscuro";
+            }
             localStorage.setItem("caja-theme", "light");
             this.showNotification("Modo claro activado", "success");
         }
+        
+        this.forceStyleUpdate();
     }
 
     actualizarSelectTema(tema) {
@@ -395,14 +412,33 @@ class PanelCaja {
 
     restoreTheme() {
         const savedTheme = localStorage.getItem("caja-theme");
+        const icon = document.querySelector("#darkModeToggle i");
+        
         if (savedTheme === "dark") {
             document.body.setAttribute("data-theme", "dark");
-            const icon = document.querySelector("#darkModeToggle i");
-            if (icon) icon.className = "fas fa-sun";
+            if (icon) {
+                icon.className = "fas fa-sun";
+                icon.title = "Activar modo claro";
+            }
             this.actualizarSelectTema('oscuro');
         } else {
+            document.body.removeAttribute("data-theme");
+            if (icon) {
+                icon.className = "fas fa-moon";
+                icon.title = "Activar modo oscuro";
+            }
             this.actualizarSelectTema('claro');
         }
+        
+        // Asegurar que los estilos se apliquen correctamente
+        setTimeout(() => this.forceStyleUpdate(), 100);
+    }
+
+    forceStyleUpdate() {
+        // Forzar repaint para asegurar que los estilos se apliquen
+        document.body.style.display = 'none';
+        document.body.offsetHeight; // Trigger reflow
+        document.body.style.display = '';
     }
 
     showNotification(message, type = "info") {
@@ -469,9 +505,18 @@ class PanelCaja {
                 
                 // Mostrar la sección correspondiente
                 const sectionId = link.getAttribute('data-section');
-                document.getElementById(sectionId).classList.add('visible');
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('visible');
+                }
             });
         });
+
+        // Activar la primera sección por defecto
+        const firstLink = document.querySelector('.caja-nav-link');
+        if (firstLink) {
+            firstLink.click();
+        }
     }
 
     cargarProductos() {
@@ -522,6 +567,7 @@ class PanelCaja {
         }
 
         this.actualizarCarrito();
+        this.showNotification(`${productoNombre} agregado al carrito`, 'success');
     }
 
     actualizarCarrito() {
@@ -570,6 +616,9 @@ class PanelCaja {
                 item.cantidad++;
             } else if (accion === 'decrement' && item.cantidad > 1) {
                 item.cantidad--;
+            } else if (accion === 'decrement' && item.cantidad === 1) {
+                // Si la cantidad es 1 y se presiona decrement, eliminar el producto
+                this.carrito = this.carrito.filter(i => i.id !== itemId);
             }
             
             this.actualizarCarrito();
@@ -580,43 +629,57 @@ class PanelCaja {
         const boton = event.currentTarget;
         const itemElement = boton.closest('.item-carrito');
         const itemId = itemElement.getAttribute('data-id');
+        const itemNombre = this.carrito.find(item => item.id === itemId)?.nombre;
         
         this.carrito = this.carrito.filter(item => item.id !== itemId);
         this.actualizarCarrito();
+        
+        if (itemNombre) {
+            this.showNotification(`${itemNombre} eliminado del carrito`, 'success');
+        }
     }
 
     vaciarCarrito() {
+        if (this.carrito.length === 0) {
+            this.showNotification("El carrito ya está vacío", "info");
+            return;
+        }
+
         if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
             this.carrito = [];
             this.actualizarCarrito();
+            this.showNotification("Carrito vaciado", "success");
         }
     }
 
     finalizarVenta() {
         if (this.carrito.length === 0) {
-            alert('El carrito está vacío');
+            this.showNotification("El carrito está vacío", "error");
             return;
         }
 
         if (this.metodoPago === 'efectivo') {
-            const montoRecibido = parseFloat(document.getElementById('monto-recibido').value);
+            const montoRecibido = parseFloat(document.getElementById('monto-recibido')?.value);
             if (isNaN(montoRecibido) || montoRecibido < this.total) {
-                alert('El monto recibido debe ser igual o mayor al total');
+                this.showNotification("El monto recibido debe ser igual o mayor al total", "error");
                 return;
             }
         }
 
         // Simular proceso de venta
-        alert(`Venta realizada exitosamente!\nTotal: $${this.total.toFixed(2)}\nMétodo de pago: ${this.metodoPago}`);
+        this.showNotification(`Venta realizada exitosamente! Total: $${this.total.toFixed(2)}`, "success");
         this.carrito = [];
         this.actualizarCarrito();
-        document.getElementById('monto-recibido').value = '';
+        
+        const montoRecibidoInput = document.getElementById('monto-recibido');
+        if (montoRecibidoInput) montoRecibidoInput.value = '';
+        
         this.calcularCambio();
     }
 
     imprimirTicket() {
         if (this.carrito.length === 0) {
-            alert('No hay productos en el carrito para imprimir');
+            this.showNotification("No hay productos en el carrito para imprimir", "error");
             return;
         }
 
@@ -641,6 +704,8 @@ class PanelCaja {
         `);
         ventanaImpresion.document.close();
         ventanaImpresion.print();
+        
+        this.showNotification("Ticket generado para impresión", "success");
     }
 
     generarTicket() {
@@ -675,7 +740,7 @@ class PanelCaja {
     }
 
     buscarProductos() {
-        const termino = document.getElementById('buscar-productos').value.toLowerCase();
+        const termino = document.getElementById('buscar-productos')?.value.toLowerCase();
         const productos = document.querySelectorAll('.tarjeta-producto');
         
         productos.forEach(producto => {
@@ -724,14 +789,22 @@ class PanelCaja {
         document.querySelectorAll('.contenido-pago').forEach(contenido => {
             contenido.classList.remove('visible');
         });
-        document.getElementById(`pago-${metodo}`).classList.add('visible');
+        
+        const targetContent = document.getElementById(`pago-${metodo}`);
+        if (targetContent) {
+            targetContent.classList.add('visible');
+        }
         
         this.metodoPago = metodo;
     }
 
     calcularCambio() {
-        const montoRecibido = parseFloat(document.getElementById('monto-recibido').value);
+        const montoRecibidoInput = document.getElementById('monto-recibido');
         const cambioElement = document.getElementById('cambio');
+        
+        if (!montoRecibidoInput || !cambioElement) return;
+        
+        const montoRecibido = parseFloat(montoRecibidoInput.value);
         
         if (!isNaN(montoRecibido) && montoRecibido >= this.total) {
             const cambio = montoRecibido - this.total;
@@ -743,15 +816,15 @@ class PanelCaja {
 
     iniciarCaja(event) {
         event.preventDefault();
-        const efectivoInicial = parseFloat(document.getElementById('efectivo-inicial').value);
+        const efectivoInicial = parseFloat(document.getElementById('efectivo-inicial')?.value);
         
         if (isNaN(efectivoInicial) || efectivoInicial < 0) {
-            alert('Por favor ingresa un monto válido para el efectivo inicial');
+            this.showNotification("Por favor ingresa un monto válido para el efectivo inicial", "error");
             return;
         }
         
         // Simular inicio de caja
-        alert(`Caja iniciada exitosamente\nEfectivo inicial: $${efectivoInicial.toFixed(2)}`);
+        this.showNotification(`Caja iniciada exitosamente. Efectivo inicial: $${efectivoInicial.toFixed(2)}`, "success");
         document.getElementById('form-inicio-caja').reset();
     }
 }

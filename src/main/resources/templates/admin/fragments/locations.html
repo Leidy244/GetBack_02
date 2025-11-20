@@ -79,36 +79,44 @@
                 </tbody>
             </table>
         </div>
-        <div class="mx-auto" style="max-width: 1200px;">
+		
+	
+        <div class="mx-auto" >
         <!-- Modal Agregar -->
-        <div class="modal fade" id="addLocationModal" tabindex="-1">
-            <div class="modal-dialog" style="margin-top:5vh">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form th:action="@{/admin/locations/save}" method="post">
-                    <div class="modal-body">
-                        <input type="hidden" name="id">
-                        <div class="mb-3">
-                            <label class="form-label required">Nombre de Ubicación</label>
-                            <input type="text" class="form-control" name="nombre" required placeholder="Terraza, Interior, Barra...">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Descripción</label>
-                            <textarea class="form-control" name="descripcion" rows="2" placeholder="Descripción opcional..." maxlength="255"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times me-2"></i>Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Guardar Ubicación
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+		<!-- Modal Agregar Ubicación -->
+		<div class="modal fade" id="addLocationModal" tabindex="-1">
+		    <div class="modal-dialog">
+		        <form th:action="@{/admin/locations/save}" method="post" class="modal-content">
+		            <div class="modal-header bg-primary text-white">
+		                <h5 class="modal-title">
+		                    <i class="fas fa-plus-circle me-2"></i>Nueva Ubicación
+		                </h5>
+		                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+		            </div>
+		            <div class="modal-body">
+		                <input type="hidden" name="id">
+		                <div class="mb-3">
+		                    <label class="form-label required">Nombre de Ubicación</label>
+		                    <input type="text" class="form-control" name="nombre" required
+		                           placeholder="Terraza, Interior, Barra...">
+		                </div>
+		                <div class="mb-3">
+		                    <label class="form-label">Descripción</label>
+		                    <textarea class="form-control" name="descripcion" rows="2"
+		                              placeholder="Descripción opcional..." maxlength="255"></textarea>
+		                </div>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
+		                    <i class="fas fa-times me-1"></i>Cancelar
+		                </button>
+		                <button type="submit" class="btn btn-primary rounded-pill">
+		                    <i class="fas fa-save me-1"></i>Guardar Ubicación
+		                </button>
+		            </div>
+		        </form>
+		    </div>
+		</div>
 
     <!-- Modales de eliminación (fuera de la tabla) -->
     <div th:each="loc : ${locations}">

@@ -40,6 +40,11 @@
                th:classappend="${activeSection == 'historial-pagos'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-receipt"></i> Historial de Pagos
             </a>
+
+<a th:href="@{/caja(section='configuracion')}" 
+   th:classappend="${activeSection == 'configuracion'} ? 'nav-link active' : 'nav-link'">
+    <i class="fas fa-gear"></i> Configuración
+</a>
         </nav>
         
         <div class="sidebar-footer">

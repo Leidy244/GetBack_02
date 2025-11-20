@@ -9,11 +9,14 @@
 			<h2>
 				<i class="fas fa-user-shield"></i>
 				<span>Perfil del Administrador</span>
-				<button type="button" class="admin-settings-btn" id="adminSettingsBtn" title="Configuración de apariencia">
+				<button type="button" class="admin-settings-btn" id="adminSettingsBtn"
+					title="Configuración de apariencia">
 					<i class="fas fa-gear"></i>
+					<span class="btn-text">Configuración</span>
 				</button>
 			</h2>
 		</div>
+
 
 		<!-- Información -->
 		<div class="content-col">
@@ -26,10 +29,12 @@
 							<!-- FOTO -->
 							<div class="avatar col-auto" id="avatar">
 								<img th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}"
-									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}"
-									alt="Foto de perfil" class="avatar-img" />
-								<div th:if="${session.usuarioLogueado == null or session.usuarioLogueado.foto == null}" class="avatar-placeholder">
-									<span th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}">AD</span>
+									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil"
+									class="avatar-img" />
+								<div th:if="${session.usuarioLogueado == null or session.usuarioLogueado.foto == null}"
+									class="avatar-placeholder">
+									<span
+										th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}">AD</span>
 								</div>
 							</div>
 
@@ -57,37 +62,52 @@
 							<!-- FORMULARIO EDITAR PERFIL  -->
 							<div id="editar-perfil" class="col-lg-4 col-md-6 col-12" style="display:none;">
 								<div class="content-card">
-									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i class="fas fa-user-edit"></i> Editar perfil</div>
+									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i
+											class="fas fa-user-edit"></i> Editar perfil</div>
 									<div class="card-body">
 										<form th:action="@{/actualizar-datos}" method="post">
 											<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
 											<div class="mb-2">
 												<label class="form-label">Nombres</label>
-												<input class="form-control" type="text" name="nombre" th:value="${session.usuarioLogueado.nombre}" required minlength="2" autocomplete="name" />
+												<input class="form-control" type="text" name="nombre"
+													th:value="${session.usuarioLogueado.nombre}" required minlength="2"
+													autocomplete="name" />
 											</div>
 											<div class="mb-2">
 												<label class="form-label">Apellidos</label>
-												<input class="form-control" type="text" name="apellido" th:value="${session.usuarioLogueado.apellido}" required minlength="2" autocomplete="family-name" />
+												<input class="form-control" type="text" name="apellido"
+													th:value="${session.usuarioLogueado.apellido}" required
+													minlength="2" autocomplete="family-name" />
 											</div>
 											<div class="mb-2">
 												<label class="form-label">Correo</label>
-												<input class="form-control" type="email" name="correo" th:value="${session.usuarioLogueado.correo}" required autocomplete="email" />
+												<input class="form-control" type="email" name="correo"
+													th:value="${session.usuarioLogueado.correo}" required
+													autocomplete="email" />
 											</div>
 											<div class="mb-2">
 												<label class="form-label">Dirección</label>
-												<input class="form-control" type="text" name="direccion" th:value="${session.usuarioLogueado.direccion}" autocomplete="street-address" />
+												<input class="form-control" type="text" name="direccion"
+													th:value="${session.usuarioLogueado.direccion}"
+													autocomplete="street-address" />
 											</div>
 											<div class="mb-2">
 												<label class="form-label">Teléfono</label>
-												<input class="form-control" type="tel" name="telefono" th:value="${session.usuarioLogueado.telefono}" inputmode="tel" />
+												<input class="form-control" type="tel" name="telefono"
+													th:value="${session.usuarioLogueado.telefono}" inputmode="tel" />
 											</div>
 											<div class="mb-2">
 												<label class="form-label">Clave</label>
-												<input class="form-control" type="password" name="clave" th:value="${session.usuarioLogueado.clave}" autocomplete="new-password" />
+												<input class="form-control" type="password" name="clave"
+													th:value="${session.usuarioLogueado.clave}"
+													autocomplete="new-password" />
 											</div>
 											<div class="mt-2" style="display:flex; gap:8px;">
-												<button type="submit" class="btn btn-primary" style="padding:6px 14px; font-size:0.875rem; line-height:1.4; background-color:#6f42c1; border-color:#6f42c1; color:#fff;">Guardar cambios</button>
-												<button type="button" id="btnHideEdit" class="btn btn-sm" style="padding:2px 8px; font-size:0.75rem; line-height:1.2; background-color:transparent; color:#6f42c1; border:1px solid #6f42c1;">Cancelar</button>
+												<button type="submit" class="btn btn-primary"
+													style="padding:6px 14px; font-size:0.875rem; line-height:1.4; background-color:#6f42c1; border-color:#6f42c1; color:#fff;">Guardar
+													cambios</button>
+												<button type="button" id="btnHideEdit" class="btn btn-sm"
+													style="padding:2px 8px; font-size:0.75rem; line-height:1.2; background-color:transparent; color:#6f42c1; border:1px solid #6f42c1;">Cancelar</button>
 											</div>
 										</form>
 									</div>
@@ -97,23 +117,34 @@
 							<!-- CAMBIAR FOTO  -->
 							<div id="cambiar-foto" class="col-lg-4 col-md-6 col-12" style="display:none;">
 								<div class="content-card">
-									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i class="fas fa-camera"></i> Cambiar Foto</div>
+									<div class="card-header" style="padding:8px 12px;font-size:0.95rem;"><i
+											class="fas fa-camera"></i> Cambiar Foto</div>
 									<div class="card-body">
-										<form th:action="@{/actualizar-foto}" method="post" enctype="multipart/form-data">
+										<form th:action="@{/actualizar-foto}" method="post"
+											enctype="multipart/form-data">
 											<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
 											<div class="mb-2" style="display:flex; gap:12px; align-items:center;">
-												<div class="avatar" style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;">
-													<img id="previewFoto" class="avatar-img" style="width:100%;height:100%;object-fit:cover;display:none;" alt="Preview" />
-													<span id="previewIniciales" th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}"></span>
+												<div class="avatar"
+													style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center;">
+													<img id="previewFoto" class="avatar-img"
+														style="width:100%;height:100%;object-fit:cover;display:none;"
+														alt="Preview" />
+													<span id="previewIniciales"
+														th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}"></span>
 												</div>
 												<div>
-													<input class="form-control form-control-sm" type="file" id="inputFoto" name="foto" accept="image/*" required />
-													<small id="nombreArchivo" class="text-muted">Ningún archivo seleccionado</small>
+													<input class="form-control form-control-sm" type="file"
+														id="inputFoto" name="foto" accept="image/*" required />
+													<small id="nombreArchivo" class="text-muted">Ningún archivo
+														seleccionado</small>
 												</div>
 											</div>
 											<div style="display:flex; gap:8px;">
-												<button type="submit" class="btn btn-primary" style="padding:6px 14px; font-size:0.875rem; line-height:1.4; background-color:#6f42c1; border-color:#6f42c1; color:#fff;">Actualizar Foto</button>
-												<button type="button" id="btnHidePhoto" class="btn btn-sm" style="padding:2px 8px; font-size:0.75rem; line-height:1.2; background-color:transparent; color:#6f42c1; border:1px solid #6f42c1;">Cancelar</button>
+												<button type="submit" class="btn btn-primary"
+													style="padding:6px 14px; font-size:0.875rem; line-height:1.4; background-color:#6f42c1; border-color:#6f42c1; color:#fff;">Actualizar
+													Foto</button>
+												<button type="button" id="btnHidePhoto" class="btn btn-sm"
+													style="padding:2px 8px; font-size:0.75rem; line-height:1.2; background-color:transparent; color:#6f42c1; border:1px solid #6f42c1;">Cancelar</button>
 											</div>
 										</form>
 									</div>
@@ -125,7 +156,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<!-- Modal de Configuración -->
 		<div class="adminsettings-modal" id="adminsettingsModal">
 
@@ -184,115 +215,116 @@
 
 		<!-- SCRIPT -->
 		<script>
-		document.addEventListener("DOMContentLoaded", () => {
-		    const inputFoto        = document.getElementById("inputFoto");
-		    const nombreArchivo    = document.getElementById("nombreArchivo");
-		    const preview          = document.getElementById("previewFoto");
-		    const previewIniciales = document.getElementById("previewIniciales");
-		    const btnShowEdit      = document.getElementById("btnShowEdit");
-		    const btnHideEdit      = document.getElementById("btnHideEdit");
-		    const btnShowPhoto     = document.getElementById("btnShowPhoto");
-		    const btnHidePhoto     = document.getElementById("btnHidePhoto");
-		    const boxEdit          = document.getElementById("editar-perfil");
-		    const boxPhoto         = document.getElementById("cambiar-foto");
+			document.addEventListener("DOMContentLoaded", () => {
+				const inputFoto = document.getElementById("inputFoto");
+				const nombreArchivo = document.getElementById("nombreArchivo");
+				const preview = document.getElementById("previewFoto");
+				const previewIniciales = document.getElementById("previewIniciales");
+				const btnShowEdit = document.getElementById("btnShowEdit");
+				const btnHideEdit = document.getElementById("btnHideEdit");
+				const btnShowPhoto = document.getElementById("btnShowPhoto");
+				const btnHidePhoto = document.getElementById("btnHidePhoto");
+				const boxEdit = document.getElementById("editar-perfil");
+				const boxPhoto = document.getElementById("cambiar-foto");
 
-		    // Editar perfil
-		    if (btnShowEdit && boxEdit && boxPhoto) {
-		        btnShowEdit.addEventListener('click', () => {
-		            const willShow = boxEdit.style.display === 'none' || boxEdit.style.display === '';
-		            boxPhoto.style.display = 'none';
-		            boxEdit.style.display = willShow ? 'block' : 'none';
-		        });
-		    }
-		    if (btnHideEdit && boxEdit) {
-		        btnHideEdit.addEventListener('click', () => {
-		            boxEdit.style.display = 'none';
-		        });
-		    }
+				// Editar perfil
+				if (btnShowEdit && boxEdit && boxPhoto) {
+					btnShowEdit.addEventListener('click', () => {
+						const willShow = boxEdit.style.display === 'none' || boxEdit.style.display === '';
+						boxPhoto.style.display = 'none';
+						boxEdit.style.display = willShow ? 'block' : 'none';
+					});
+				}
+				if (btnHideEdit && boxEdit) {
+					btnHideEdit.addEventListener('click', () => {
+						boxEdit.style.display = 'none';
+					});
+				}
 
-		    // Cambiar foto
-		    if (btnShowPhoto && boxPhoto && boxEdit) {
-		        btnShowPhoto.addEventListener('click', () => {
-		            const willShow = boxPhoto.style.display === 'none' || boxPhoto.style.display === '';
-		            boxEdit.style.display = 'none';
-		            boxPhoto.style.display = willShow ? 'block' : 'none';
-		        });
-		    }
-		    if (btnHidePhoto && boxPhoto) {
-		        btnHidePhoto.addEventListener('click', () => {
-		            boxPhoto.style.display = 'none';
-		        });
-		    }
+				// Cambiar foto
+				if (btnShowPhoto && boxPhoto && boxEdit) {
+					btnShowPhoto.addEventListener('click', () => {
+						const willShow = boxPhoto.style.display === 'none' || boxPhoto.style.display === '';
+						boxEdit.style.display = 'none';
+						boxPhoto.style.display = willShow ? 'block' : 'none';
+					});
+				}
+				if (btnHidePhoto && boxPhoto) {
+					btnHidePhoto.addEventListener('click', () => {
+						boxPhoto.style.display = 'none';
+					});
+				}
 
-		    // Preview de foto
-		    if (inputFoto && nombreArchivo) {
-		        inputFoto.addEventListener("change", () => {
-		            const archivo = inputFoto.files[0];
-		            nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
+				// Preview de foto
+				if (inputFoto && nombreArchivo) {
+					inputFoto.addEventListener("change", () => {
+						const archivo = inputFoto.files[0];
+						nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
 
-		            if (archivo) {
-		                const url = URL.createObjectURL(archivo);
-		                if (preview) {
-		                    preview.src = url;
-		                    preview.style.display = 'block';
-		                }
-		                if (previewIniciales) {
-		                    previewIniciales.style.display = 'none';
-		                }
-		                const headerAvatar = document.querySelector('.admin-header .user-avatar .avatar-img');
-		                if (headerAvatar) {
-		                    headerAvatar.src = url;
-		                }
-		            }
-		        });
-		    }
+						if (archivo) {
+							const url = URL.createObjectURL(archivo);
+							if (preview) {
+								preview.src = url;
+								preview.style.display = 'block';
+							}
+							if (previewIniciales) {
+								previewIniciales.style.display = 'none';
+							}
+							const headerAvatar = document.querySelector('.admin-header .user-avatar .avatar-img');
+							if (headerAvatar) {
+								headerAvatar.src = url;
+							}
+						}
+					});
+				}
 
-			// === Configuración: Modal de ajustes ===
-			const adminSettingsBtn = document.getElementById('adminSettingsBtn');
-			const adminSettingsModal = document.getElementById('adminsettingsModal');
-			const closeSettingsBtn = document.getElementById('closeSettings');
+				// === Configuración: Modal de ajustes ===
+				const adminSettingsBtn = document.getElementById('adminSettingsBtn');
+				const adminSettingsModal = document.getElementById('adminsettingsModal');
+				const closeSettingsBtn = document.getElementById('closeSettings');
 
-			// Abrir modal al hacer clic en el engranaje
-			if (adminSettingsBtn && adminSettingsModal) {
-			    adminSettingsBtn.addEventListener('click', () => {
-			        adminSettingsModal.classList.add('show');
-			    });
-			}
+				// Abrir modal al hacer clic en el engranaje
+				if (adminSettingsBtn && adminSettingsModal) {
+					adminSettingsBtn.addEventListener('click', () => {
+						adminSettingsModal.classList.add('show');
+					});
+				}
 
-			// Cerrar modal al hacer clic en la X
-			if (closeSettingsBtn && adminSettingsModal) {
-			    closeSettingsBtn.addEventListener('click', () => {
-			        adminSettingsModal.classList.remove('show');
-			    });
-			}
+				// Cerrar modal al hacer clic en la X
+				if (closeSettingsBtn && adminSettingsModal) {
+					closeSettingsBtn.addEventListener('click', () => {
+						adminSettingsModal.classList.remove('show');
+					});
+				}
 
-			// Cerrar modal al hacer clic fuera del contenido
-			if (adminSettingsModal) {
-			    adminSettingsModal.addEventListener('click', (e) => {
-			        if (e.target === adminSettingsModal) {
-			            adminSettingsModal.classList.remove('show');
-			        }
-			    });
-			}
+				// Cerrar modal al hacer clic fuera del contenido
+				if (adminSettingsModal) {
+					adminSettingsModal.addEventListener('click', (e) => {
+						if (e.target === adminSettingsModal) {
+							adminSettingsModal.classList.remove('show');
+						}
+					});
+				}
 
-			// Guardar configuración (función básica)
-			const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-			if (saveSettingsBtn) {
-			    saveSettingsBtn.addEventListener('click', () => {
-			        if (typeof Swal !== 'undefined') {
-			            Swal.fire({
-			                icon: 'success',
-			                title: 'Ajustes guardados',
-			                text: 'Tus preferencias de apariencia se han aplicado correctamente.',
-			                showConfirmButton: false,
-			                timer: 1700
-			            });
-			        }
-			        adminSettingsModal.classList.remove('show');
-			    });
-			}
-		});
+				// Guardar configuración (función básica)
+				const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+				if (saveSettingsBtn) {
+					saveSettingsBtn.addEventListener('click', () => {
+						if (typeof Swal !== 'undefined') {
+							Swal.fire({
+								icon: 'success',
+								title: 'Ajustes guardados',
+								text: 'Tus preferencias de apariencia se han aplicado correctamente.',
+								showConfirmButton: false,
+								timer: 1700
+							});
+						}
+						adminSettingsModal.classList.remove('show');
+					});
+				}
+			});
 		</script>
 	</section>
 </body>
+
 </html>

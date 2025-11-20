@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title th:text="${title}">Panel de Cajero - GETBACK</title>
 	<link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+	<link rel="stylesheet" th:href="@{/css/configuracionCaja.css}">
 
 
 	<!-- Bootstrap CSS -->
@@ -72,27 +73,30 @@
 				<div th:case="'inicio-caja'" class="content-section">
 					<div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
 				</div>
-				
+
 				<!-- Punto de Venta -->
 				<div th:case="'punto-venta'" class="content-section">
 					<div th:replace="~{caja/fragments/punto-venta :: punto-venta}"></div>
 				</div>
-				
+
 				<!-- Ventas Rápidas -->
 				<div th:case="'ventas-rapidas'" class="content-section">
 					<div th:replace="~{caja/fragments/ventas-rapidas :: ventas-rapidas}"></div>
 				</div>
-				
+
 				<!-- Pagos de pedidos/compras -->
 				<div th:case="'pagos'" class="content-section">
 					<div th:replace="~{caja/fragments/pagos :: pagos}"></div>
 				</div>
-				
+
 				<!-- Historial de pagos -->
 				<div th:case="'historial-pagos'" class="content-section">
 					<div th:replace="~{caja/fragments/historial-pagos :: historial-pagos}"></div>
 				</div>
-
+<!-- configuración -->
+<div th:case="'configuracion'" class="content-section">
+    <div th:replace="~{caja/fragments/configuracionCaja :: configuracionCaja}"></div>
+</div>
 				<!-- Sección por defecto (Inicio Caja) -->
 				<div th:case="*" class="content-section">
 					<div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
@@ -103,7 +107,7 @@
 
 	<!-- Botón Modo Oscuro -->
 	<button class="dark-mode-toggle" id="darkModeToggle">
-		<i class="fas fa-moon"></i>
+	    <i class="fas fa-moon"></i>
 	</button>
 
 	<!-- Modales Fragment -->

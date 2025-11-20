@@ -53,141 +53,36 @@
 
 /* ===== MODO OSCURO ===== */
 [data-theme="dark"] {
-    --bg-primary: #1E1E2F;
-    --bg-secondary: #2C2C3E;
-    --bg-tertiary: #383850;
+    /* Colores principales */
+    --primary-color: #F56565;
+    --primary-light: #FC8181;
+    --primary-dark: #E53E3E;
+    --secondary-color: #9F7AEA;
+    --accent-color: #FF6B6B;
+
+    /* Textos */
     --text-primary: #E2E8F0;
     --text-secondary: #A0AEC0;
     --text-light: #718096;
+    --text-white: #FFFFFF;
+
+    /* Fondos */
+    --bg-primary: #1E1E2F;
+    --bg-secondary: #2C2C3E;
+    --bg-tertiary: #383850;
+
+    /* Bordes */
     --border-color: #4A5568;
 
-    /* Gradientes oscuros */
+    /* Sombras */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
+    --shadow-xl: 0 20px 25px rgba(0,0,0,0.3);
+
+    /* Gradientes */
     --sidebar-gradient: linear-gradient(135deg, #A82A2A, #401070);
     --primary-gradient: linear-gradient(135deg, #A82A2A, #401070);
-}
-
-[data-theme="dark"] body.caja-theme {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .caja-header {
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .caja-sidebar {
-    background: var(--sidebar-gradient);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .caja-sidebar .nav-link {
-    color: rgba(255, 255, 255, 0.85);
-}
-
-[data-theme="dark"] .caja-sidebar .nav-link:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-}
-
-[data-theme="dark"] .caja-sidebar .nav-link.active {
-    background: rgba(255, 255, 255, 0.25);
-    color: #fff;
-}
-
-[data-theme="dark"] .stat-card,
-[data-theme="dark"] .recent-activity,
-[data-theme="dark"] .table-container,
-[data-theme="dark"] .form-container,
-[data-theme="dark"] .panel-productos,
-[data-theme="dark"] .panel-carrito,
-[data-theme="dark"] .ventas-rapidas-container {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .stat-info h3,
-[data-theme="dark"] .activity-content p,
-[data-theme="dark"] .nombre-producto,
-[data-theme="dark"] .precio-item,
-[data-theme="dark"] .total-carrito {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .stat-info p,
-[data-theme="dark"] .stat-info small,
-[data-theme="dark"] .activity-content small,
-[data-theme="dark"] .stock-producto {
-    color: var(--text-secondary);
-}
-
-[data-theme="dark"] .table th {
-    background: var(--primary-dark);
-    color: #fff;
-    border-bottom: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .table td {
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .table tr:hover td {
-    background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select {
-	background: var(--bg-secondary);
-	border: 1px solid var(--border-color);
-	color: var(--text-white);
-}
-
-[data-theme="dark"] .form-control::placeholder {
-    color: var(--text-light);
-}
-
-[data-theme="dark"] .form-control:focus,
-[data-theme="dark"] .form-select:focus {
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
-	color: var(--text-white);
-}
-
-[data-theme="dark"] .filtro-categoria {
-    color: var(--text-white);
-    background: var(--bg-secondary);
-    border-color: var(--border-color);
-}
-
-[data-theme="dark"] .filtro-categoria.activo,
-[data-theme="dark"] .filtro-categoria:hover {
-    background: var(--primary-color);
-    color: var(--text-white);
-    border-color: var(--primary-color);
-}
-
-/* ===== BOTONES PESTAÑA PAGO EN MODO OSCURO ===== */
-[data-theme="dark"] .pestana-pago {
-    color: var(--text-white);
-    background: transparent;
-}
-
-[data-theme="dark"] .pestana-pago.active,
-[data-theme="dark"] .pestana-pago:hover {
-    color: var(--text-white);
-    border-bottom-color: var(--primary-light);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .pestana-pago:not(.active) {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-[data-theme="dark"] .pestana-pago:not(.active):hover {
-    color: var(--text-white);
-    background: rgba(255, 255, 255, 0.05);
 }
 
 /* ===== BOTÓN MODO OSCURO FLOTANTE ===== */
@@ -220,6 +115,11 @@
     transform: scale(0.95) translateY(0);
 }
 
+[data-theme="dark"] .dark-mode-toggle {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #333;
+}
+
 .dark-mode-toggle::after {
     content: '';
     position: absolute;
@@ -246,11 +146,6 @@
         transform: scale(0.95);
         opacity: 0;
     }
-}
-
-[data-theme="dark"] .dark-mode-toggle {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: #333;
 }
 
 [data-theme="dark"] .dark-mode-toggle::after {
@@ -280,6 +175,7 @@ body.caja-theme {
     overflow-x: hidden;
     width: 100%;
     min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ==========================
@@ -429,6 +325,7 @@ body.caja-theme {
     box-shadow: var(--shadow-md);
     z-index: 999;
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-container {
@@ -494,6 +391,7 @@ body.caja-theme {
     min-height: calc(100vh - var(--header-height));
     width: calc(100% - var(--sidebar-width));
     background: var(--bg-secondary);
+    transition: background-color 0.3s ease;
 }
 
 .content-area {
@@ -705,9 +603,11 @@ body.caja-theme {
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
+    color: var(--text-primary);
+    background: var(--bg-primary);
 }
 
-.table tbody tr:hover {
+.table tbody tr:hover td {
     background: var(--bg-secondary);
 }
 
@@ -862,6 +762,10 @@ body.caja-theme {
     box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
+.form-control::placeholder {
+    color: var(--text-light);
+}
+
 /* Grupos de acciones */
 .acciones-configuracion,
 .acciones-devoluciones,
@@ -928,6 +832,7 @@ body.caja-theme {
     padding: 0.5rem 1rem;
     border: 2px solid var(--border-color);
     background: var(--bg-primary);
+    color: var(--text-primary);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: var(--transition);
@@ -1108,6 +1013,7 @@ body.caja-theme {
     cursor: pointer;
     transition: var(--transition);
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 .pestana-pago.active,
@@ -1403,8 +1309,6 @@ body.caja-theme {
     background: var(--primary-dark);
 }
 
-
-
 /* === CONTENEDOR GENERAL === */
 .contenedor-pos {
   display: grid;
@@ -1417,13 +1321,12 @@ body.caja-theme {
 
 /* === SECCIÓN PRODUCTOS === */
 .panel-productos {
-  background: #fff;
+  background: var(--bg-primary);
   border-radius: 8px;
   padding: 0;
   margin: 0;
   width: 100%;
 }
-
 
 /* === GRID DE PRODUCTOS === */
 .grid-productos {
@@ -1432,7 +1335,7 @@ body.caja-theme {
   gap: 1rem;
   padding: 1rem;
   margin: 0;
-  background-color: #fff;
+  background-color: var(--bg-primary);
 }
 
 /* Estos estiloss son los de las cards de punto de venta xd */
@@ -1440,10 +1343,10 @@ body.caja-theme {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #ddd;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
   cursor: pointer;
@@ -1452,7 +1355,7 @@ body.caja-theme {
 
 .producto-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .producto-card img {
@@ -1465,22 +1368,90 @@ body.caja-theme {
 .producto-card h4 {
   margin: 0.5rem 0 0.2rem;
   font-size: 1rem;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
 }
 
 .producto-card p {
   margin: 0;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-secondary);
   text-align: center;
 }
 
 .producto-card p:last-child {
   font-weight: bold;
-  color: #007bff;
+  color: var(--primary-color);
   margin-top: 0.5rem;
 }
 
+/* Tema azul */
+body[data-admin-theme="azul"] {
+  --primary-color: #1D4ED8;
+  --primary-light: #3B82F6;
+  --primary-dark: #1E3A8A;
+  --secondary-color: #0EA5E9;
+  --accent-color: #0EA5E9;
+  --sidebar-gradient: linear-gradient(135deg, #1D4ED8, #0EA5E9);
+}
 
+/* Tema verde */
+body[data-admin-theme="verde"] {
+  --primary-color: #065F46;
+  --primary-light: #10B981;
+  --primary-dark: #064E3B;
+  --secondary-color: #22C55E;
+  --accent-color: #22C55E;
+  --sidebar-gradient: linear-gradient(135deg, #065F46, #22C55E);
+}
 
+/* Tema rojo */
+body[data-admin-theme="rojo"] {
+  --primary-color: #B91C1C;
+  --primary-light: #F97373;
+  --primary-dark: #7F1D1D;
+  --secondary-color: #F97316;
+  --accent-color: #F97316;
+  --sidebar-gradient: linear-gradient(135deg, #B91C1C, #F97316);
+}
+
+/* Tema dorado */
+body[data-admin-theme="dorado"] {
+  --primary-color: #92400E;
+  --primary-light: #D97706;
+  --primary-dark: #78350F;
+  --secondary-color: #FBBF24;
+  --accent-color: #FBBF24;
+  --sidebar-gradient: linear-gradient(135deg, #92400E, #FBBF24);
+}
+
+/* Tema rosa */
+body[data-admin-theme="rosa"] {
+  --primary-color: #BE185D;
+  --primary-light: #EC4899;
+  --primary-dark: #9D174D;
+  --secondary-color: #F9A8D4;
+  --accent-color: #F9A8D4;
+  --sidebar-gradient: linear-gradient(135deg, #BE185D, #F9A8D4);
+}
+
+/* Tema gris */
+body[data-admin-theme="gris"] {
+  --primary-color: #4B5563;
+  --primary-light: #9CA3AF;
+  --primary-dark: #374151;
+  --secondary-color: #E5E7EB;
+  --accent-color: #9CA3AF;
+  --sidebar-gradient: linear-gradient(135deg, #4B5563, #9CA3AF);
+}
+
+/*perfiles button*/
+.user-profile {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+/*cerrar sesion*/
+.logout-btn {
+    background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
+}
