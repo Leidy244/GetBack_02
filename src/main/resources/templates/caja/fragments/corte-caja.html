@@ -28,32 +28,34 @@
 		</div>
 
 		<div class="form-container mt-4" th:attr="data-ingresos-dia=${ingresosDia}">
-			<h3><i class="fas fa-coins"></i> Definir base para el siguiente día</h3>
-			<p class="text-muted">La base es el efectivo que se dejará en caja al iniciar el próximo día. El resto se considera retiro.</p>
+			<h3><i class="fas fa-coins"></i> Cierre del día y base para mañana</h3>
+			<p class="text-muted">El retiro es lo generado hoy en la caja menos la base que dejarás para iniciar el siguiente día.</p>
 
-			<div class="row g-3 align-items-end">
-				<div class="col-md-4">
-					<label for="baseSiguienteDia" class="form-label">Base para mañana</label>
+			<div class="row g-3 align-items-start">
+				<div class="col-md-4 text-center text-md-start">
+					<label for="baseSiguienteDia" class="form-label">Base para el día siguiente</label>
 					<div class="input-group">
 						<span class="input-group-text">$</span>
-						<input type="number" step="0.01" min="0" class="form-control" id="baseSiguienteDia" placeholder="Monto definido por el usuario">
+						<input type="number" step="0.01" min="0" class="form-control" id="baseSiguienteDia" placeholder="Efectivo que se deja en caja para mañana">
 					</div>
 				</div>
-
-				<div class="col-md-4">
-					<label class="form-label">Retiro estimado</label>
+				
+				<div class="col-md-4 text-center text-md-start">
+					<label class="form-label">Retiro del día</label>
 					<div class="input-group">
 						<span class="input-group-text">$</span>
 						<input type="text" class="form-control" id="retiroEstimado" readonly value="0.00">
 					</div>
-					<small class="text-muted">Ingresos del día menos la base ingresada.</small>
+					<small class="text-muted">Ingresos del día menos la base para el día siguiente.</small>
 				</div>
-
-				<div class="col-md-4">
+				
+				<div class="col-md-4 text-center text-md-start">
 					<label class="form-label d-block">Acciones</label>
-					<button type="button" class="btn btn-primary" id="btnCalcularCorte">
-						<i class="fas fa-calculator"></i> Calcular corte
-					</button>
+					<div class="d-flex justify-content-md-end justify-content-start gap-2">
+						<button type="button" class="btn btn-primary" id="btnCalcularCorte">
+							<i class="fas fa-calculator"></i> Calcular corte
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

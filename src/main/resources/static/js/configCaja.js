@@ -1,3 +1,23 @@
+(function () {
+    try {
+        const saved = localStorage.getItem("caja-config");
+        if (!saved) return;
+        const cfg = JSON.parse(saved) || {};
+        const root = document.documentElement;
+
+        if (cfg.tema && cfg.tema !== "default") {
+            root.setAttribute("data-admin-theme", cfg.tema);
+        }
+        if (Number.isFinite(cfg.contraste)) {
+            root.setAttribute("data-admin-contrast", String(cfg.contraste));
+        }
+        if (cfg.fontSize) {
+            root.setAttribute("data-admin-font-size", cfg.fontSize);
+        }
+    } catch (e) {
+        console.error("No se pudo aplicar configuración inicial de caja", e);
+    }
+})();
 
 document.addEventListener("DOMContentLoaded", () => {
     // ===== Formularios de editar perfil y cambiar foto =====
@@ -62,6 +82,69 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeSettingsBtn = document.getElementById("closeSettings");
     const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 
+    const notificacionesSwitch = document.getElementById("notificacionesSwitch");
+    const contrastRange = document.getElementById("contrastRange");
+    const themeSelect = document.getElementById("themeSelect");
+    const fontSizeSelect = document.getElementById("fontSizeSelect");
+
+    const applyCajaConfig = (config, options = {}) => {
+        const body = document.body;
+        const root = document.documentElement;
+
+        const cfg = {
+            notificaciones: config.notificaciones ?? true,
+            contraste: Number.isFinite(config.contraste) ? config.contraste : 1,
+            tema: config.tema || "default",
+            fontSize: config.fontSize || "pequeno",
+        };
+
+        if (notificacionesSwitch) {
+            notificacionesSwitch.checked = !!cfg.notificaciones;
+        }
+        if (contrastRange) {
+            contrastRange.value = String(cfg.contraste);
+        }
+        if (themeSelect) {
+            themeSelect.value = cfg.tema;
+        }
+        if (fontSizeSelect) {
+            fontSizeSelect.value = cfg.fontSize;
+        }
+
+        if (root) {
+            if (cfg.tema && cfg.tema !== "default") {
+                root.setAttribute("data-admin-theme", cfg.tema);
+            } else {
+                root.removeAttribute("data-admin-theme");
+            }
+
+            root.setAttribute("data-admin-contrast", String(cfg.contraste));
+            root.setAttribute("data-admin-font-size", cfg.fontSize);
+        }
+
+        if (body) {
+            body.setAttribute("data-admin-font-size", cfg.fontSize);
+        }
+
+        if (!options.silent) {
+            try {
+                localStorage.setItem("caja-config", JSON.stringify(cfg));
+            } catch (e) {
+                console.error("No se pudo guardar la configuración de caja", e);
+            }
+        }
+    };
+
+    try {
+        const saved = localStorage.getItem("caja-config");
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            applyCajaConfig(parsed, { silent: true });
+        }
+    } catch (e) {
+        console.error("No se pudo leer la configuración de caja", e);
+    }
+
     if (adminSettingsBtn && adminSettingsModal) {
         adminSettingsBtn.addEventListener("click", () => {
             adminSettingsModal.classList.add("show");
@@ -82,8 +165,49 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Aplicar en tiempo real (sin guardar todavía) al mover los controles
+    const applyLiveFromControls = () => {
+        let contraste = 1;
+        if (contrastRange) {
+            const parsed = Number(contrastRange.value);
+            contraste = Number.isFinite(parsed) ? parsed : 1;
+        }
+
+        const liveCfg = {
+            notificaciones: notificacionesSwitch ? notificacionesSwitch.checked : true,
+            contraste,
+            tema: themeSelect ? themeSelect.value : "default",
+            fontSize: fontSizeSelect ? fontSizeSelect.value : "pequeno",
+        };
+        applyCajaConfig(liveCfg, { silent: true });
+    };
+
+    if (contrastRange) {
+        contrastRange.addEventListener("input", applyLiveFromControls);
+    }
+    if (themeSelect) {
+        themeSelect.addEventListener("change", applyLiveFromControls);
+    }
+    if (fontSizeSelect) {
+        fontSizeSelect.addEventListener("change", applyLiveFromControls);
+    }
+
     if (saveSettingsBtn && adminSettingsModal) {
         saveSettingsBtn.addEventListener("click", () => {
+            let contraste = 1;
+            if (contrastRange) {
+                const parsed = Number(contrastRange.value);
+                contraste = Number.isFinite(parsed) ? parsed : 1;
+            }
+
+            const cfg = {
+                notificaciones: notificacionesSwitch ? notificacionesSwitch.checked : true,
+                contraste,
+                tema: themeSelect ? themeSelect.value : "default",
+                fontSize: fontSizeSelect ? fontSizeSelect.value : "pequeno",
+            };
+
+            applyCajaConfig(cfg);
             adminSettingsModal.classList.remove("show");
         });
     }

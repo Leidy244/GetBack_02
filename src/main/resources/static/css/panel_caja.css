@@ -1017,8 +1017,24 @@ body.caja-theme {
     border-top: 1px solid var(--border-color);
 }
 
+.ver-detalle-pago {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none;
+    color: var(--text-primary);
+}
+
+.ver-detalle-pago:hover,
+.ver-detalle-pago:focus,
+.ver-detalle-pago:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none;
+}
+
 .pedido-detalle-resumen {
     margin-bottom: 0.5rem;
+    user-select: none;
 }
 
 .pedido-acciones {
@@ -1531,13 +1547,12 @@ body.caja-theme {
 
 /* ==========================
    DROPDOWN ADMINISTRADOR
-=========================== */
 .user-dropdown {
     position: relative;
 }
 
 .user-dropdown .dropdown-menu {
-    background: var(--bg-primary);
+    background: var(--primary-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 0.5rem 0;
@@ -1562,6 +1577,7 @@ body.caja-theme {
 }
 
 .user-dropdown .dropdown-item {
+    background: var(--primary-color);
     color: var(--text-primary);
     padding: 0.8rem 1rem;
     display: flex;
@@ -1587,6 +1603,30 @@ body.caja-theme {
 }
 
 .user-dropdown .dropdown-item:hover i {
+    color: #fff;
+}
+
+.user-dropdown .dropdown-item:active,
+.user-dropdown .dropdown-item.active,
+.user-dropdown .dropdown-item:focus {
+    background: var(--primary-gradient) !important;
+    color: #fff !important;
+    box-shadow: none;
+    outline: none;
+}
+
+.user-dropdown .dropdown-item:active i,
+.user-dropdown .dropdown-item.active i,
+.user-dropdown .dropdown-item:focus i {
+    color: #fff !important;
+}
+
+/* Colores de texto según modo claro/oscuro */
+html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
+    color: #111;
+}
+
+[data-theme="dark"] .user-dropdown .dropdown-item {
     color: #fff;
 }
 

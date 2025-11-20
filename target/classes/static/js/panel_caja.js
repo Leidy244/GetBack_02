@@ -369,7 +369,7 @@ class PanelCaja {
 
     // Inicio / Cierre de caja: cálculo de base y retiro estimado
     setupCorteCaja() {
-        const corteContainer = document.querySelector('.form-container.mt-4');
+        const corteContainer = document.querySelector('.form-container.mt-4[data-ingresos-dia]');
         if (!corteContainer) return;
 
         const ingresosAttr = corteContainer.getAttribute('data-ingresos-dia');
@@ -390,6 +390,9 @@ class PanelCaja {
 
         btnCalcular.addEventListener('click', calcular);
         inputBase.addEventListener('input', calcular);
+
+        // Inicializar el retiro automáticamente con lo generado en el día
+        calcular();
     }
 
     /* ===== FUNCIONALIDADES MODO OSCURO ===== */
@@ -486,6 +489,18 @@ class PanelCaja {
     }
 
     showNotification(message, type = "info") {
+        try {
+            const raw = localStorage.getItem("caja-config");
+            if (raw) {
+                const cfg = JSON.parse(raw);
+                if (cfg && cfg.notificaciones === false) {
+                    return;
+                }
+            }
+        } catch (e) {
+            console.error("No se pudo leer configuración de notificaciones de caja", e);
+        }
+
         // Crear notificación temporal
         const notification = document.createElement("div");
         notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;

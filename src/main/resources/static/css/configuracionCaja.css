@@ -28,7 +28,7 @@
 /* ===== TEMAS DE COLOR PARA CONFIGURACIÓN CAJERO (usados por admin.js) ===== */
 
 /* Tema azul */
-body[data-admin-theme="azul"] {
+html[data-admin-theme="azul"] {
   --primary-color: #1D4ED8;
   --primary-light: #3B82F6;
   --primary-dark: #1E3A8A;
@@ -39,7 +39,7 @@ body[data-admin-theme="azul"] {
 }
 
 /* Tema verde */
-body[data-admin-theme="verde"] {
+html[data-admin-theme="verde"] {
   --primary-color: #065F46;
   --primary-light: #10B981;
   --primary-dark: #064E3B;
@@ -50,7 +50,7 @@ body[data-admin-theme="verde"] {
 }
 
 /* Tema rojo */
-body[data-admin-theme="rojo"] {
+html[data-admin-theme="rojo"] {
   --primary-color: #B91C1C;
   --primary-light: #F97373;
   --primary-dark: #7F1D1D;
@@ -61,7 +61,7 @@ body[data-admin-theme="rojo"] {
 }
 
 /* Tema dorado */
-body[data-admin-theme="dorado"] {
+html[data-admin-theme="dorado"] {
   --primary-color: #92400E;
   --primary-light: #D97706;
   --primary-dark: #78350F;
@@ -72,7 +72,7 @@ body[data-admin-theme="dorado"] {
 }
 
 /* Tema rosa */
-body[data-admin-theme="rosa"] {
+html[data-admin-theme="rosa"] {
   --primary-color: #BE185D;
   --primary-light: #EC4899;
   --primary-dark: #9D174D;
@@ -83,7 +83,7 @@ body[data-admin-theme="rosa"] {
 }
 
 /* Tema gris */
-body[data-admin-theme="gris"] {
+html[data-admin-theme="gris"] {
   --primary-color: #4B5563;
   --primary-light: #9CA3AF;
   --primary-dark: #374151;
@@ -97,7 +97,7 @@ body[data-admin-theme="gris"] {
 /* ===== CONTRASTE MODO CLARO ===== */
 
 /* 0: BAJO - EXTREMADAMENTE suave, casi sin contraste */
-body:not([data-theme="dark"])[data-admin-contrast="0"] {
+html:not([data-theme="dark"])[data-admin-contrast="0"] {
 	--bg-primary: #FFFFFF;
 	--bg-secondary: #FFFFFF;
 	--bg-tertiary: #FEFEFE;
@@ -110,7 +110,7 @@ body:not([data-theme="dark"])[data-admin-contrast="0"] {
 }
 
 /* 1: NORMAL - Contraste estándar */
-body:not([data-theme="dark"])[data-admin-contrast="1"] {
+html:not([data-theme="dark"])[data-admin-contrast="1"] {
 	--bg-primary: #FFFFFF;
 	--bg-secondary: #F8F9FA;
 	--bg-tertiary: #E9ECEF;
@@ -120,7 +120,7 @@ body:not([data-theme="dark"])[data-admin-contrast="1"] {
 }
 
 /* 2: MUY ALTO - Contraste extremo */
-body:not([data-theme="dark"])[data-admin-contrast="2"] {
+html:not([data-theme="dark"])[data-admin-contrast="2"] {
 	--bg-primary: #FFFFFF;
 	--bg-secondary: #FFFFFF;
 	--bg-tertiary: #F0F0F0;
@@ -132,7 +132,7 @@ body:not([data-theme="dark"])[data-admin-contrast="2"] {
 /* ===== CONTRASTE MODO OSCURO ===== */
 
 /* 0: BAJO - EXTREMADAMENTE suave en oscuro */
-body[data-theme="dark"][data-admin-contrast="0"] {
+html[data-theme="dark"][data-admin-contrast="0"] {
 	--bg-primary: #2A2E38;
 	/* Oscuro muy suave */
 	--bg-secondary: #272B34;
@@ -146,7 +146,7 @@ body[data-theme="dark"][data-admin-contrast="0"] {
 }
 
 /* 1: NORMAL - Oscuro estándar */
-body[data-theme="dark"][data-admin-contrast="1"] {
+html[data-theme="dark"][data-admin-contrast="1"] {
 	--bg-primary: #1A1A1A;
 	--bg-secondary: #151515;
 	--bg-tertiary: #101010;
@@ -157,7 +157,7 @@ body[data-theme="dark"][data-admin-contrast="1"] {
 }
 
 /* 2: MUY ALTO - Contraste extremo en oscuro */
-body[data-theme="dark"][data-admin-contrast="2"] {
+html[data-theme="dark"][data-admin-contrast="2"] {
 	--bg-primary: #000000;
 	--bg-secondary: #000000;
 	--bg-tertiary: #0A0A0A;
@@ -848,4 +848,19 @@ body[data-theme="dark"][data-admin-contrast="2"] {
     max-height: 85vh;
     overflow-y: auto;
   }
+}
+
+body[data-admin-font-size="pequeno"],
+html[data-admin-font-size="pequeno"] {
+  font-size: 14px;
+}
+
+body[data-admin-font-size="mediano"],
+html[data-admin-font-size="mediano"] {
+  font-size: 16px;
+}
+
+body[data-admin-font-size="grande"],
+html[data-admin-font-size="grande"] {
+  font-size: 18px;
 }
