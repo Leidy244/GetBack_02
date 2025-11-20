@@ -160,24 +160,16 @@ public class PedidoService {
                 .toList();
     }
 
-    // Obtener pedidos PENDIENTES solo del área BAR (para panel de inicio de caja)
+    // Obtener pedidos PENDIENTES para el panel de inicio de caja
+    // (por ahora no filtramos por área para evitar dejar la vista vacía
+    // si las categorías no tienen configurado correctamente el campo "area")
     public List<Pedido> obtenerPedidosPendientesBar() {
-        return obtenerPedidosPendientes().stream()
-                .filter(p -> p.getMenu() != null
-                        && p.getMenu().getCategoria() != null
-                        && p.getMenu().getCategoria().getArea() != null
-                        && "BAR".equalsIgnoreCase(p.getMenu().getCategoria().getArea()))
-                .toList();
+        return obtenerPedidosPendientes();
     }
 
-    // Obtener pedidos PAGADOS solo del área BAR (para panel de inicio de caja)
+    // Obtener pedidos PAGADOS para el panel de inicio de caja
     public List<Pedido> obtenerPedidosPagadosBar() {
-        return obtenerPedidosPagados().stream()
-                .filter(p -> p.getMenu() != null
-                        && p.getMenu().getCategoria() != null
-                        && p.getMenu().getCategoria().getArea() != null
-                        && "BAR".equalsIgnoreCase(p.getMenu().getCategoria().getArea()))
-                .toList();
+        return obtenerPedidosPagados();
     }
 
     // Marcar un pedido como PAGADO y registrar datos de pago (monto recibido y cambio),

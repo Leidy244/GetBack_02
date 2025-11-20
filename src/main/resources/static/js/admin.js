@@ -13,6 +13,8 @@ const adminApp = {
 		this.restoreTheme();
 		this.setupNavigation();
 		this.setupAdminAppearanceSettings();
+		this.setupFlashMessages();
+		this.setupPerfilSection();
 		console.log("GETBACK Admin Panel inicializado ✅");
 	},
 
@@ -58,6 +60,140 @@ const adminApp = {
 		}
 
 		body.setAttribute('data-admin-contrast', String(contrast));
+	},
+
+	// Interacciones de la sección de perfil (editar datos, cambiar foto, modal de configuración)
+	setupPerfilSection() {
+		// Botones y cajas de edición / foto
+		const inputFoto        = document.getElementById("inputFoto");
+		const nombreArchivo    = document.getElementById("nombreArchivo");
+		const preview          = document.getElementById("previewFoto");
+		const previewIniciales = document.getElementById("previewIniciales");
+		const btnShowEdit      = document.getElementById("btnShowEdit");
+		const btnHideEdit      = document.getElementById("btnHideEdit");
+		const btnShowPhoto     = document.getElementById("btnShowPhoto");
+		const btnHidePhoto     = document.getElementById("btnHidePhoto");
+		const boxEdit          = document.getElementById("editar-perfil");
+		const boxPhoto         = document.getElementById("cambiar-foto");
+
+		// Si no estamos en la vista de perfil, no hacer nada
+		if (!document.querySelector('.content-section #btnShowEdit')) {
+			return;
+		}
+
+		// Editar perfil
+		if (btnShowEdit && boxEdit && boxPhoto) {
+			btnShowEdit.addEventListener('click', () => {
+				const willShow = boxEdit.style.display === 'none' || boxEdit.style.display === '';
+				boxPhoto.style.display = 'none';
+				boxEdit.style.display = willShow ? 'block' : 'none';
+			});
+		}
+		if (btnHideEdit && boxEdit) {
+			btnHideEdit.addEventListener('click', () => {
+				boxEdit.style.display = 'none';
+			});
+		}
+
+		// Cambiar foto
+		if (btnShowPhoto && boxPhoto && boxEdit) {
+			btnShowPhoto.addEventListener('click', () => {
+				const willShow = boxPhoto.style.display === 'none' || boxPhoto.style.display === '';
+				boxEdit.style.display = 'none';
+				boxPhoto.style.display = willShow ? 'block' : 'none';
+			});
+		}
+		if (btnHidePhoto && boxPhoto) {
+			btnHidePhoto.addEventListener('click', () => {
+				boxPhoto.style.display = 'none';
+			});
+		}
+
+		// Preview de foto
+		if (inputFoto && nombreArchivo) {
+			inputFoto.addEventListener("change", () => {
+				const archivo = inputFoto.files[0];
+				nombreArchivo.textContent = archivo ? archivo.name : "Ningún archivo seleccionado";
+
+				if (archivo) {
+					const url = URL.createObjectURL(archivo);
+					if (preview) {
+						preview.src = url;
+						preview.style.display = 'block';
+					}
+					if (previewIniciales) {
+						previewIniciales.style.display = 'none';
+					}
+					const headerAvatar = document.querySelector('.admin-header .user-avatar .avatar-img');
+					if (headerAvatar) {
+						headerAvatar.src = url;
+					}
+				}
+			});
+		}
+
+		// === Configuración: Modal de ajustes ===
+		const adminSettingsBtn = document.getElementById('adminSettingsBtn');
+		const adminSettingsModal = document.getElementById('adminsettingsModal');
+		const closeSettingsBtn = document.getElementById('closeSettings');
+
+		// Abrir modal al hacer clic en el engranaje
+		if (adminSettingsBtn && adminSettingsModal) {
+			adminSettingsBtn.addEventListener('click', () => {
+				adminSettingsModal.classList.add('show');
+			});
+		}
+
+		// Cerrar modal al hacer clic en la X
+		if (closeSettingsBtn && adminSettingsModal) {
+			closeSettingsBtn.addEventListener('click', () => {
+				adminSettingsModal.classList.remove('show');
+			});
+		}
+
+		// Cerrar modal al hacer clic fuera del contenido
+		if (adminSettingsModal) {
+			adminSettingsModal.addEventListener('click', (e) => {
+				if (e.target === adminSettingsModal) {
+					adminSettingsModal.classList.remove('show');
+				}
+			});
+		}
+
+		// Nota: el guardado de apariencia (fontSize/theme/contrast) ya se maneja en setupAdminAppearanceSettings.
+	},
+
+	// Mensajes flash (success / error) usando SweetAlert2
+	setupFlashMessages() {
+		if (typeof Swal === 'undefined') return;
+
+		const successEl = document.getElementById('flash-success');
+		const errorEl = document.getElementById('flash-error');
+
+		if (successEl) {
+			const msg = successEl.getAttribute('data-message') || '';
+			// Eliminar alerts Bootstrap duplicados si existen
+			document.querySelectorAll('.alert.alert-success').forEach(a => a.remove());
+			Swal.fire({
+				icon: 'success',
+				title: 'Guardado con éxito',
+				text: msg,
+				showConfirmButton: false,
+				timer: 1800
+			});
+		}
+
+		if (errorEl) {
+			const msg = errorEl.getAttribute('data-message') || '';
+			// Eliminar alerts Bootstrap duplicados si existen
+			document.querySelectorAll('.alert.alert-danger').forEach(a => a.remove());
+			Swal.fire({
+				icon: 'error',
+				title: 'Ocurrió un error',
+				text: msg,
+				confirmButtonText: 'Entendido'
+			});
+		}
 	},
 
 	setupAdminAppearanceSettings() {
@@ -632,8 +768,13 @@ const adminApp = {
 	}
 };
 
-// Inicializar
-document.addEventListener("DOMContentLoaded", () => adminApp.init());
+// Inicializar solo en el panel de administración (body.admin-panel)
+document.addEventListener("DOMContentLoaded", () => {
+	const body = document.body;
+	if (body && body.classList.contains("admin-panel")) {
+		adminApp.init();
+	}
+});
 window.adminApp = adminApp;
 
 

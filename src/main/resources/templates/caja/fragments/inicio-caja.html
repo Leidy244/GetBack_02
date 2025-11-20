@@ -14,27 +14,18 @@
 			</div>
 		</div>
 
-		<!-- Tarjetas resumen -->
+		<!-- Tarjetas resumen (clicables) -->
 		<div class="stats-grid">
-			<div class="stat-card">
+			<a th:href="@{/caja(section='historial-pagos', filtro='hoy')}" class="stat-card stat-card-link" title="Ver pagos realizados hoy">
 				<div class="stat-icon bg-primary"><i class="fas fa-dollar-sign"></i></div>
 				<div class="stat-info">
 					<h3 th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
 					<p>Ventas Hoy</p>
 					<small th:text="${ventasHoy} + ' ventas'">0 ventas</small>
 				</div>
-			</div>
-
-			<div class="stat-card">
-				<div class="stat-icon bg-success"><i class="fas fa-list"></i></div>
-				<div class="stat-info">
-					<h3 th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
-					<p>Ingresos Totales</p>
-					<small th:text="${totalVentas} + ' ventas · ' + ${ventasCanceladas} + ' canceladas'">0 ventas</small>
-				</div>
-			</div>
-
-			<div class="stat-card">
+			</a>
+		
+			<div class="stat-card stat-card-link">
 				<div class="stat-icon bg-warning"><i class="fas fa-undo"></i></div>
 				<div class="stat-info">
 					<h3 th:text="${pedidosPendientes}">0</h3>
@@ -42,15 +33,24 @@
 					<small>Pedidos en proceso</small>
 				</div>
 			</div>
-
-			<div class="stat-card">
+		
+			<a th:href="@{/caja(section='pagos')}" class="stat-card stat-card-link" title="Ir a pedidos pendientes de cobro">
+				<div class="stat-icon bg-success"><i class="fas fa-list"></i></div>
+				<div class="stat-info">
+					<h3 th:text="${pedidosPendientesPago}">0</h3>
+					<p>Pedidos por cobrar</p>
+					<small th:text="${pedidosPendientesPago} + ' pedidos pendientes'">0 pedidos pendientes</small>
+				</div>
+			</a>
+		
+			<a th:href="@{/admin(activeSection='users')}" class="stat-card stat-card-link" title="Ver usuarios del sistema">
 				<div class="stat-icon bg-danger"><i class="fas fa-lock"></i></div>
 				<div class="stat-info">
 					<h3 th:text="${totalUsuarios}">0</h3>
 					<p>Usuarios</p>
 					<small>Activos en el sistema</small>
 				</div>
-			</div>
+			</a>
 		</div>
 
 		<!-- Sección 1: Pedidos generados (pendientes, área BAR) -->
@@ -140,7 +140,7 @@
 						</div>
 						<div class="pedido-acciones">
 							<span class="badge bg-success"
-								  th:text="${pago.estado != null ? pago.estado.nombreEstado : 'PAGADO'}">PAGADO</span>
+								  th:text="${pago.estado != null ? pago.estado.nombreEstado : 'COMPLETADO'}">COMPLETADO</span>
 						</div>
 					</div>
 				</div>

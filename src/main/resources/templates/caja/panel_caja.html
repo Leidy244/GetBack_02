@@ -79,11 +79,6 @@
 					<div th:replace="~{caja/fragments/punto-venta :: punto-venta}"></div>
 				</div>
 
-				<!-- Ventas Rápidas -->
-				<div th:case="'ventas-rapidas'" class="content-section">
-					<div th:replace="~{caja/fragments/ventas-rapidas :: ventas-rapidas}"></div>
-				</div>
-
 				<!-- Pagos de pedidos/compras -->
 				<div th:case="'pagos'" class="content-section">
 					<div th:replace="~{caja/fragments/pagos :: pagos}"></div>
@@ -93,10 +88,12 @@
 				<div th:case="'historial-pagos'" class="content-section">
 					<div th:replace="~{caja/fragments/historial-pagos :: historial-pagos}"></div>
 				</div>
-<!-- configuración -->
-<div th:case="'configuracion'" class="content-section">
-    <div th:replace="~{caja/fragments/configuracionCaja :: configuracionCaja}"></div>
-</div>
+
+				<!-- Inicio / Cierre de caja -->
+				<div th:case="'corte-caja'" class="content-section">
+					<div th:replace="~{caja/fragments/corte-caja :: corte-caja}"></div>
+				</div>
+
 				<!-- Sección por defecto (Inicio Caja) -->
 				<div th:case="*" class="content-section">
 					<div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
@@ -122,13 +119,6 @@
 	<!-- JS personalizado de caja -->
 	<script th:src="@{/js/panel_caja.js}"></script>
 
-	<!-- Loader Script -->
-	<script>
-		window.addEventListener('load', () => {
-			const loader = document.getElementById('preloader');
-			if (loader) loader.style.display = 'none';
-		});
-	</script>
 	<script th:src="@{/js/puntoVenta.js}"></script>
 
 </body>

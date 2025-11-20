@@ -21,6 +21,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Controller
@@ -33,6 +35,9 @@ public class CajaController {
     private final PedidoRepository pedidoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PedidoService pedidoService;
+
+    // Pedidos marcados como "completados" visualmente en el inicio de caja (pero aún PENDIENTES de pago)
+    private final Set<Integer> pedidosCompletadosInicioCaja = ConcurrentHashMap.newKeySet();
 
     public CajaController(MenuService menuService,
                           CategoriaService categoriaService,
@@ -52,6 +57,7 @@ public class CajaController {
     public String panelCaja(
             @RequestParam(required = false) String section,
             @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String filtro,
             Model model) {
 
         String activeSection = (section != null && !section.isEmpty()) ? section : "inicio-caja";
@@ -67,15 +73,20 @@ public class CajaController {
             model.addAttribute("totalVentas", totalVentas);
             model.addAttribute("totalUsuarios", totalUsuarios);
 
-            long ventasHoy = facturas.stream()
-                    .filter(f -> f.getFechaEmision().toLocalDate().equals(LocalDate.now()))
+            // Ventas del día basadas en los pedidos pagados que genera caja
+            List<Pedido> pedidosPagados = pedidoService.obtenerPedidosPagados();
+            LocalDate hoy = LocalDate.now();
+
+            long ventasHoy = pedidosPagados.stream()
+                    .filter(p -> p.getFechaCreacion() != null
+                            && p.getFechaCreacion().toLocalDate().equals(hoy))
                     .count();
             model.addAttribute("ventasHoy", ventasHoy);
 
-            double ingresosHoy = facturas.stream()
-                    .filter(f -> f.getFechaEmision().toLocalDate().equals(LocalDate.now()))
-                    .filter(f -> "PAGADO".equals(f.getEstadoPago()))
-                    .mapToDouble(f -> f.getTotalPagar().doubleValue())
+            double ingresosHoy = pedidosPagados.stream()
+                    .filter(p -> p.getFechaCreacion() != null
+                            && p.getFechaCreacion().toLocalDate().equals(hoy))
+                    .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
                     .sum();
             model.addAttribute("ingresosHoy", ingresosHoy);
 
@@ -85,10 +96,9 @@ public class CajaController {
                     .sum();
             model.addAttribute("ingresosTotales", ingresosTotales);
 
-            long pedidosPendientes = pedidos.stream()
-                    .filter(p -> "PENDIENTE".equals(p.getEstado()))
-                    .count();
-            model.addAttribute("pedidosPendientes", pedidosPendientes);
+            // Cantidad de pedidos pendientes de cobro (se usa en la tarjeta verde del dashboard y en la sección Pagos)
+            long pedidosPendientesPago = pedidoService.obtenerPedidosPendientes().size();
+            model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
 
             long ventasCanceladas = facturas.stream()
                     .filter(f -> "CANCELADO".equals(f.getEstadoPago()))
@@ -101,9 +111,26 @@ public class CajaController {
                     .collect(Collectors.toList());
             model.addAttribute("actividadReciente", actividadReciente);
 
-            // Pedidos de BAR para mostrar en cards en el inicio
-            model.addAttribute("pedidosPendientesBar", pedidoService.obtenerPedidosPendientesBar());
-            model.addAttribute("pedidosPagadosBar", pedidoService.obtenerPedidosPagadosBar());
+            // Pedidos para mostrar en cards en el inicio
+            // Ambos grupos se basan en pedidos PENDIENTES (no pagados todavía):
+            //  - pedidosPendientesBar: aún no marcados como completados en el panel
+            //  - pedidosPagadosBar: marcados como "completados" visualmente (pero siguen pendientes de pago)
+            List<Pedido> pedidosPendientesBarTodos = pedidoService.obtenerPedidosPendientesBar();
+
+            List<Pedido> pedidosPendientesBar = pedidosPendientesBarTodos.stream()
+                    .filter(p -> p.getId() != null && !pedidosCompletadosInicioCaja.contains(p.getId()))
+                    .collect(Collectors.toList());
+
+            List<Pedido> pedidosCompletadosBar = pedidosPendientesBarTodos.stream()
+                    .filter(p -> p.getId() != null && pedidosCompletadosInicioCaja.contains(p.getId()))
+                    .collect(Collectors.toList());
+
+            model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
+            model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
+
+            // Para el dashboard, "Pedidos Pendientes" refleja los pedidos de BAR aún no marcados como completados en el inicio
+            long pedidosPendientes = pedidosPendientesBar.size();
+            model.addAttribute("pedidosPendientes", pedidosPendientes);
         }
 
         if ("punto-venta".equals(activeSection)) {
@@ -121,7 +148,36 @@ public class CajaController {
         }
 
         if ("historial-pagos".equals(activeSection)) {
-            model.addAttribute("pagosPagados", pedidoService.obtenerPedidosPagados());
+            List<Pedido> pagosPagados = pedidoService.obtenerPedidosPagados();
+
+            if (filtro != null && filtro.equalsIgnoreCase("hoy")) {
+                LocalDate hoy = LocalDate.now();
+                pagosPagados = pagosPagados.stream()
+                        .filter(p -> p.getFechaCreacion() != null
+                                && p.getFechaCreacion().toLocalDate().equals(hoy))
+                        .collect(Collectors.toList());
+            }
+
+            model.addAttribute("pagosPagados", pagosPagados);
+            model.addAttribute("filtro", filtro);
+        }
+
+        if ("corte-caja".equals(activeSection)) {
+            LocalDate hoy = LocalDate.now();
+
+            List<Pedido> pagosPagadosHoy = pedidoService.obtenerPedidosPagados().stream()
+                    .filter(p -> p.getFechaCreacion() != null
+                            && p.getFechaCreacion().toLocalDate().equals(hoy))
+                    .collect(Collectors.toList());
+
+            long ventasDia = pagosPagadosHoy.size();
+            double ingresosDia = pagosPagadosHoy.stream()
+                    .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
+                    .sum();
+
+            model.addAttribute("fechaCorte", hoy);
+            model.addAttribute("ventasDia", ventasDia);
+            model.addAttribute("ingresosDia", ingresosDia);
         }
 
         return "caja/panel_caja";
@@ -136,8 +192,11 @@ public class CajaController {
 
     @PostMapping("/marcar-completado")
     public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId) {
-        // Marcar como pagado sin gestionar aquí el monto recibido (flujo rápido desde inicio-caja)
-        pedidoService.marcarPedidoComoPagado(pedidoId, null);
+        // Solo marcar visualmente como "completado" en el panel de inicio de caja.
+        // El estado de pago (PAGADO) se gestiona exclusivamente desde la vista de pagos (/caja?section=pagos).
+        if (pedidoId != null) {
+            pedidosCompletadosInicioCaja.add(pedidoId);
+        }
         return "redirect:/caja";
     }
  
