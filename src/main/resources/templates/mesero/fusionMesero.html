@@ -24,10 +24,16 @@
 					<div class="logo-desktop">
 						<img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
 					</div>
-					<span>
-                        Menú Pedidos - Mesa #
-                        <span th:text="${mesa != null and mesa.numero != null} ? ${mesa.numero} : ${mesaId}">0</span>
-                    </span>
+					<div class="logo-text-wrapper">
+						<span class="logo-title">
+							Menú Pedidos - Mesa #
+							<span th:text="${mesa != null and mesa.numero != null} ? ${mesa.numero} : ${mesaId}">0</span>
+						</span>
+						<a class="header-back-btn" id="btn-back-to-mesas" title="Volver a Mesas" th:href="@{/mesero}">
+							<i class="fas fa-arrow-left"></i>
+							<span>Volver a Mesas</span>
+						</a>
+					</div>
 				</div>
 
 				<ul class="nav-links" id="nav-links">
@@ -53,8 +59,6 @@
 			<h3>No se encontraron productos</h3>
 			<p>Intenta con otros filtros o términos de búsqueda</p>
 		</div>
-
-
 
 		<!-- Grid de productos -->
 		<div class="menu-grid" id="menu-grid">
@@ -121,17 +125,13 @@
 				</div>
 			</div>
 
-			<button class="btn-order" id="btn-send-order">
-				<i class="fas fa-paper-plane"></i> Enviar Pedido
+			<!-- Botón Enviar Pedido: en escritorio flotante abajo derecha, en móvil debajo de Comentarios -->
+			<button class="btn-order floating-order-btn" id="btn-send-order" type="button">
+				<i class="fas fa-paper-plane"></i>
+				<span>Enviar Pedido</span>
 			</button>
 		</div>
 	</nav>
-
-	<!-- Botón flotante para volver a mesas -->
-	<a class="floating-back-btn" id="btn-back-to-mesas" title="Volver a Mesas" th:href="@{/mesero}">
-		<i class="fas fa-arrow-left"></i>
-		<span>Volver a Mesas</span>
-	</a>
 
 	<script th:inline="javascript">
 		/*<![CDATA[*/
