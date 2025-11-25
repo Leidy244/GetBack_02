@@ -1303,18 +1303,16 @@ body {
 }
 
 [data-theme="dark"] .btn-outline-secondary:hover {
-	background-color: #444;
-	color: #fff;
-	border-color: #777;
-}
 
-[data-theme="dark"] .table-hover tbody tr:hover {
-	background-color: rgba(255, 255, 255, 0.08);
-}
+    [data-theme="dark"] .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
 
-/* Fix: muted subtitle text in dark mode */
-[data-theme="dark"] .text-muted,
-[data-theme="dark"] .section-header .text-muted {
+    /* Ajustes generales para tarjetas y tablas en modo oscuro (inventario, etc.) */
+    [data-theme="dark"] .card {
+        background-color: #1f1f1f;
+        border-color: #333333;
+    }
 	color: #c9c9c9 !important;
 }
 

@@ -99,6 +99,14 @@
 				<div th:replace="~{admin/fragments/users :: users}"></div>
 			</div>
 
+			<div th:if="${activeSection == 'clientes'}" class="content-section">
+				<div th:replace="~{admin/fragments/clientes :: clientes}"></div>
+			</div>
+
+			<div th:if="${activeSection == 'inventario'}" class="content-section">
+				<div th:replace="~{admin/fragments/inventario :: inventario}"></div>
+			</div>
+
 			<!-- Sección Locations -->
 			<div th:if="${activeSection == 'locations'}" class="content-section">
 				<div th:replace="~{admin/fragments/locations :: locations}"></div>

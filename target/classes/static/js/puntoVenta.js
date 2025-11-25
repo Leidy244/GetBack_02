@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Renderizar el carrito
     function renderCarrito() {
         carritoContainer.innerHTML = '';
-
         carrito.forEach((item, index) => {
             const div = document.createElement('div');
             div.classList.add('item-carrito');
@@ -52,9 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 carrito.push({ id, nombre, precio, cantidad: 1 });
             }
-
-            renderCarrito();
         }
+        renderCarrito();
     });
 
     //dentro del carrito
