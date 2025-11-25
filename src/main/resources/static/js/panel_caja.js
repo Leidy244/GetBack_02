@@ -104,6 +104,8 @@ class PanelCaja {
         const btnConfirmarPago = document.getElementById('btn-confirmar-pago');
         const modalInfo = document.getElementById('modal-info');
         const modalError = document.getElementById('modal-error');
+        const inputBusquedaPagos = document.getElementById('busqueda-pagos');
+        const tablaPagosPendientes = document.getElementById('tabla-pagos-pendientes');
 
         // Helper: formatear montos sin decimales, con separador de miles usando punto (7.000, 70.000)
         const formatearMonto = (valor) => {
@@ -350,6 +352,37 @@ class PanelCaja {
                     btnConfirmarPago.disabled = true;
                 }
             });
+        }
+
+        // Filtro de búsqueda en la tabla de pagos pendientes
+        if (inputBusquedaPagos && tablaPagosPendientes) {
+            const cuerpo = tablaPagosPendientes.querySelector('tbody');
+            if (cuerpo) {
+                inputBusquedaPagos.addEventListener('input', () => {
+                    const termino = inputBusquedaPagos.value.trim().toLowerCase();
+
+                    const filas = Array.from(cuerpo.querySelectorAll('tr'));
+                    filas.forEach(fila => {
+                        // No filtrar la fila de "no hay pedidos"; la gestionamos aparte
+                        const esFilaVacia = fila.querySelector('td[colspan]');
+                        if (esFilaVacia) {
+                            return;
+                        }
+
+                        const textoFila = fila.textContent.toLowerCase();
+                        const coincide = !termino || textoFila.includes(termino);
+                        fila.style.display = coincide ? '' : 'none';
+                    });
+
+                    // Mostrar u ocultar el mensaje de "no hay pedidos" según resultado del filtro
+                    const filaVacia = cuerpo.querySelector('tr td[colspan]')?.parentElement;
+                    if (filaVacia) {
+                        const hayAlgunaVisible = Array.from(cuerpo.querySelectorAll('tr'))
+                            .some(tr => !tr.querySelector('td[colspan]') && tr.style.display !== 'none');
+                        filaVacia.style.display = hayAlgunaVisible ? 'none' : '';
+                    }
+                });
+            }
         }
     }
 

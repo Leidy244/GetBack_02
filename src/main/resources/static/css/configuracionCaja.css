@@ -171,7 +171,7 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 .content-section {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 /* Header de la sección */
@@ -547,14 +547,14 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 
 /* ===== BOTONES PRINCIPALES ===== */
 .btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
 .btn:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-color) 100%);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     transform: translateY(-2px);
 }
 
@@ -578,15 +578,15 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 
 /* ===== BOTONES DROPDOWN ITEM ===== */
 .dropdown-item {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
     padding: 12px 24px;
 }
 
 .dropdown-item:hover {
-    background: linear-gradient(135deg, #ee7df7 0%, #f34158 100%);
-    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-color) 100%);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     transform: translateY(-2px);
 }
 
@@ -596,6 +596,15 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 
 .dropdown-item i {
     font-size: 16px;
+}
+
+.dropdown-item.logout-btn {
+    background: linear-gradient(135deg, var(--danger-color) 0%, #922B21 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+.dropdown-item.logout-btn:hover {
+    background: linear-gradient(135deg, #C0392B 0%, var(--danger-color) 100%);
 }
 
 /* ===== BOTÓN PARA SUBIR ARCHIVOS ===== */

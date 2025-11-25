@@ -35,8 +35,14 @@
 				<div class="dropdown user-dropdown">
 					<button class="btn user-profile dropdown-toggle" type="button" id="userDropdown"
 						data-bs-toggle="dropdown" aria-expanded="false">
-						<div class="user-avatar">C</div>
-						<span>Cajero</span>
+						<div class="user-avatar">
+							<span th:if="${session.usuarioLogueado != null}"
+								th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1)}">DF</span>
+							<span th:if="${session.usuarioLogueado == null}">C</span>
+						</div>
+						<span th:if="${session.usuarioLogueado != null}"
+							th:text="${session.usuarioLogueado.nombre + ' ' + session.usuarioLogueado.apellido}">Cajero</span>
+						<span th:if="${session.usuarioLogueado == null}">Cajero</span>
 						<i class="fas fa-chevron-down dropdown-arrow"></i>
 					</button>
 					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">

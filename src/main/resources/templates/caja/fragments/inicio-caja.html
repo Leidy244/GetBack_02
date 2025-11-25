@@ -42,15 +42,6 @@
 					<small th:text="${pedidosPendientesPago} + ' pedidos pendientes'">0 pedidos pendientes</small>
 				</div>
 			</a>
-		
-			<a th:href="@{/admin(activeSection='users')}" class="stat-card stat-card-link" title="Ver usuarios del sistema">
-				<div class="stat-icon bg-danger"><i class="fas fa-lock"></i></div>
-				<div class="stat-info">
-					<h3 th:text="${totalUsuarios}">0</h3>
-					<p>Usuarios</p>
-					<small>Activos en el sistema</small>
-				</div>
-			</a>
 		</div>
 
 		<!-- Sección 1: Pedidos generados (pendientes, área BAR) -->
