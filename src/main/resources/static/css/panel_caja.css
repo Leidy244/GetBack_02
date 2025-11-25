@@ -186,6 +186,61 @@
     border-color: var(--primary-color);
 }
 
+/* ===== MODAL DE PAGO EN MODO OSCURO ===== */
+[data-theme="dark"] .modal-content {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .modal-body {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .modal-header .btn-close {
+    filter: invert(1) grayscale(100%);
+}
+
+[data-theme="dark"] #modal-detalle {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-content .card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .modal-content .card-header {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-content .card-body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-content .alert-info {
+    background-color: rgba(66, 153, 225, 0.15);
+    border-color: rgba(66, 153, 225, 0.4);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-content .alert-danger {
+    background-color: rgba(229, 62, 62, 0.15);
+    border-color: rgba(229, 62, 62, 0.4);
+    color: var(--text-primary);
+}
+
 /* ===== BOTONES PESTAÑA PAGO EN MODO OSCURO ===== */
 [data-theme="dark"] .pestana-pago {
     color: var(--text-white);
@@ -641,7 +696,7 @@ body.caja-theme {
 .caja-main {
     margin-left: var(--sidebar-width);
     margin-top: var(--header-height);
-    padding: 2rem;
+    padding: 1.25rem 1.5rem;
     min-height: calc(100vh - var(--header-height));
     width: calc(100% - var(--sidebar-width));
     background: var(--bg-secondary);
@@ -2159,7 +2214,17 @@ body[data-admin-theme="gris"] {
     color: white;
 }
 
-/*cerrar sesion*/
-.logout-btn {
-    background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
+/* Botón Cancelar del modal de pago con el mismo look que
+   .dropdown-item.logout-btn (usa danger sólido y respeta tema) */
+#modalPago .btn-secondary {
+	background: linear-gradient(135deg, var(--danger-color) 0%, #922B21 100%);
+	color: #fff;
+	border: none;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+#modalPago .btn-secondary:hover {
+	background: linear-gradient(135deg, #C0392B 0%, var(--danger-color) 100%);
+	transform: translateX(5px);
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
 }

@@ -326,6 +326,36 @@ html[data-theme="dark"][data-admin-contrast="2"] {
   font-style: italic;
 }
 
+/* Caja de información de turno (usa variables para soportar modo oscuro) */
+.turno-info {
+  margin-top: 15px;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.turno-info h4 {
+  margin: 0 0 8px 0;
+  color: var(--primary-color);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.turno-info p {
+  margin: 5px 0;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.turno-info-empty {
+  margin: 5px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 /* Botones Editar / Cambiar foto */
 .account-actions {
   display: flex;
@@ -679,6 +709,28 @@ html[data-theme="dark"][data-admin-contrast="2"] {
     margin-right: 5px;
 }
 
+/* Modo oscuro: sección de actualización de foto coherente con el tema */
+html[data-theme="dark"] #formFoto .card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+}
+
+html[data-theme="dark"] .nombre-archivo {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .btnGuardarFoto {
+    background: linear-gradient(135deg, #0da271 0%, #047852 100%);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+html[data-theme="dark"] .btnCancelarFoto {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
 /* ===== CONTENEDOR DE ACCIONES DE CUENTA ===== */
 .account-actions {
     display: flex;
@@ -687,10 +739,23 @@ html[data-theme="dark"][data-admin-contrast="2"] {
     flex-wrap: wrap;
 }
 
+/* Botones de acciones (Editar perfil / Cambiar foto) con estilo coherente
+   a los botones del panel de caja: tamaño compacto, esquinas redondeadas
+   y gradiente principal del tema. */
 .account-actions .dropdown-item {
-    white-space: nowrap;
-    min-width: 140px;
-    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: #fff;
+    border-radius: var(--border-radius-sm);
+    padding: 0.6rem 1.2rem;
+    min-width: 160px;
+    justify-content: flex-start;
+    box-shadow: var(--shadow-sm);
+}
+
+.account-actions .dropdown-item:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-color) 100%);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 /* ===== ESTILOS PARA EL FORMULARIO ===== */
@@ -732,6 +797,26 @@ html[data-theme="dark"][data-admin-contrast="2"] {
     font-weight: 600;
     color: #374151;
     font-size: 14px;
+}
+
+/* Modo oscuro: hacer que los inputs y labels respeten la paleta oscura */
+html[data-theme="dark"] #formEditar input {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] #formEditar input::placeholder {
+    color: var(--text-light);
+}
+
+html[data-theme="dark"] #formEditar input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+html[data-theme="dark"] #formEditar label {
+    color: var(--text-secondary);
 }
 
 /* ===== ESTILOS RESPONSIVE ===== */

@@ -20,6 +20,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sena.getback.repository.ClienteFrecuenteRepository;
 
 import java.time.LocalDate;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +71,7 @@ this.clienteFrecuenteRepository = clienteFrecuenteRepository;
         model.addAttribute("activeSection", activeSection);
         model.addAttribute("title", "Panel principal - Cajero");
 
-        if ("inicio-caja".equals(activeSection)) {
+        if ("inicio-caja".equals(activeSection) || "pedidos".equals(activeSection)) {
             List<Factura> facturas = facturaRepository.findAll();
             List<Pedido> pedidos = pedidoRepository.findAll();
             long totalUsuarios = usuarioRepository.count();
@@ -157,12 +159,46 @@ this.clienteFrecuenteRepository = clienteFrecuenteRepository;
         if ("historial-pagos".equals(activeSection)) {
             List<Pedido> pagosPagados = pedidoService.obtenerPedidosPagados();
 
-            if (filtro != null && filtro.equalsIgnoreCase("hoy")) {
+            if (filtro != null && !filtro.isEmpty()) {
                 LocalDate hoy = LocalDate.now();
-                pagosPagados = pagosPagados.stream()
-                        .filter(p -> p.getFechaCreacion() != null
-                                && p.getFechaCreacion().toLocalDate().equals(hoy))
-                        .collect(Collectors.toList());
+
+                if (filtro.equalsIgnoreCase("hoy")) {
+                    pagosPagados = pagosPagados.stream()
+                            .filter(p -> p.getFechaCreacion() != null
+                                    && p.getFechaCreacion().toLocalDate().equals(hoy))
+                            .collect(Collectors.toList());
+
+                } else if (filtro.equalsIgnoreCase("semana")) {
+
+                    // Rango de la semana actual: lunes a domingo
+                    LocalDate inicioSemana = hoy.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                    LocalDate finSemana = hoy.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+                    pagosPagados = pagosPagados.stream()
+                            .filter(p -> p.getFechaCreacion() != null)
+                            .filter(p -> {
+                                LocalDate fecha = p.getFechaCreacion().toLocalDate();
+                                return (fecha.isEqual(inicioSemana) || fecha.isAfter(inicioSemana))
+                                        && (fecha.isEqual(finSemana) || fecha.isBefore(finSemana));
+                            })
+                            .collect(Collectors.toList());
+
+                } else if (filtro.equalsIgnoreCase("mes")) {
+                    pagosPagados = pagosPagados.stream()
+                            .filter(p -> p.getFechaCreacion() != null)
+                            .filter(p -> {
+                                LocalDate fecha = p.getFechaCreacion().toLocalDate();
+                                return fecha.getYear() == hoy.getYear()
+                                        && fecha.getMonth() == hoy.getMonth();
+                            })
+                            .collect(Collectors.toList());
+
+                } else if (filtro.equalsIgnoreCase("anio")) {
+                    pagosPagados = pagosPagados.stream()
+                            .filter(p -> p.getFechaCreacion() != null)
+                            .filter(p -> p.getFechaCreacion().toLocalDate().getYear() == hoy.getYear())
+                            .collect(Collectors.toList());
+                }
             }
 
             model.addAttribute("pagosPagados", pagosPagados);
@@ -198,12 +234,25 @@ this.clienteFrecuenteRepository = clienteFrecuenteRepository;
     }
 
     @PostMapping("/marcar-completado")
-    public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId) {
+    public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId,
+                                                        @RequestParam(value = "section", required = false) String section,
+                                                        @RequestParam(value = "accion", required = false) String accion) {
         // Solo marcar visualmente como "completado" en el panel de inicio de caja.
         // El estado de pago (PAGADO) se gestiona exclusivamente desde la vista de pagos (/caja?section=pagos).
         if (pedidoId != null) {
-            pedidosCompletadosInicioCaja.add(pedidoId);
+            if (accion != null && accion.equalsIgnoreCase("revertir")) {
+                pedidoService.marcarPedidoComoPendienteBar(pedidoId);
+                pedidosCompletadosInicioCaja.remove(pedidoId);
+            } else {
+                pedidoService.marcarPedidoComoCompletadoBar(pedidoId);
+                pedidosCompletadosInicioCaja.add(pedidoId);
+            }
         }
+
+        if (section != null && !section.isEmpty()) {
+            return "redirect:/caja?section=" + section;
+        }
+
         return "redirect:/caja";
     }
     

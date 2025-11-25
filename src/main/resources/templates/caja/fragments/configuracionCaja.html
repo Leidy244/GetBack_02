@@ -22,15 +22,15 @@
 		<div class="content-col">
 			<div class="content-card">
 				<div class="card-body">
-					<div class="account-info">
+					<!-- Solo mostrar el contenido si existe usuarioLogueado en sesión -->
+					<div class="account-info" th:if="${session.usuarioLogueado != null}">
 						<div class="user-display">
 							<!-- FOTO -->
 							<div class="avatar" id="avatar">
-								<img th:if="${session.usuarioLogueado.foto != null}"
+								<img th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}"
 									th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
-								<div th:if="${session.usuarioLogueado.foto == null}" class="avatar-placeholder">
-									<span th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + 
-												#strings.substring(session.usuarioLogueado.apellido,0,1)}">AD</span>
+								<div th:if="${session.usuarioLogueado == null or session.usuarioLogueado.foto == null}" class="avatar-placeholder">
+									<span th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}">AD</span>
 								</div>
 							</div>
 
@@ -43,32 +43,31 @@
 								<p th:text="${session.usuarioLogueado.direccion}"></p>
 
 								<!-- INFORMACIÓN DEL TURNO -->
-								<div class="turno-info"
-									style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
-									<h4 style="margin: 0 0 8px 0; color: #007bff; font-size: 16px;">
+								<div class="turno-info">
+									<h4>
 										<i class="fas fa-calendar-alt me-2"></i><span>Turno Asignado</span>
 									</h4>
 									<div th:if="${session.usuarioLogueado.fecha != null}">
-										<p style="margin: 5px 0; font-weight: 500;">
+										<p>
 											<strong>Fecha:</strong>
 											<span th:text="${#temporals.format(session.usuarioLogueado.fecha, 'dd/MM/yyyy')}"></span>
 										</p>
-										<p style="margin: 5px 0; font-weight: 500;">
+										<p>
 											<strong>Horario:</strong>
 											<span
 												th:text="${session.usuarioLogueado.horaInicio} + ' - ' + ${session.usuarioLogueado.horaFin}"></span>
 										</p>
 									</div>
 									<div th:if="${session.usuarioLogueado.fecha == null}">
-										<p style="margin: 5px 0; color: #6c757d; font-style: italic;">
+										<p class="turno-info-empty">
 											No hay turno asignado actualmente
 										</p>
 									</div>
 								</div>
-
+								
 								<small><span>Último acceso:</span> <span id="ultimo-acceso">Hoy</span></small>
 							</div>
-
+							
 							<!-- BOTONES -->
 							<div class="account-actions">
 								<button type="button" id="btnEditProfile" class="dropdown-item">
@@ -79,29 +78,29 @@
 								</button>
 							</div>
 						</div>
-
+						
 						<!-- FORMULARIO EDITAR -->
 						<form id="formEditar" th:action="@{/actualizar-datos-caja}" method="post" style="display:none;">
 							<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
-
+							
 							<label>Nombres:</label>
 							<input type="text" name="nombre" th:value="${session.usuarioLogueado.nombre}" />
-
+							
 							<label>Apellidos:</label>
 							<input type="text" name="apellido" th:value="${session.usuarioLogueado.apellido}" />
-
+							
 							<label>Correo:</label>
 							<input type="email" name="correo" th:value="${session.usuarioLogueado.correo}" />
-
+							
 							<label>Dirección:</label>
 							<input type="text" name="direccion" th:value="${session.usuarioLogueado.direccion}" />
-
+							
 							<label>Teléfono:</label>
 							<input type="text" name="telefono" th:value="${session.usuarioLogueado.telefono}" />
-
+							
 							<label>Clave:</label>
 							<input type="password" name="clave" th:value="${session.usuarioLogueado.clave}" />
-
+							
 							<div>
 								<button type="submit" class="btn">Guardar cambios</button>
 								<button type="button" id="btnCancelEdit" class="btn ghost">Cancelar</button>
@@ -112,10 +111,10 @@
 							<div class="card">
 								<form th:action="@{/actualizar-foto-caja}" method="post" enctype="multipart/form-data">
 									<input type="hidden" name="id" th:value="${session.usuarioLogueado.id}" />
-
+									
 									<input type="file" id="inputFoto" name="foto" accept="image/*" required
 										style="display:none;" />
-
+									
 									<label for="inputFoto" class="btnArchivo">Seleccionar imagen</label>
 									<span id="nombreArchivo" class="nombre-archivo">Ningún archivo seleccionado</span>
 									<br>

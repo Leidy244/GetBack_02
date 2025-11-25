@@ -79,6 +79,11 @@
 					<div th:replace="~{caja/fragments/inicio-caja :: inicio-caja}"></div>
 				</div>
 
+				<!-- Pedidos (pendientes y completados) -->
+				<div th:case="'pedidos'" class="content-section">
+					<div th:replace="~{caja/fragments/pedidos-caja :: pedidos}"></div>
+				</div>
+
 				<!-- Punto de Venta -->
 				<div th:case="'punto-venta'" class="content-section">
 					<div th:replace="~{caja/fragments/punto-venta :: punto-venta}"></div>

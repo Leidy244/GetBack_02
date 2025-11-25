@@ -189,6 +189,9 @@ public class PedidoService {
         return pedidoRepository.findAll().stream()
                 .filter(p -> p.getEstado() != null
                         && p.getEstado().getId() != null
+                        
+                        
+                        
                         && p.getEstado().getId() == 1) // 1 = PENDIENTE
                 .count();
     }
@@ -216,7 +219,7 @@ public class PedidoService {
         return pedidoRepository.findAll().stream()
                 .filter(p -> p.getEstado() != null
                         && p.getEstado().getId() != null
-                        && p.getEstado().getId() == 1)
+                        && (p.getEstado().getId() == 1 || p.getEstado().getId() == 3))
                 .toList();
     }
 
@@ -234,6 +237,32 @@ public class PedidoService {
     // si las categorías no tienen configurado correctamente el campo "area")
     public List<Pedido> obtenerPedidosPendientesBar() {
         return obtenerPedidosPendientes();
+    }
+
+    // Marcar pedido como COMPLETADO (estado id=3) para flujo de BAR/CAJA
+    public void marcarPedidoComoCompletadoBar(Integer pedidoId) {
+        Pedido pedido = findById(pedidoId);
+        if (pedido == null) {
+            return;
+        }
+
+        estadoRepository.findById(3)
+                .ifPresent(pedido::setEstado);
+
+        pedidoRepository.save(pedido);
+    }
+
+    // Revertir pedido a PENDIENTE (estado id=1) para flujo de BAR/CAJA
+    public void marcarPedidoComoPendienteBar(Integer pedidoId) {
+        Pedido pedido = findById(pedidoId);
+        if (pedido == null) {
+            return;
+        }
+
+        estadoRepository.findById(1)
+                .ifPresent(pedido::setEstado);
+
+        pedidoRepository.save(pedido);
     }
 
     // Obtener pedidos PAGADOS para el panel de inicio de caja
