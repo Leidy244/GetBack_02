@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="clientes" class="content-section">
+    <div class="container-fluid">
+        <!-- Encabezado -->
+        <div class="section-header mb-4">
+            <h2><i class="fas fa-id-card me-2"></i>Clientes frecuentes</h2>
+            <p class="text-muted">Administra los clientes que manejan crédito o dejan fianzas</p>
+        </div>
+
+        <!-- Subtítulo y acciones -->
+        <div class="events-header mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="section-subtitle mb-0">
+                    Lista de clientes frecuentes
+                    <span class="badge bg-primary" th:text="${clientes != null ? clientes.size() : 0}"></span>
+                </h4>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary rounded-pill shadow-sm px-3"
+                            data-bs-toggle="modal" data-bs-target="#nuevoClienteFrecuenteModal">
+                        <i class="fas fa-user-plus me-2"></i>Nuevo cliente frecuente
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <div class="d-flex flex-wrap gap-2 align-items-center" style="flex:1; min-width:260px;">
+                    <div class="input-group" style="max-width: 320px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="clienteFrecuenteFilterInput" class="form-control"
+                               placeholder="Buscar por nombre, documento o teléfono...">
+                    </div>
+                </div>
+                <div id="clientesFrecuentesPagination" class="btn-group" role="group" aria-label="Paginación"></div>
+            </div>
+        </div>
+
+        <!-- Tabla de clientes frecuentes -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle text-center">
+                <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Documento</th>
+                    <th>Teléfono</th>
+                    <th>Saldo</th>
+                    <th>Nota</th>
+                    <th>Abono</th>
+                    <th>Consumo</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="clientesFrecuentesTableBody">
+                <tr th:each="c : ${clientes}" data-row>
+                    <td th:text="${c.nombre}"></td>
+                    <td th:text="${c.documento != null ? c.documento : '—'}"></td>
+                    <td th:text="${c.telefono != null ? c.telefono : '—'}"></td>
+                    <td>
+                        <span th:class="${c.saldo != null && c.saldo > 0} ? 'badge bg-success' :
+                                        (${c.saldo != null && c.saldo < 0} ? 'badge bg-danger' : 'badge bg-secondary')"
+                              th:text="${c.saldo != null ? #numbers.formatDecimal(c.saldo, 1, 'POINT', 2, 'POINT') : '0.00'}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${c.nota != null ? c.nota : '—'}"></span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-success btn-sm rounded-pill px-3"
+                                data-bs-toggle="modal"
+                                th:data-bs-target="${'#abonoClienteFrecuenteModal' + c.id}">
+                            <i class="fas fa-plus"></i> Abono
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3"
+                                data-bs-toggle="modal"
+                                th:data-bs-target="${'#consumoClienteFrecuenteModal' + c.id}">
+                            <i class="fas fa-minus"></i> Consumo
+                        </button>
+                    </td>
+                    <td>
+                        <div class="d-inline-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-warning btn-sm rounded-pill px-3"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="${'#editarClienteFrecuenteModal' + c.id}">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${clientes == null or clientes.isEmpty()}">
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="fas fa-id-card fa-2x mb-3"></i>
+                        <p>No hay clientes frecuentes registrados.</p>
+                        <button type="button" class="btn btn-primary mt-2 rounded-pill"
+                                data-bs-toggle="modal" data-bs-target="#nuevoClienteFrecuenteModal">
+                            <i class="fas fa-user-plus me-2"></i>Agregar Primer Cliente
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal Nuevo Cliente Frecuente -->
+        <div class="modal fade" id="nuevoClienteFrecuenteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <form th:action="@{/admin/clientes/guardar}" method="post" class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nuevo cliente frecuente</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Documento (opcional)</label>
+                            <input type="text" name="documento" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono (opcional)</label>
+                            <input type="text" name="telefono" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nota (ej: referencia, condiciones)</label>
+                            <textarea name="nota" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success rounded-pill">Guardar</button>
+                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modales Editar / Abono / Consumo Cliente Frecuente -->
+        <div th:each="c : ${clientes}">
+
+            <!-- Editar -->
+            <div class="modal fade" th:id="${'editarClienteFrecuenteModal' + c.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form th:action="@{/admin/clientes/guardar}" method="post" class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar cliente frecuente</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="id" th:value="${c.id}">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" name="nombre" class="form-control" th:value="${c.nombre}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Documento</label>
+                                <input type="text" name="documento" class="form-control" th:value="${c.documento}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control" th:value="${c.telefono}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nota</label>
+                                <textarea name="nota" class="form-control" rows="2" th:text="${c.nota}"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success rounded-pill">Guardar cambios</button>
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Abono -->
+            <div class="modal fade" th:id="${'abonoClienteFrecuenteModal' + c.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form th:action="@{/admin/clientes/abono}" method="post" class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Registrar abono</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="clienteId" th:value="${c.id}">
+                            <p class="mb-2"><strong th:text="${c.nombre}"></strong></p>
+                            <div class="mb-3">
+                                <label class="form-label">Monto</label>
+                                <input type="number" name="monto" step="0.01" min="0.01" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descripción (opcional)</label>
+                                <textarea name="descripcion" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success rounded-pill">Guardar abono</button>
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Consumo -->
+            <div class="modal fade" th:id="${'consumoClienteFrecuenteModal' + c.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form th:action="@{/admin/clientes/consumo}" method="post" class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Registrar consumo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="clienteId" th:value="${c.id}">
+                            <p class="mb-2"><strong th:text="${c.nombre}"></strong></p>
+                            <div class="mb-3">
+                                <label class="form-label">Monto</label>
+                                <input type="number" name="monto" step="0.01" min="0.01" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descripción (opcional)</label>
+                                <textarea name="descripcion" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-danger rounded-pill">Guardar consumo</button>
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        (function(){
+            const run = () => {
+                const tbody = document.getElementById('clientesFrecuentesTableBody');
+                const filterInput = document.getElementById('clienteFrecuenteFilterInput');
+                const pager = document.getElementById('clientesFrecuentesPagination');
+                const pageSize = 5;
+                let rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
+                let filtered = rows.slice();
+                let page = 1;
+
+                function getText(r){
+                    const tds = r.querySelectorAll('td');
+                    const nombre = tds[0] ? (tds[0].innerText || '') : '';
+                    const doc = tds[1] ? (tds[1].innerText || '') : '';
+                    const tel = tds[2] ? (tds[2].innerText || '') : '';
+                    return (nombre + ' ' + doc + ' ' + tel).toLowerCase();
+                }
+
+                function render(){
+                    rows.forEach(r => r.style.display = 'none');
+                    const total = filtered.length;
+                    const pages = Math.max(1, Math.ceil(total / pageSize));
+                    page = Math.min(page, pages);
+                    const start = (page - 1) * pageSize;
+                    const end = start + pageSize;
+                    filtered.slice(start, end).forEach(r => r.style.display = '');
+                    renderPager(pages);
+                }
+
+                function renderPager(pages){
+                    if (!pager) return;
+                    pager.innerHTML = '';
+                    const prev = document.createElement('button');
+                    prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
+                    prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
+                    pager.appendChild(prev);
+
+                    for (let i = 1; i <= pages; i++){
+                        const b = document.createElement('button');
+                        b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary');
+                        b.textContent = i;
+                        b.onclick = () => { page = i; render(); };
+                        pager.appendChild(b);
+                    }
+
+                    const next = document.createElement('button');
+                    next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
+                    next.disabled = page >= pages; next.onclick = () => { page++; render(); };
+                    pager.appendChild(next);
+                }
+
+                function applyFilter(){
+                    const q = (filterInput?.value || '').toLowerCase().trim();
+                    filtered = q ? rows.filter(r => getText(r).includes(q)) : rows.slice();
+                    page = 1; render();
+                }
+
+                if (filterInput) filterInput.addEventListener('input', applyFilter);
+                render();
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', run);
+            } else {
+                run();
+            }
+        })();
+    </script>
+</section>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<section class="content-section" th:fragment="inventario">
+
+    <!-- Encabezado -->
+    <div class="section-header mb-4">
+        <h2><i class="fas fa-warehouse me-2"></i>Gestión de Inventario</h2>
+        <p class="text-muted">Registra ingresos de productos y mantén el inventario al día</p>
+    </div>
+
+	<!-- Bloque de alertas de bajo stock -->
+	<div class="mb-4" th:if="${bajoStock != null and !bajoStock.isEmpty()}">
+		<div class="alert alert-warning" role="alert">
+			<h5 class="alert-heading mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Productos con bajo stock</h5>
+			<p class="mb-2 small">Estos productos tienen stock menor o igual a
+				<span class="fw-bold" th:text="${stockThreshold}"></span> unidades.</p>
+			<div class="d-flex flex-wrap gap-2">
+				<span class="badge bg-warning text-dark" th:each="entry : ${bajoStock.entrySet()}"
+				      th:text="${entry.key + ' (' + entry.value + ')'}"></span>
+			</div>
+		</div>
+	</div>
+
+    <!-- Encabezado con botón para modal -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="section-subtitle mb-0">
+            Ingresos de inventario
+            <span class="badge bg-primary" th:text="${ingresosInventario != null ? ingresosInventario.size() : 0}"></span>
+        </h4>
+        <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#nuevoIngresoInventarioModal">
+            <i class="fas fa-plus me-2"></i>Nuevo ingreso
+        </button>
+    </div>
+
+    <div class="row g-4">
+        <!-- Tabla de ingresos -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body p-0">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-3 pt-3">
+                        <div class="input-group" style="max-width: 320px;">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="inventarioFilterInput" class="form-control" placeholder="Filtrar por remisión, producto o proveedor...">
+                        </div>
+                        <div id="inventarioPagination" class="btn-group" role="group" aria-label="Paginación"></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Remisión</th>
+                                <th>Fecha remisión</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Proveedor</th>
+                                <th>Teléfono</th>
+                                <th>Fecha ingreso</th>
+                                <th>Observaciones</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="inventarioTableBody">
+                            <tr th:each="ingreso : ${ingresosInventario}" data-row="inv">
+                                <td class="fw-semibold" th:text="${ingreso.remision != null ? ingreso.remision : '—'}"></td>
+                                <td>
+                                    <span th:text="${ingreso.fechaRemision != null ? #temporals.format(ingreso.fechaRemision, 'dd/MM/yyyy') : '—'}"></span>
+                                </td>
+                                <td th:text="${ingreso.producto != null ? ingreso.producto : '—'}"></td>
+                                <td>
+                                    <span class="badge bg-success rounded-pill" th:text="${ingreso.cantidad}"></span>
+                                </td>
+                                <td th:text="${ingreso.proveedor != null && !ingreso.proveedor.isEmpty() ? ingreso.proveedor : '—'}"></td>
+                                <td th:text="${ingreso.telefonoProveedor != null && !ingreso.telefonoProveedor.isEmpty() ? ingreso.telefonoProveedor : '—'}"></td>
+                                <td>
+                                    <span th:text="${ingreso.fechaIngreso != null ? #temporals.format(ingreso.fechaIngreso, 'dd/MM/yyyy HH:mm') : '—'}"></span>
+                                </td>
+                                <td th:text="${ingreso.observaciones != null && !ingreso.observaciones.isEmpty() ? ingreso.observaciones : '—'}"></td>
+                                <td class="text-center">
+                                    <div class="d-inline-flex gap-2">
+                                        <button type="button" class="btn btn-warning btn-sm rounded-pill"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#__editarInventarioModal' + ${ingreso.id}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm rounded-pill"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#__eliminarInventarioModal' + ${ingreso.id}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${ingresosInventario == null or ingresosInventario.isEmpty()}">
+                                <td colspan="9" class="text-center py-4 text-muted">
+                                    <i class="fas fa-box-open fa-2x mb-3"></i>
+                                    <p class="mb-0">Aún no registras movimientos de inventario.</p>
+                                    <small>Utiliza el formulario para registrar tu primer ingreso.</small>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales Editar Inventario -->
+    <div th:each="ingreso : ${ingresosInventario}">
+        <div class="modal fade" th:id="'__editarInventarioModal' + ${ingreso.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <form th:action="@{/inventario/actualizar}" method="post" class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar ingreso de inventario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" th:value="${ingreso.id}">
+                        <div class="mb-3">
+                            <label class="form-label">Remisión</label>
+                            <input type="text" maxlength="100" class="form-control" name="remision"
+                                   th:value="${ingreso.remision}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de remisión</label>
+                            <input type="date" class="form-control" name="fechaRemision"
+                                   th:value="${ingreso.fechaRemision != null ? #temporals.format(ingreso.fechaRemision, 'yyyy-MM-dd') : ''}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Producto</label>
+                            <input type="text" maxlength="150" class="form-control" name="producto"
+                                   th:value="${ingreso.producto}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cantidad ingresada</label>
+                            <input type="number" min="1" class="form-control" name="cantidad"
+                                   th:value="${ingreso.cantidad}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Proveedor (opcional)</label>
+                            <input type="text" maxlength="120" class="form-control" name="proveedor"
+                                   th:value="${ingreso.proveedor}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono del proveedor (opcional)</label>
+                            <input type="text" maxlength="20" class="form-control" name="telefonoProveedor"
+                                   th:value="${ingreso.telefonoProveedor}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" name="observaciones" rows="3"
+                                      th:text="${ingreso.observaciones}"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success rounded-pill">Guardar cambios</button>
+                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales Eliminar Inventario -->
+    <div th:each="ingreso : ${ingresosInventario}">
+        <div class="modal fade" th:id="'__eliminarInventarioModal' + ${ingreso.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content border-danger">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Confirmar eliminación</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p class="mb-3">
+                            ¿Seguro que deseas eliminar la remisión
+                            <strong th:text="${ingreso.remision}"></strong>?
+                        </p>
+                        <p class="text-muted small">Esta acción no se puede deshacer.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <form th:action="@{/inventario/eliminar}" method="post">
+                            <input type="hidden" name="id" th:value="${ingreso.id}">
+                            <button type="submit" class="btn btn-danger rounded-pill px-4">Eliminar</button>
+                        </form>
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Ingreso Inventario -->
+    <div class="modal fade" id="nuevoIngresoInventarioModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form th:action="@{/inventario/registrar}" method="post" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo ingreso de inventario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Remisión</label>
+                        <input type="text" maxlength="100" class="form-control" name="remision" placeholder="Número o código de remisión" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de remisión</label>
+                        <input type="date" class="form-control" name="fechaRemision">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Producto</label>
+                        <input type="text" maxlength="150" class="form-control" name="producto" placeholder="Ej: Pan, Helado, Cerveza" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad ingresada</label>
+                        <input type="number" min="1" class="form-control" name="cantidad" placeholder="Ej: 25" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Proveedor (opcional)</label>
+                        <input type="text" maxlength="120" class="form-control" name="proveedor" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono del proveedor (opcional)</label>
+                        <input type="text" maxlength="20" class="form-control" name="telefonoProveedor" placeholder="Teléfono de contacto">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea class="form-control" name="observaciones" rows="3" placeholder="Notas o detalles del ingreso"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success rounded-pill">Guardar</button>
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+          const run = () => {
+            const tbody = document.getElementById('inventarioTableBody');
+            const filterInput = document.getElementById('inventarioFilterInput');
+            const pager = document.getElementById('inventarioPagination');
+            const pageSize = 5;
+            let rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
+            let filtered = rows.slice();
+            let page = 1;
+
+            function getText(r){
+                const tds = r.querySelectorAll('td');
+                const rem = tds[0] ? (tds[0].innerText || '') : '';
+                const prod = tds[2] ? (tds[2].innerText || '') : '';
+                const prov = tds[4] ? (tds[4].innerText || '') : '';
+                return (rem + ' ' + prod + ' ' + prov).toLowerCase();
+            }
+
+            function render(){
+                rows.forEach(r => r.style.display = 'none');
+                const total = filtered.length;
+                const pages = Math.max(1, Math.ceil(total / pageSize));
+                page = Math.min(page, pages);
+                const start = (page - 1) * pageSize;
+                const end = start + pageSize;
+                filtered.slice(start, end).forEach(r => r.style.display = '');
+                renderPager(pages);
+            }
+
+            function renderPager(pages){
+                if (!pager) return;
+                pager.innerHTML = '';
+                const prev = document.createElement('button');
+                prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
+                prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
+                pager.appendChild(prev);
+
+                for (let i = 1; i <= pages; i++){
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary');
+                    b.textContent = i;
+                    b.onclick = () => { page = i; render(); };
+                    pager.appendChild(b);
+                }
+
+                const next = document.createElement('button');
+                next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
+                next.disabled = page >= pages; next.onclick = () => { page++; render(); };
+                pager.appendChild(next);
+            }
+
+            function applyFilter(){
+                const q = (filterInput?.value || '').toLowerCase().trim();
+                filtered = q ? rows.filter(r => getText(r).includes(q)) : rows.slice();
+                page = 1; render();
+            }
+
+            if (filterInput) filterInput.addEventListener('input', applyFilter);
+            render();
+          };
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', run);
+          } else {
+            run();
+          }
+        })();
+    </script>
+
+</section>
+</body>
+
+</html>

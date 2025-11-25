@@ -41,10 +41,11 @@
             <thead class="table-dark text-center">
                 <tr>
                     <th>Nombre</th>
-                    <th>Descripción</th>
+                    <th>Receta / Descripción</th>
                     <th>Precio</th>
                     <th>Categoría</th>
                     <th>Disponible</th>
+                    <th>Stock</th>
                     <th>Imagen</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -57,6 +58,9 @@
                     <td th:text="${producto.categoria.nombre}"></td>
                     <td>
                         <span th:text="${producto.disponible} ? 'Sí' : 'No'"></span>
+                    </td>
+                    <td>
+                        <span th:text="${stockPorProducto != null && stockPorProducto.containsKey(producto.nombreProducto) ? stockPorProducto.get(producto.nombreProducto) : 0}"></span>
                     </td>
                     <td>
                         <img th:if="${producto.imagen}" th:src="@{${producto.imagen}}" alt="Imagen del producto"
@@ -83,7 +87,7 @@
                 </tr>
 
                 <tr th:if="${products == null or products.isEmpty()}">
-                    <td colspan="7" class="text-center py-4 text-muted">
+                    <td colspan="8" class="text-center py-4 text-muted">
                         <i class="fas fa-box-open fa-2x mb-3"></i>
                         <p>No hay productos registrados</p>
                         <p class="small">Comienza agregando tu primer producto</p>
@@ -139,10 +143,10 @@
                     <input type="hidden" th:field="*{id}">
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control" th:field="*{nombreProducto}" required>
+                        <input type="text" class="form-control" th:field="*{nombreProducto}" list="inventarioNombres" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Descripción</label>
+                        <label class="form-label">Receta / Descripción</label>
                         <textarea class="form-control" th:field="*{descripcion}" required></textarea>
                     </div>
                     <div class="mb-3">
@@ -187,10 +191,10 @@
                         <input type="hidden" name="id" th:value="${producto.id}">
                         <div class="mb-3">
                             <label class="form-label">Nombre</label>
-                            <input type="text" class="form-control" name="nombreProducto" th:value="${producto.nombreProducto}" required>
+                            <input type="text" class="form-control" name="nombreProducto" th:value="${producto.nombreProducto}" list="inventarioNombres" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Descripción</label>
+                            <label class="form-label">Receta / Descripción</label>
                             <textarea class="form-control" name="descripcion" th:text="${producto.descripcion}" required></textarea>
                         </div>
                         <div class="mb-3">

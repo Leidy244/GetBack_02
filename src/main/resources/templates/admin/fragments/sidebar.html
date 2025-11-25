@@ -44,7 +44,16 @@
 				<i class="fas fa-chair"></i>Asignar Mesas
 			</a>
 
-			
+			<a th:href="@{/inventario}"
+				th:classappend="${activeSection == 'inventario'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-warehouse"></i>Inventario
+			</a>
+
+			<a th:href="@{/admin(activeSection='clientes')}"
+			   th:classappend="${activeSection == 'clientes'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-id-card"></i>Clientes frecuentes
+			</a>
+
 			<a th:href="@{/admin(activeSection='ventas')}"
 			   th:classappend="${activeSection == 'ventas'} ? 'nav-link active' : 'nav-link'">
 			    <i class="fas fa-history"></i> Historial de ventas
@@ -53,7 +62,7 @@
 		<!-- Footer compacto -->
 		<div class="sidebar-footer">
 			<p class="text-secondary small mb-0">
-				© 2025 Ignitia — Desarrollado por Ignitia. Todos los derechos reservados
+				2025 Ignitia — Desarrollado por Ignitia. Todos los derechos reservados
 			</p>
 
 		</div>

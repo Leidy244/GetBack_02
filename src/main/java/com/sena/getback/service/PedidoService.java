@@ -1,5 +1,6 @@
 package com.sena.getback.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sena.getback.model.Pedido;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.model.Menu;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class PedidoService {
@@ -26,16 +29,19 @@ public class PedidoService {
     private final MenuRepository menuRepository;
     private final EstadoRepository estadoRepository;
     private final FacturaRepository facturaRepository;
+    private final InventarioService inventarioService;
 
     public PedidoService(PedidoRepository pedidoRepository, MesaRepository mesaRepository,
                          UsuarioRepository usuarioRepository, MenuRepository menuRepository,
-                         EstadoRepository estadoRepository, FacturaRepository facturaRepository) {
+                         EstadoRepository estadoRepository, FacturaRepository facturaRepository,
+                         InventarioService inventarioService) {
         this.pedidoRepository = pedidoRepository;
         this.mesaRepository = mesaRepository;
         this.usuarioRepository = usuarioRepository;
         this.menuRepository = menuRepository;
         this.estadoRepository = estadoRepository;
         this.facturaRepository = facturaRepository;
+        this.inventarioService = inventarioService;
     }
 
     // Listar todos los pedidos
@@ -71,8 +77,11 @@ public class PedidoService {
 
     // Crear nuevo pedido
     public Pedido crearPedido(Integer mesaId, String itemsJson, String comentarios, Double total) {
+        // 1) Validar stock a partir de itemsJson antes de crear el pedido
+        validarStockParaItems(itemsJson);
+
         Pedido pedido = new Pedido();
-        
+
         // Guardamos el JSON de items en la columna orden para que la vista pueda parsearlo
         // Si hay comentarios generales, los combinamos con el JSON
         if (comentarios != null && !comentarios.trim().isEmpty()) {
@@ -85,25 +94,77 @@ public class PedidoService {
         }
         // Total del pedido
         pedido.setTotal(total);
-        
+
         // Asociar la mesa (obligatorio) y marcarla como OCUPADA mientras haya pedido pendiente
         mesaRepository.findById(mesaId).ifPresent(mesa -> {
             mesa.setEstado("OCUPADA");
             mesaRepository.save(mesa);
             pedido.setMesa(mesa);
         });
-        
+
         // Configurar usuario por defecto (primer usuario disponible o crear uno genérico)
         usuarioRepository.findAll().stream().findFirst().ifPresent(pedido::setUsuario);
-        
+
         // Configurar menú por defecto (primer menú disponible)
         menuRepository.findAll().stream().findFirst().ifPresent(pedido::setMenu);
-        
+
         // Configurar estado por defecto usando la tabla estados: ID 1 = PENDIENTE
         estadoRepository.findById(1)
                 .ifPresent(pedido::setEstado);
-        
+
         return pedidoRepository.save(pedido);
+    }
+
+    /**
+     * Valida el stock disponible en Inventario para los productos incluidos en itemsJson.
+     * itemsJson tiene la forma: { items: [{ productoNombre, cantidad, ... }], total: ... }
+     */
+    private void validarStockParaItems(String itemsJson) {
+        if (itemsJson == null || itemsJson.isBlank()) {
+            return;
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
+            Object itemsObj = root.get("items");
+            if (!(itemsObj instanceof List<?> itemsList)) {
+                return;
+            }
+
+            // Acumular cantidad requerida por productoNombre
+            Map<String, Integer> requeridos = new HashMap<>();
+            for (Object o : itemsList) {
+                if (!(o instanceof Map<?, ?> itemMap)) continue;
+                Object nombreObj = itemMap.get("productoNombre");
+                Object cantidadObj = itemMap.get("cantidad");
+                if (nombreObj == null || cantidadObj == null) continue;
+                String nombre = String.valueOf(nombreObj);
+                int cant = (cantidadObj instanceof Number)
+                        ? ((Number) cantidadObj).intValue()
+                        : Integer.parseInt(String.valueOf(cantidadObj));
+                if (cant <= 0) continue;
+                requeridos.merge(nombre, cant, Integer::sum);
+            }
+
+            // Validar contra inventario
+            for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
+                String nombre = entry.getKey();
+                int solicitado = entry.getValue();
+                int disponible = inventarioService.obtenerStockDisponible(nombre);
+                if (solicitado > disponible) {
+                    throw new IllegalStateException(
+                            "No hay stock suficiente de '" + nombre + "' (disponible: " + disponible
+                                    + ", solicitado: " + solicitado + ")");
+                }
+            }
+        } catch (IllegalStateException e) {
+            // Propagar tal cual para que llegue al controlador y a la UI
+            throw e;
+        } catch (Exception e) {
+            // Si hay un error al parsear, no bloqueamos el pedido pero registramos en logs
+            System.err.println("Error al validar stock para itemsJson: " + e.getMessage());
+        }
     }
 
     // Obtener historial por mesa
