@@ -4,9 +4,14 @@ import com.sena.getback.service.MenuService;
 import com.sena.getback.model.Usuario;
 import com.sena.getback.model.Pedido;
 import com.sena.getback.model.Mesa;
+import com.sena.getback.repository.UsuarioRepository;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
 import com.sena.getback.service.LocationService;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import jakarta.servlet.http.HttpSession;
 import com.sena.getback.service.MesaService;
 import org.springframework.stereotype.Controller;
@@ -29,15 +34,18 @@ public class MeseroController {
 	private final CategoriaService categoriaService;
 	private final PedidoService pedidoService;
 	private final MesaService mesaService;
-	private final LocationService locationService; // ← AÑADIDO
+	private final LocationService locationService;
+	private final UsuarioRepository usuarioRepository;
 
 	public MeseroController(MenuService menuService, CategoriaService categoriaService,
-			PedidoService pedidoService, MesaService mesaService, LocationService locationService) { // ← MODIFICADO
+			PedidoService pedidoService, MesaService mesaService,
+			LocationService locationService, UsuarioRepository usuarioRepository) {
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
 		this.pedidoService = pedidoService;
 		this.mesaService = mesaService;
-		this.locationService = locationService; // ← AÑADIDO
+		this.locationService = locationService;
+		this.usuarioRepository = usuarioRepository;
 	}
 
 	@GetMapping("/mesero")
@@ -339,6 +347,60 @@ public class MeseroController {
         Map<String, Object> map = mapper.readValue(itemsJson, Map.class);
         return map;
     }
+
+	@GetMapping("/historial")
+	public String mostrarHistorialPedidos(
+	        @RequestParam(name = "page", defaultValue = "0") int page,
+	        @RequestParam(name = "size", defaultValue = "10") int size,
+	        @RequestParam(name = "mesa", required = false) String mesa,
+	        @RequestParam(name = "estado", required = false) String estado,
+	        @RequestParam(name = "meseroId", required = false) Long meseroId,
+	        @RequestParam(name = "fechaDesde", required = false)
+	        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
+	        @RequestParam(name = "fechaHasta", required = false)
+	        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta,
+	        Model model,
+	        HttpSession session) {
+
+	    Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+	    String rol = usuario != null && usuario.getRol() != null && usuario.getRol().getNombre() != null
+	            ? usuario.getRol().getNombre().toUpperCase() : "";
+
+	    boolean esAdmin = "ADMIN".equals(rol);
+	    boolean esMesero = "MESERO".equals(rol);
+
+	    Long usuarioIdFiltro = null;
+	    if (esMesero && usuario != null) {
+	        // Mesero solo ve su propio historial
+	        usuarioIdFiltro = usuario.getId();
+	    } else if (esAdmin) {
+	        // Admin puede filtrar por cualquier mesero
+	        usuarioIdFiltro = meseroId;
+	    }
+
+	    Page<Pedido> pagePedidos = pedidoService.obtenerHistorialPaginado(
+	            mesa, estado, fechaDesde, fechaHasta, usuarioIdFiltro, page, size);
+
+	    model.addAttribute("pedidos", pagePedidos.getContent());
+	    model.addAttribute("currentPage", pagePedidos.getNumber());
+	    model.addAttribute("totalPages", pagePedidos.getTotalPages());
+	    model.addAttribute("pageSize", pagePedidos.getSize());
+	    model.addAttribute("totalElements", pagePedidos.getTotalElements());
+
+	    model.addAttribute("mesaFiltro", mesa);
+	    model.addAttribute("estadoFiltro", estado);
+	    model.addAttribute("fechaDesdeFiltro", fechaDesde);
+	    model.addAttribute("fechaHastaFiltro", fechaHasta);
+	    model.addAttribute("meseroFiltro", meseroId);
+	    model.addAttribute("esAdmin", esAdmin);
+	    model.addAttribute("esMesero", esMesero);
+
+	    if (esAdmin) {
+	        model.addAttribute("meseros", usuarioRepository.findByRol_Nombre("MESERO"));
+	    }
+
+	    return "mesero/historial";
+	}
 
 	@GetMapping("/configuracion")
 	public String mostrarConfiguracion() {
