@@ -242,21 +242,27 @@ const adminApp = {
 
 		// Al guardar ajustes desde el modal, persistir todos los valores
 		saveSettingsBtn.addEventListener('click', () => {
-			const newSettings = {
-				fontSize: fontSizeSelect?.value || 'mediano',
-				theme: themeSelect?.value || 'default',
-				contrast: contrastRange?.value ?? '1'
-			};
+		    const newSettings = {
+		        fontSize: fontSizeSelect?.value || 'mediano',
+		        theme: themeSelect?.value || 'default',
+		        contrast: contrastRange?.value ?? '1'
+		    };
 
-			// Aplicar inmediatamente
-			this.applyAdminFontSize(newSettings.fontSize);
-			this.applyAdminTheme(newSettings.theme);
-			this.applyAdminContrast(newSettings.contrast);
+		    // Aplicar inmediatamente
+		    this.applyAdminFontSize(newSettings.fontSize);
+		    this.applyAdminTheme(newSettings.theme);
+		    this.applyAdminContrast(newSettings.contrast);
 
-			// Guardar para futuras sesiones
-			localStorage.setItem('adminAppearanceSettings', JSON.stringify(newSettings));
+		    // Guardar para futuras sesiones
+		    localStorage.setItem('adminAppearanceSettings', JSON.stringify(newSettings));
+
+		    // Cerrar el modal de configuración del admin
+		    const adminSettingsModal = document.getElementById('adminsettingsModal');
+		    if (adminSettingsModal) {
+		        adminSettingsModal.classList.remove('show');
+		    }
 		});
-	},
+	}, // <-- CIERRE FALTANTE AÑADIDO AQUÍ
 
 	/* -------------------------------
 	   MODAL ÚNICO PARA PRODUCTOS
@@ -273,8 +279,6 @@ const adminApp = {
 
 			this.setupModalMode(mode, productId);
 		});
-
- 
 
 		// Configurar evento cuando se cierra el modal
 		productModal.addEventListener('hidden.bs.modal', () => {
@@ -347,7 +351,7 @@ const adminApp = {
 		const noImageMessage = document.getElementById('noImageMessage');
 
 		if (product.imagen) {
-			currentImage.src = `/images/${product.imagen}`;
+			currentImage.src = /images/${product.imagen};
 			currentImage.style.display = 'block';
 			noImageMessage.style.display = 'none';
 		} else {
@@ -387,7 +391,7 @@ const adminApp = {
 		// Determinar la acción (guardar o editar)
 		const productId = document.getElementById('productId').value;
 		if (productId) {
-			form.action = `/admin/productos/editar/${productId}`;
+			form.action = /admin/productos/editar/${productId};
 		} else {
 			form.action = '/admin/productos/guardar';
 		}
@@ -596,7 +600,7 @@ const adminApp = {
 		const urlParams = new URLSearchParams(window.location.search);
 		const activeSection = urlParams.get('activeSection') || 'dashboard';
 
-		const activeLink = document.querySelector(`a[href*="activeSection=${activeSection}"]`);
+		const activeLink = document.querySelector(a[href*="activeSection=${activeSection}"]);
 		if (activeLink) {
 			activeLink.classList.add('active');
 		} else if (activeSection === 'dashboard') {
@@ -689,7 +693,7 @@ const adminApp = {
 		document.querySelectorAll('.admin-notification').forEach(n => n.remove());
 
 		const notification = document.createElement("div");
-		notification.className = `admin-notification notification-${type}`;
+		notification.className = admin-notification notification-${type};
 		notification.innerHTML = `
             <div class="notification-content">
                 <i class="fas fa-${this.getNotificationIcon(type)}"></i>
@@ -833,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			const confirmLink = document.getElementById('confirm-delete-link');
 			if (confirmLink) {
 				// Ajusta esta URL si tu endpoint es /admin/users/delete/{id} en lugar de /users/delete/{id}
-				confirmLink.setAttribute('href', /*[[*/ /* th:remove="tag" */ '' + '/users/delete/' + id);
+				confirmLink.setAttribute('href', /[[/ /* th:remove="tag" */ '' + '/users/delete/' + id);
 			}
 		});
 	}
@@ -853,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
       const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
-      dateEl.textContent = `${dateStr} ${timeStr}`;
+      dateEl.textContent = ${dateStr} ${timeStr};
     };
     renderHeaderDate();
     setInterval(renderHeaderDate, 1000);
@@ -889,7 +893,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Charts (Chart.js must be loaded on the page)
   if (typeof Chart === 'undefined') return;
 
-  const sanitizeLabels = (labels) => (labels || []).map((l, i) => (l && l.toString().trim().length > 0) ? l : `Ítem ${i+1}`);
+  const sanitizeLabels = (labels) => (labels || []).map((l, i) => (l && l.toString().trim().length > 0) ? l : Ítem ${i+1});
   const safeNumber = (n) => Number.isFinite(n) ? n : 0;
 
   fetch('/api/dashboard/stats')
@@ -901,7 +905,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const catCfg = {
         type: 'pie',
         data: { labels: pc.labels, datasets: [{ label: 'Productos', data: pc.data, backgroundColor: ['#3498db','#9b59b6','#1abc9c','#f39c12','#e74c3c','#2ecc71'] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Productos por categoría' }, tooltip: { callbacks: { label: (ctx) => { const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const val = safeNumber(ctx.parsed); const pct = total ? ((val/total)*100).toFixed(1) : 0; const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; return `${label}: ${val} (${pct}%)`; } } } }, layout: { padding: 0 }, animation: { duration: 0 } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Productos por categoría' }, tooltip: { callbacks: { label: (ctx) => { const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const val = safeNumber(ctx.parsed); const pct = total ? ((val/total)*100).toFixed(1) : 0; const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; return ${label}: ${val} (${pct}%); } } } }, layout: { padding: 0 }, animation: { duration: 0 } }
       };
       if (document.getElementById('chartCategorias')) new Chart(document.getElementById('chartCategorias'), catCfg);
       if (document.getElementById('chartCategorias2')) new Chart(document.getElementById('chartCategorias2'), {...catCfg, type:'bar'});
@@ -913,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const evCfg = {
         type: 'bar',
         data: { labels: meses, datasets: [{ label: 'Eventos', data: eventos, backgroundColor: '#3498db', barThickness: 6, maxBarThickness: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Eventos por mes' }, tooltip: { callbacks: { label: (ctx) => `Eventos: ${ctx.parsed.y}` } } }, scales: { x: { ticks: { font: { size: 10 } }, title: { display: true, text: 'Mes' } }, y: { ticks: { font: { size: 10 } }, title: { display: true, text: 'Cantidad' }, beginAtZero: true } }, layout: { padding: 0 }, animation: { duration: 0 } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Eventos por mes' }, tooltip: { callbacks: { label: (ctx) => Eventos: ${ctx.parsed.y} } } }, scales: { x: { ticks: { font: { size: 10 } }, title: { display: true, text: 'Mes' } }, y: { ticks: { font: { size: 10 } }, title: { display: true, text: 'Cantidad' }, beginAtZero: true } }, layout: { padding: 0 }, animation: { duration: 0 } }
       };
       if (document.getElementById('chartEventos')) new Chart(document.getElementById('chartEventos'), evCfg);
       if (document.getElementById('chartEventos2')) new Chart(document.getElementById('chartEventos2'), evCfg);
@@ -921,14 +925,14 @@ document.addEventListener('DOMContentLoaded', function() {
       // Usuarios por rol
       const urRaw = data.usuariosPorRol || {labels: [], data: []};
       const ur = { labels: sanitizeLabels(urRaw.labels), data: (urRaw.data || []).map(safeNumber) };
-      const urCfg = { type: 'pie', data: { labels: ur.labels, datasets: [{ label: 'Usuarios', data: ur.data, backgroundColor: ['#2ecc71','#9b59b6','#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Usuarios por rol' }, tooltip: { callbacks: { label: (ctx) => { const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const val = safeNumber(ctx.parsed); const pct = total ? ((val/total)*100).toFixed(1) : 0; const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; return `${label}: ${val} (${pct}%)`; } } } }, layout: { padding: 0 }, animation: { duration: 0 } } };
+      const urCfg = { type: 'pie', data: { labels: ur.labels, datasets: [{ label: 'Usuarios', data: ur.data, backgroundColor: ['#2ecc71','#9b59b6','#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Usuarios por rol' }, tooltip: { callbacks: { label: (ctx) => { const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const val = safeNumber(ctx.parsed); const pct = total ? ((val/total)*100).toFixed(1) : 0; const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; return ${label}: ${val} (${pct}%); } } } }, layout: { padding: 0 }, animation: { duration: 0 } } };
       if (document.getElementById('chartUsuarios')) new Chart(document.getElementById('chartUsuarios'), urCfg);
       if (document.getElementById('chartUsuarios2')) new Chart(document.getElementById('chartUsuarios2'), urCfg);
 
       // Estado de mesas
       const emRaw = data.estadoMesas || {labels: [], data: []};
       const em = { labels: sanitizeLabels(emRaw.labels), data: (emRaw.data || []).map(safeNumber) };
-      const emCfg = { type: 'doughnut', data: { labels: em.labels, datasets: [{ label: 'Mesas', data: em.data, backgroundColor: ['#2ecc71','#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Estado de mesas' }, tooltip: { callbacks: { label: (ctx) => { const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; const val = safeNumber(ctx.parsed); const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const pct = total ? ((val/total)*100).toFixed(1) : 0; return `${label}: ${val} (${pct}%)`; } } } }, layout: { padding: 0 }, animation: { duration: 0 } } };
+      const emCfg = { type: 'doughnut', data: { labels: em.labels, datasets: [{ label: 'Mesas', data: em.data, backgroundColor: ['#2ecc71','#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Estado de mesas' }, tooltip: { callbacks: { label: (ctx) => { const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; const val = safeNumber(ctx.parsed); const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const pct = total ? ((val/total)*100).toFixed(1) : 0; return ${label}: ${val} (${pct}%); } } } }, layout: { padding: 0 }, animation: { duration: 0 } } };
       if (document.getElementById('chartMesas')) new Chart(document.getElementById('chartMesas'), emCfg);
       if (document.getElementById('chartMesas2')) new Chart(document.getElementById('chartMesas2'), emCfg);
     })
@@ -963,7 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!u) return '';
       const name = String(u).trim();
       if (!name || name.toLowerCase() === 'anonymoususer' || name.toLowerCase() === 'system') return '';
-      return `<span><i class="fas fa-user"></i> ${name}</span>`;
+      return <span><i class="fas fa-user"></i> ${name}</span>;
     };
     list.innerHTML = items.map(a => `
       <div class="activity-item ${a.type ? 'activity-'+a.type.toLowerCase() : ''}">
@@ -978,10 +982,10 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `).join('');
   }
-  function updatePageLabel(){ if (pageLabel) pageLabel.textContent = `Página ${activityPage+1}`; }
+  function updatePageLabel(){ if (pageLabel) pageLabel.textContent = Página ${activityPage+1}; }
   function loadActivity(){
     if (!list) return;
-    fetch(`/api/admin/activity?page=${activityPage}&size=${activitySize}`).then(r=>r.json()).then(renderActivity).catch(()=>{});
+    fetch(/api/admin/activity?page=${activityPage}&size=${activitySize}).then(r=>r.json()).then(renderActivity).catch(()=>{});
     updatePageLabel();
   }
   loadActivity();
@@ -1049,6 +1053,5 @@ document.addEventListener('DOMContentLoaded', function(){
 
     if (filterInput) filterInput.addEventListener('input', applyFilter);
     render();
-  } catch(_) {}
+  } catch(_) {}
 });
-
