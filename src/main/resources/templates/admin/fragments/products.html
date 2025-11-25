@@ -253,6 +253,11 @@
         </div>
     </div>
 
+    <!-- Datalist compartido: sugerencias tomadas del inventario y del menú -->
+    <datalist id="inventarioNombres">
+        <option th:each="n : ${inventarioNombres}" th:value="${n}"></option>
+    </datalist>
+
     <script>
         (function(){
           const run = () => {

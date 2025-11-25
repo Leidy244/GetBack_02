@@ -303,6 +303,15 @@ public class AdminController {
 				model.addAttribute("categorias", categoriaRepository.findAll());
 				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
 				model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+
+				// Para la sección products, mostrar SOLO los nombres del menú (no incluir nombres desde inventario)
+				java.util.List<String> menuNombres = new java.util.ArrayList<>();
+				menuRepository.findAll().forEach(m -> {
+					if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+						menuNombres.add(m.getNombreProducto().trim());
+					}
+				});
+				model.addAttribute("inventarioNombres", menuNombres);
 			}
 
 			// CATEGORÍAS

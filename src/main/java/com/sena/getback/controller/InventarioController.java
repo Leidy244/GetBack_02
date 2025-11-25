@@ -3,7 +3,9 @@ package com.sena.getback.controller;
 import java.time.LocalDate;
 
 import com.sena.getback.model.Inventario;
+import com.sena.getback.model.Menu;
 import com.sena.getback.service.InventarioService;
+import com.sena.getback.service.MenuService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,15 +19,32 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class InventarioController {
 
     private final InventarioService inventarioService;
+    private final MenuService menuService;
 
-    public InventarioController(InventarioService inventarioService) {
+    public InventarioController(InventarioService inventarioService, MenuService menuService) {
         this.inventarioService = inventarioService;
+        this.menuService = menuService;
     }
 
     @GetMapping
     public String listarInventario(Model model) {
         model.addAttribute("ingresosInventario", inventarioService.listarIngresosRecientes());
         model.addAttribute("nuevoIngreso", new Inventario());
+        // Proveer lista de productos del menú para autocompletar y nombres existentes en inventario
+        model.addAttribute("products", menuService.findAll());
+        model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+
+        // Construir una lista unificada y deduplicada para el datalist (conserva orden: menú luego inventario)
+        java.util.LinkedHashSet<String> nombresSet = new java.util.LinkedHashSet<>();
+        menuService.findAll().forEach(m -> {
+            if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+                nombresSet.add(m.getNombreProducto().trim());
+            }
+        });
+        inventarioService.listarNombresProductosInventario().forEach(n -> {
+            if (n != null && !n.isBlank()) nombresSet.add(n.trim());
+        });
+        model.addAttribute("inventarioNombres", new java.util.ArrayList<>(nombresSet));
 
 		// Stock total por producto e items en bajo stock (umbral fijo por ahora)
 		model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
@@ -38,6 +57,7 @@ public class InventarioController {
     @PostMapping("/registrar")
     public String registrarIngresoInventario(@RequestParam("remision") String remision,
                                              @RequestParam("producto") String producto,
+                                             @RequestParam(value = "productoId", required = false) Long productoId,
                                              @RequestParam("cantidad") Integer cantidad,
                                              @RequestParam(value = "fechaRemision", required = false) String fechaRemision,
                                              @RequestParam(value = "proveedor", required = false) String proveedor,
@@ -48,7 +68,15 @@ public class InventarioController {
             try {
                 Inventario ingreso = new Inventario();
                 ingreso.setRemision(remision);
-                ingreso.setProducto(producto);
+                // Si vino un productoId válido preferimos ligar la entidad Menu y usar su nombre
+                if (productoId != null && productoId > 0 && menuService.existsById(productoId)) {
+                    Menu m = menuService.findById(productoId);
+                    ingreso.setMenu(m);
+                    ingreso.setProducto(m != null ? m.getNombreProducto() : producto);
+                } else {
+                    ingreso.setMenu(null);
+                    ingreso.setProducto(producto);
+                }
                 ingreso.setCantidad(cantidad);
                 if (fechaRemision != null && !fechaRemision.isBlank()) {
                     ingreso.setFechaRemision(LocalDate.parse(fechaRemision));
@@ -75,6 +103,7 @@ public class InventarioController {
     public String actualizarIngresoInventario(@RequestParam("id") Long id,
                                               @RequestParam("remision") String remision,
                                               @RequestParam("producto") String producto,
+                                              @RequestParam(value = "productoId", required = false) Long productoId,
                                               @RequestParam("cantidad") Integer cantidad,
                                               @RequestParam(value = "fechaRemision", required = false) String fechaRemision,
                                               @RequestParam(value = "proveedor", required = false) String proveedor,
@@ -90,7 +119,14 @@ public class InventarioController {
             }
 
             ingreso.setRemision(remision);
-            ingreso.setProducto(producto);
+            if (productoId != null && productoId > 0 && menuService.existsById(productoId)) {
+                Menu m = menuService.findById(productoId);
+                ingreso.setMenu(m);
+                ingreso.setProducto(m != null ? m.getNombreProducto() : producto);
+            } else {
+                ingreso.setMenu(null);
+                ingreso.setProducto(producto);
+            }
             ingreso.setCantidad(cantidad);
             if (fechaRemision != null && !fechaRemision.isBlank()) {
                 ingreso.setFechaRemision(LocalDate.parse(fechaRemision));

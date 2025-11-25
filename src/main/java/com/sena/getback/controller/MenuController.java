@@ -35,7 +35,17 @@ public class MenuController {
 		model.addAttribute("categorias", categoriaService.findAll());
 		model.addAttribute("newProduct", new Menu());
 		model.addAttribute("activeSection", "products"); // activa sección de productos en admin.html
-		return "admin/admin";
+
+		// Asegurar que la vista principal usada es 'admin' y proveer lista de nombres para el datalist (solo nombres del menú)
+		java.util.List<String> menuNombres = new java.util.ArrayList<>();
+		menuService.findAll().forEach(m -> {
+			if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+				menuNombres.add(m.getNombreProducto().trim());
+			}
+		});
+		model.addAttribute("inventarioNombres", menuNombres);
+
+		return "admin";
 	}
 
 	// Guardar o editar producto
@@ -43,6 +53,17 @@ public class MenuController {
 	public String guardarProducto(@ModelAttribute Menu producto, @RequestParam("imagenFile") MultipartFile imagenFile,
 			RedirectAttributes redirectAttributes) {
 		try {
+			// Validación: evitar crear o renombrar a un producto con nombre ya existente (case-insensitive)
+			if (producto.getNombreProducto() != null && !producto.getNombreProducto().isBlank()) {
+				Menu existente = menuService.findByNombreExact(producto.getNombreProducto());
+				if (existente != null) {
+					// Si es creación nueva o el existente tiene distinto id -> bloqueo
+					if (producto.getId() == null || !existente.getId().equals(producto.getId())) {
+						redirectAttributes.addFlashAttribute("error", "Ya existe un producto con ese nombre: '" + producto.getNombreProducto() + "'. Cambia el nombre o edita el existente.");
+						return "redirect:/admin?activeSection=products";
+					}
+				}
+			}
 			if (!imagenFile.isEmpty()) {
 				// Subir nueva imagen y guardar con prefijo "/images/"
 				String nombreImagen = uploadFileService.saveImages(imagenFile, producto.getNombreProducto());

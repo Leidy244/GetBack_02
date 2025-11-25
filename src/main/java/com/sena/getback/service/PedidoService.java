@@ -290,4 +290,8 @@ public class PedidoService {
 
         return pedidoRepository.buscarHistorial(mesa, estado, desdeDateTime, hastaDateTime, usuarioId, pageable);
     }
+
+	public void marcarPedidoComoPagado(Integer pedidoId, Double montoRecibido) {
+		// TODO Auto-generated method stub
+	}
 }
