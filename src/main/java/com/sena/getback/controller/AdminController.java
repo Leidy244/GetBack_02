@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Controlador para la administración del sistema.
@@ -43,6 +44,8 @@ public class AdminController {
 	private final ClienteFrecuenteRepository clienteFrecuenteRepository;
 	private final MovimientoCreditoRepository movimientoCreditoRepository;
 
+	
+	
 	@Autowired
 	public AdminController(CategoriaRepository categoriaRepository, MenuRepository menuRepository,
 			EventoRepository eventoRepository, UsuarioRepository usuarioRepository, UsuarioService usuarioService,
@@ -73,6 +76,7 @@ public class AdminController {
 		this.clienteFrecuenteRepository = clienteFrecuenteRepository;
 		this.movimientoCreditoRepository = movimientoCreditoRepository;
 	}
+	
 
 	/** ==================== CLIENTES FRECUENTES ==================== **/
 
@@ -147,41 +151,73 @@ public class AdminController {
 
 	@PostMapping("/clientes/consumo")
 	public String registrarConsumoCliente(@RequestParam("clienteId") Long clienteId,
-			@RequestParam("monto") Double monto,
-			@RequestParam(value = "descripcion", required = false) String descripcion,
-			RedirectAttributes redirectAttributes) {
+	                                      @RequestParam("monto") Double monto,
+	                                      @RequestParam(value = "descripcion", required = false) String descripcion,
+	                                      @RequestParam(value = "fromCaja", required = false) Boolean fromCaja,
+	                                      RedirectAttributes redirectAttributes) {
 
-		if (clienteId == null || monto == null || monto <= 0) {
-			redirectAttributes.addFlashAttribute("error", "Monto de consumo inválido");
-			return "redirect:/admin?activeSection=clientes";
-		}
+	    if (clienteId == null || monto == null || monto <= 0) {
+	        redirectAttributes.addFlashAttribute("error", "Monto de consumo inválido");
+	        // si vino de caja, vuelve a caja; si no, a admin
+	        return (fromCaja != null && fromCaja)
+	                ? "redirect:/caja?section=caja"
+	                : "redirect:/admin?activeSection=clientes";
+	    }
 
-		try {
-			ClienteFrecuente cliente = clienteFrecuenteRepository.findById(clienteId).orElse(null);
-			if (cliente == null) {
-				redirectAttributes.addFlashAttribute("error", "Cliente no encontrado");
-				return "redirect:/admin?activeSection=clientes";
-			}
+	    try {
+	        ClienteFrecuente cliente = clienteFrecuenteRepository.findById(clienteId).orElse(null);
+	        if (cliente == null) {
+	            redirectAttributes.addFlashAttribute("error", "Cliente no encontrado");
+	            return (fromCaja != null && fromCaja)
+	                    ? "redirect:/caja?section=caja"
+	                    : "redirect:/admin?activeSection=clientes";
+	        }
 
-			// Actualizar saldo (restar consumo)
-			Double saldoActual = cliente.getSaldo() != null ? cliente.getSaldo() : 0.0;
-			cliente.setSaldo(saldoActual - monto);
-			clienteFrecuenteRepository.save(cliente);
+	        Double saldoActual = cliente.getSaldo() != null ? cliente.getSaldo() : 0.0;
+	        cliente.setSaldo(saldoActual - monto);
+	        clienteFrecuenteRepository.save(cliente);
 
-			// Registrar movimiento
-			MovimientoCredito mov = new MovimientoCredito();
-			mov.setCliente(cliente);
-			mov.setTipo("CONSUMO");
-			mov.setMonto(monto);
-			mov.setDescripcion(descripcion != null ? descripcion : "Consumo a crédito del cliente");
-			movimientoCreditoRepository.save(mov);
+	        MovimientoCredito mov = new MovimientoCredito();
+	        mov.setCliente(cliente);
+	        mov.setTipo("CONSUMO");
+	        mov.setMonto(monto);
+	        mov.setDescripcion(descripcion != null ? descripcion : "Consumo a crédito del cliente");
+	        movimientoCreditoRepository.save(mov);
 
-			redirectAttributes.addFlashAttribute("success", "Consumo registrado correctamente");
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Error al registrar consumo: " + e.getMessage());
-		}
+	        redirectAttributes.addFlashAttribute("success", "Consumo registrado correctamente");
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("error", "Error al registrar consumo: " + e.getMessage());
+	    }
 
-		return "redirect:/admin?activeSection=clientes";
+	    // Redirigir según el origen
+	    return (fromCaja != null && fromCaja)
+	            ? "redirect:/caja?section=caja"
+	            : "redirect:/admin?activeSection=clientes";
+	}
+	
+	@Transactional
+	@PostMapping("/clientes/eliminar")
+	public String eliminarClienteFrecuente(@RequestParam("clienteId") Long clienteId,
+	                                       RedirectAttributes redirectAttributes) {
+
+	    if (clienteId == null) {
+	        redirectAttributes.addFlashAttribute("error", "ID de cliente inválido");
+	        return "redirect:/admin?activeSection=clientes";
+	    }
+
+	    try {
+	        // 1) Borrar movimientos del cliente
+	        movimientoCreditoRepository.deleteByCliente_Id(clienteId);
+
+	        // 2) Borrar cliente
+	        clienteFrecuenteRepository.deleteById(clienteId);
+
+	        redirectAttributes.addFlashAttribute("success", "Cliente frecuente eliminado correctamente");
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("error", "Error al eliminar cliente frecuente: " + e.getMessage());
+	    }
+
+	    return "redirect:/admin?activeSection=clientes";
 	}
 
 	/** ==================== PANEL PRINCIPAL ==================== **/

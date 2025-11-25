@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.sena.getback.repository.ClienteFrecuenteRepository;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -35,22 +36,26 @@ public class CajaController {
     private final PedidoRepository pedidoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PedidoService pedidoService;
+    private final ClienteFrecuenteRepository clienteFrecuenteRepository;
+    
 
     // Pedidos marcados como "completados" visualmente en el inicio de caja (pero aún PENDIENTES de pago)
     private final Set<Integer> pedidosCompletadosInicioCaja = ConcurrentHashMap.newKeySet();
 
     public CajaController(MenuService menuService,
-                          CategoriaService categoriaService,
-                          FacturaRepository facturaRepository,
-                          PedidoRepository pedidoRepository,
-                          UsuarioRepository usuarioRepository,
-                          PedidoService pedidoService) {
-        this.menuService = menuService;
-        this.categoriaService = categoriaService;
-        this.facturaRepository = facturaRepository;
-        this.pedidoRepository = pedidoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.pedidoService = pedidoService;
+            CategoriaService categoriaService,
+            FacturaRepository facturaRepository,
+            PedidoRepository pedidoRepository,
+            UsuarioRepository usuarioRepository,
+            PedidoService pedidoService,
+            ClienteFrecuenteRepository clienteFrecuenteRepository) { 
+this.menuService = menuService;
+this.categoriaService = categoriaService;
+this.facturaRepository = facturaRepository;
+this.pedidoRepository = pedidoRepository;
+this.usuarioRepository = usuarioRepository;
+this.pedidoService = pedidoService;
+this.clienteFrecuenteRepository = clienteFrecuenteRepository;           
     }
 
     @GetMapping
@@ -141,6 +146,8 @@ public class CajaController {
             } else {
                 model.addAttribute("menus", menuService.findAll());
             }
+
+            model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
         }
 
         if ("pagos".equals(activeSection)) {
@@ -199,6 +206,7 @@ public class CajaController {
         }
         return "redirect:/caja";
     }
- 
+    
 }
+
 

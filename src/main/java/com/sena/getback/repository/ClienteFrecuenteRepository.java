@@ -8,4 +8,5 @@ import java.util.List;
 public interface ClienteFrecuenteRepository extends JpaRepository<ClienteFrecuente, Long> {
 
     List<ClienteFrecuente> findByNombreContainingIgnoreCase(String nombre);
+   
 }

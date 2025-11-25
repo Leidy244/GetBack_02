@@ -55,12 +55,15 @@
                     <td th:text="${c.nombre}"></td>
                     <td th:text="${c.documento != null ? c.documento : '—'}"></td>
                     <td th:text="${c.telefono != null ? c.telefono : '—'}"></td>
-                    <td>
-                        <span th:class="${c.saldo != null && c.saldo > 0} ? 'badge bg-success' :
-                                        (${c.saldo != null && c.saldo < 0} ? 'badge bg-danger' : 'badge bg-secondary')"
-                              th:text="${c.saldo != null ? #numbers.formatDecimal(c.saldo, 1, 'POINT', 2, 'POINT') : '0.00'}"></span>
-                    </td>
-                    <td>
+					<td>
+					    <span th:class="${c.saldo != null && c.saldo > 0} ? 'badge bg-success' :
+					                    (${c.saldo != null && c.saldo < 0} ? 'badge bg-danger' : 'badge bg-secondary')"
+					          th:text="${c.saldo != null 
+					                    ? #strings.concat('$ ', #numbers.formatDecimal(c.saldo, 0, 'POINT', 0, 'POINT')) 
+					                    : '$ 0.00'}">
+					    </span>
+					</td>
+				<td>
                         <span th:text="${c.nota != null ? c.nota : '—'}"></span>
                     </td>
                     <td>
@@ -77,15 +80,26 @@
                             <i class="fas fa-minus"></i> Consumo
                         </button>
                     </td>
-                    <td>
-                        <div class="d-inline-flex gap-2 justify-content-center">
-                            <button type="button" class="btn btn-warning btn-sm rounded-pill px-3"
-                                    data-bs-toggle="modal"
-                                    th:data-bs-target="${'#editarClienteFrecuenteModal' + c.id}">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                        </div>
-                    </td>
+					<td>
+					    <div class="d-inline-flex gap-2 justify-content-center">
+					        <!-- Editar -->
+					        <button type="button" class="btn btn-warning btn-sm rounded-pill px-3"
+					                data-bs-toggle="modal"
+					                th:data-bs-target="${'#editarClienteFrecuenteModal' + c.id}">
+					            <i class="fas fa-edit"></i> Editar
+					        </button>
+
+					        <!-- Eliminar -->
+							<form th:action="@{/admin/clientes/eliminar}" method="post"
+							      class="form-eliminar-cliente"
+							      th:data-cliente-nombre="${c.nombre}">
+							    <input type="hidden" name="clienteId" th:value="${c.id}">
+							    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
+							        <i class="fas fa-trash-alt"></i> Eliminar
+							    </button>
+							</form>
+					    </div>
+					</td>
                 </tr>
 
                 <tr th:if="${clientes == null or clientes.isEmpty()}">
@@ -301,6 +315,27 @@
                 run();
             }
         })();
+		
+		//alerta de confirmar al eliminar 
+		(function () {
+		        function run() {
+		            document.querySelectorAll('.form-eliminar-cliente').forEach(function (form) {
+		                form.addEventListener('submit', function (e) {
+		                    const nombre = form.getAttribute('data-cliente-nombre') || 'este cliente';
+		                    const ok = confirm('¿Seguro que deseas eliminar al cliente ' + nombre + '?');
+		                    if (!ok) {
+		                        e.preventDefault();
+		                    }
+		                });
+		            });
+		        }
+		        if (document.readyState === 'loading') {
+		            document.addEventListener('DOMContentLoaded', run);
+		        } else {
+		            run();
+		        }
+		    })();
+		
     </script>
 </section>
 </body>

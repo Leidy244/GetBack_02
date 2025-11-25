@@ -9,4 +9,6 @@ import java.util.List;
 public interface MovimientoCreditoRepository extends JpaRepository<MovimientoCredito, Long> {
 
     List<MovimientoCredito> findByClienteOrderByFechaDesc(ClienteFrecuente cliente);
+   
+    void deleteByCliente_Id(Long clienteId);
 }
