@@ -790,14 +790,6 @@ nav {
     transform: translateY(0);
 }
 
-/* Permitir que el menú se despliegue con hover/focus, por si falla el JS */
-.user-dropdown:hover .dropdown-menu,
-.user-dropdown:focus-within .dropdown-menu {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-}
-
 .user-dropdown .dropdown-item {
     color: var(--text-primary);
     padding: 0.8rem 1rem;
