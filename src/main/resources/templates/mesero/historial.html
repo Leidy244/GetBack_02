@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de pedidos</title>
+    <link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+    <link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .historial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .historial-header h3 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .historial-header i {
+            color: #fff;
+        }
+
+        .historial-filtros {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr 1fr 1.4fr auto;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        .historial-filtros input,
+        .historial-filtros select {
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+        }
+
+        .historial-filtros button {
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: none;
+            background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+            color: #fff;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .historial-filtros button:hover {
+            opacity: 0.9;
+        }
+
+        .historial-tabla-wrapper {
+            margin-top: 5px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #111;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+        }
+
+        .historial-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            color: #f5f5f5;
+        }
+
+        .historial-tabla thead {
+            background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+        }
+
+        .historial-tabla thead th {
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .historial-tabla tbody tr:nth-child(even) {
+            background-color: #181818;
+        }
+
+        .historial-tabla tbody tr:nth-child(odd) {
+            background-color: #141414;
+        }
+
+        .historial-tabla td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #222;
+            white-space: nowrap;
+        }
+
+        .historial-tabla td:nth-child(1) {
+            width: 40px;
+        }
+
+        .historial-tabla td:nth-child(4) {
+            text-align: right;
+        }
+
+        .historial-paginacion {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #f0f0f0;
+        }
+
+        .historial-paginacion .page-info {
+            opacity: 0.9;
+        }
+
+        .historial-paginacion a {
+            color: #00c6ff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 198, 255, 0.4);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .historial-paginacion a:hover {
+            background: linear-gradient(90deg, #7b2ff7, #00c6ff);
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .historial-filtros {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="logo-desktop">
+        <a th:href="@{/configuracion}">
+            <img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+        </a>
+    </div>
+    <h2>Historial de pedidos</h2>
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="container">
+        <nav class="nav-btn-wrapper" id="navMenu" aria-label="Menú del mesero">
+            <a th:href="@{/mesero}" class="nav-btn">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Tomar Pedido</span>
+            </a>
+            <a th:href="@{/estadisticas}" class="nav-btn">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estadísticas</span>
+            </a>
+            <a th:href="@{/historial}" class="nav-btn active">
+                <i class="fas fa-history"></i>
+                <span>Historial</span>
+            </a>
+            <a th:href="@{/configuracion}" class="nav-btn">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+            <a th:href="@{/login}" class="nav-btn" onclick="return confirm('¿Seguro que deseas cerrar sesión?')">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Cerrar sesión</span>
+            </a>
+        </nav>
+    </div>
+</header>
+
+<div class="content-col">
+    <div class="content-card">
+        <div class="card-body">
+            <div class="historial-header">
+                <h3><i class="fas fa-history"></i> Historial de pedidos</h3>
+            </div>
+
+            <form class="historial-filtros" method="get" th:action="@{/historial}">
+                <input type="text" name="mesa" placeholder="Mesa"
+                       th:value="${mesaFiltro}" />
+                <input type="date" name="fechaDesde"
+                       th:value="${fechaDesdeFiltro}" />
+                <input type="date" name="fechaHasta"
+                       th:value="${fechaHastaFiltro}" />
+                <select name="estado">
+                    <option value="" th:selected="${estadoFiltro == null or estadoFiltro == ''}">Todos</option>
+                    <option value="PENDIENTE" th:selected="${estadoFiltro == 'PENDIENTE'}">Pendiente</option>
+                    <option value="PAGADO" th:selected="${estadoFiltro == 'PAGADO'}">Pagado</option>
+                    <option value="CANCELADO" th:selected="${estadoFiltro == 'CANCELADO'}">Cancelado</option>
+                </select>
+                <select name="meseroId" th:if="${esAdmin}">
+                    <option value="" th:selected="${meseroFiltro == null}">Todos los meseros</option>
+                    <option th:each="m : ${meseros}"
+                            th:value="${m.id}"
+                            th:text="${m.nombre + ' ' + m.apellido}"
+                            th:selected="${meseroFiltro != null and meseroFiltro == m.id}">Mesero</option>
+                </select>
+                <button type="submit">Buscar</button>
+            </form>
+
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Mesa</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Mesero</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="pedido, iterStat : ${pedidos}">
+                        <td th:text="${currentPage * pageSize + iterStat.index + 1}">1</td>
+                        <td th:text="${pedido.mesa != null ? pedido.mesa.numero : 'Sin mesa'}">Mesa 1</td>
+                        <td th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy HH:mm')}">2025-11-19</td>
+                        <td th:text="${#numbers.formatDecimal(pedido.total, 0, 'POINT', 0, 'POINT')}">$0</td>
+                        <td th:text="${pedido.estado != null ? pedido.estado.nombreEstado : 'SIN ESTADO'}">PENDIENTE</td>
+                        <td th:text="${pedido.usuario != null ? pedido.usuario.nombre + ' ' + pedido.usuario.apellido : 'No asignado'}">admin ana</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pedidos)}">
+                        <td colspan="6" style="text-align:center; padding:20px;">No hay pedidos registrados.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="historial-paginacion" th:if="${totalPages > 1}">
+                <span class="page-info"
+                      th:text="'Página ' + (${currentPage} + 1) + ' de ' + ${totalPages}">
+                    Página 1 de 1
+                </span>
+
+                <a th:if="${currentPage > 0}"
+                   th:href="@{/historial(page=${currentPage-1},size=${pageSize},mesa=${mesaFiltro},estado=${estadoFiltro},fechaDesde=${fechaDesdeFiltro},fechaHasta=${fechaHastaFiltro},meseroId=${meseroFiltro})}">
+                    Anterior
+                </a>
+
+                <a th:if="${currentPage + 1 < totalPages}"
+                   th:href="@{/historial(page=${currentPage+1},size=${pageSize},mesa=${mesaFiltro},estado=${estadoFiltro},fechaDesde=${fechaDesdeFiltro},fechaHasta=${fechaHastaFiltro},meseroId=${meseroFiltro})}">
+                    Siguiente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/ConfigMesero.js}" defer></script>
+</body>
+</html>

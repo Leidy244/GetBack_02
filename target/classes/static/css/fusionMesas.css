@@ -783,6 +783,7 @@ nav {
     z-index: 1500;
 }
 
+/* Mostrar menú únicamente cuando JS agrega la clase .show */
 .user-dropdown .dropdown-menu.show {
     display: block;
     opacity: 1;
@@ -866,7 +867,7 @@ nav {
     background: var(--surface);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-hover);
-    max-width: 900px;
+    max-width: 540px;
     width: 100%;
     max-height: 90vh;
     display: flex;
@@ -909,29 +910,24 @@ nav {
 }
 
 .modal-pedido-body {
-    padding: 1.25rem 1.5rem;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: 1.25rem;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    justify-content: center;
     overflow-y: auto;
 }
 
-@media (max-width: 768px) {
-    .modal-pedido-body {
-        grid-template-columns: 1fr;
-    }
-}
-
-.modal-pedido-resumen,
-.modal-pedido-historial {
+.modal-pedido-resumen {
     background: var(--surface-light);
     border-radius: 0.75rem;
     padding: 1rem 1.1rem;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    width: 100%;
+    max-width: 520px;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
-.modal-pedido-resumen h3,
-.modal-pedido-historial h3 {
+.modal-pedido-resumen h3 {
     font-size: 1.05rem;
     margin-bottom: 0.75rem;
 }

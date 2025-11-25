@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estadísticas de pedidos</title>
+    <link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
+    <link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .stats-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-wrapper {
+            background: #111;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #chart-loading {
+            color: #f0f0f0;
+            text-align: center;
+        }
+        #chart-loading .spinner {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: #00c6ff;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #chart-image {
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+        .chart-error {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="logo-desktop">
+        <a th:href="@{/configuracion}">
+            <img th:src="@{~/images/Logo_principal.png}" width="100" alt="Logo Get Back">
+        </a>
+    </div>
+    <h2>Estadísticas</h2>
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="container">
+        <nav class="nav-btn-wrapper" id="navMenu" aria-label="Menú del mesero">
+            <a th:href="@{/mesero}" class="nav-btn">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Tomar Pedido</span>
+            </a>
+            <a th:href="@{/estadisticas}" class="nav-btn active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estadísticas</span>
+            </a>
+            <a th:href="@{/historial}" class="nav-btn">
+                <i class="fas fa-history"></i>
+                <span>Historial</span>
+            </a>
+            <a th:href="@{/configuracion}" class="nav-btn">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+            <a th:href="@{/login}" class="nav-btn" onclick="return confirm('¿Seguro que deseas cerrar sesión?')">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Cerrar sesión</span>
+            </a>
+        </nav>
+    </div>
+</header>
+
+<div class="content-col">
+    <div class="content-card">
+        <div class="card-body stats-container">
+            <div class="stats-header">
+                <h3><i class="fas fa-chart-bar"></i> Pedidos por mesero</h3>
+            </div>
+
+            <div class="chart-wrapper">
+                <div id="chart-loading">
+                    <div class="spinner"></div>
+                    <p>Cargando gráfico de pedidos...</p>
+                </div>
+                <canvas id="graficoMeseros" style="width:100%; max-width:900px; display:none;"></canvas>
+                <div id="chart-error" class="chart-error" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:src="@{/js/ConfigMesero.js}" defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const canvas = document.getElementById('graficoMeseros');
+        const loading = document.getElementById('chart-loading');
+        const errorBox = document.getElementById('chart-error');
+
+        fetch('/estadisticas/datos-meseros')
+            .then(r => r.json())
+            .then(json => {
+                const labels = json.labels || [];
+                const data = json.data || [];
+
+                if (!labels.length) {
+                    throw new Error('No hay datos de pedidos para mostrar.');
+                }
+
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Pedidos',
+                            data: data,
+                            backgroundColor: ['#00c6ff','#7b2ff7','#00e6b4','#ffb300','#ff6384'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#ffffff' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#ffffff' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#ffffff' }
+                            }
+                        }
+                    }
+                });
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+            })
+            .catch(err => {
+                loading.style.display = 'none';
+                errorBox.style.display = 'block';
+                errorBox.textContent = 'Error al cargar el gráfico: ' + err.message;
+            });
+    });
+</script>
+</body>
+</html>

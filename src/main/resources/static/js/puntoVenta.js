@@ -215,4 +215,32 @@ btnBuscar.addEventListener('click', filtrarProductos);
             run();
         }
     })();
+	
+	//filtrar por nombre de cliente 
+	(function () {
+	        function run() {
+	            const inputBuscar = document.getElementById('buscar-cliente-frecuente-pos');
+	            const tbody = document.getElementById('clientesFrecuentesTableBody');
+	            if (!inputBuscar || !tbody) return;
+
+	            const filas = Array.from(tbody.querySelectorAll('tr[data-row]'));
+
+	            function filtrar() {
+	                const q = (inputBuscar.value || '').toLowerCase().trim();
+	                filas.forEach(tr => {
+	                    const nombreTd = tr.querySelector('td');
+	                    const nombre = nombreTd ? (nombreTd.textContent || '').toLowerCase() : '';
+	                    tr.style.display = (!q || nombre.includes(q)) ? '' : 'none';
+	                });
+	            }
+
+	            inputBuscar.addEventListener('input', filtrar);
+	        }
+
+	        if (document.readyState === 'loading') {
+	            document.addEventListener('DOMContentLoaded', run);
+	        } else {
+	            run();
+	        }
+	    })();
 

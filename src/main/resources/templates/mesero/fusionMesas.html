@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,7 +39,7 @@
         <button class="menu-toggle" id="menu-toggle" aria-label="Menú">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="user-dropdown" th:if="${esAdmin}">
+        <div class="user-dropdown" sec:authorize="hasAuthority('ADMIN')">
           <button class="user-profile" id="userDropdown" type="button">
             <i class="fas fa-user-circle"></i>
             <span>Mesero</span>
@@ -201,9 +201,6 @@
       <div id="modal-pedido-resumen" class="modal-pedido-resumen">
         <!-- Se llena por JS -->
       </div>
-      <div id="modal-pedido-historial" class="modal-pedido-historial">
-        <!-- Historial de pedidos por mesa -->
-      </div>
     </div>
     <div class="modal-pedido-footer">
       <form id="form-editar-pedido" th:action="@{/pedidos/editar}" method="post">
@@ -220,6 +217,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+
     try {
       const saved = JSON.parse(localStorage.getItem('meseroSettings')) || {};
       const theme = saved.theme || 'default';
@@ -231,6 +229,21 @@
       }
     } catch (e) {
       console.warn('No se pudo aplicar el tema del mesero en Fusion Mesas', e);
+    }
+
+    initFilters();
+
+    const logoutBtn = document.querySelector('.logout-btn');
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function () {
+        if (confirm('¿Seguro que deseas cerrar sesión?')) {
+          window.location.href = '/login';
+
+          // Si usas Spring Security con /logout, cambia la línea anterior a:
+          // window.location.href = '/logout';
+        }
+      });
     }
   });
 
@@ -256,11 +269,10 @@
     const modal = document.getElementById('modal-pedido-mesa');
     const titulo = document.getElementById('modal-mesa-titulo');
     const resumenDiv = document.getElementById('modal-pedido-resumen');
-    const historialDiv = document.getElementById('modal-pedido-historial');
     const mesaIdInput = document.getElementById('modal-mesa-id');
     const btnClose = document.getElementById('modal-pedido-close');
 
-    if (!modal || !resumenDiv || !historialDiv || !mesaIdInput) {
+    if (!modal || !resumenDiv || !mesaIdInput) {
       showNotification(`${numeroMesa} está ocupada, pero no se pudo abrir el detalle.`, 'error');
       return;
     }
@@ -268,7 +280,6 @@
     titulo.textContent = numeroMesa;
     mesaIdInput.value = mesaId;
     resumenDiv.innerHTML = '<p>Cargando información del pedido...</p>';
-    historialDiv.innerHTML = '';
 
     modal.style.display = 'flex';
 
@@ -335,23 +346,8 @@
               ${productosSection}
             </div>
           `;
-
         } else {
           resumenDiv.innerHTML = '<p>No hay pedido activo para esta mesa.</p>';
-        }
-
-        if (Array.isArray(data.historial) && data.historial.length > 0) {
-          const items = data.historial.map(p => {
-            const fechaP = p.fechaCreacion ? new Date(p.fechaCreacion).toLocaleString() : '';
-            const totalP = p.total != null ? p.total.toFixed(2) : '0.00';
-            return `<li><span>#${p.id}</span> <span>${fechaP}</span> <span>$${totalP}</span></li>`;
-          }).join('');
-          historialDiv.innerHTML = `
-            <h3>Historial de pedidos</h3>
-            <ul class="lista-historial-pedidos">${items}</ul>
-          `;
-        } else {
-          historialDiv.innerHTML = '<p>Sin historial de pedidos para esta mesa.</p>';
         }
       })
       .catch(err => {
@@ -458,6 +454,7 @@
     // Dropdown de usuario (Mesero / Admin / Caja / Cerrar sesión)
     const userDropdownBtn = document.getElementById('userDropdown');
     const dropdownMenu = document.querySelector('.user-dropdown .dropdown-menu');
+    const logoutBtn = document.querySelector('.logout-btn');
 
     if (userDropdownBtn && dropdownMenu) {
       userDropdownBtn.addEventListener('click', function (e) {
@@ -481,7 +478,21 @@
         }
       });
     }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function () {
+        if (confirm('¿Seguro que deseas cerrar sesión?')) {
+          window.location.href = '/login';
+          // Si usas Spring Security con /logout, cambia la línea anterior a:
+          // window.location.href = '/logout';
+        }
+      });
+    }
   });
+
+  // (Bloque DOMContentLoaded principal se definió más arriba y maneja
+  // tema, filtros, dropdown y logout. Aquí ya no es necesario duplicarlo.)
+
 </script>
 
 <script th:src="@{/js/fusionMesas.js}" defer></script>
