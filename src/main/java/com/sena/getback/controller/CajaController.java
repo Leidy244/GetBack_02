@@ -7,8 +7,12 @@ import com.sena.getback.repository.FacturaRepository;
 import com.sena.getback.repository.PedidoRepository;
 import com.sena.getback.repository.UsuarioRepository;
 import com.sena.getback.service.MenuService;
+import com.sena.getback.service.MesaService;
 import com.sena.getback.service.CategoriaService;
+import com.sena.getback.service.FacturaService;
 import com.sena.getback.service.PedidoService;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sena.getback.repository.ClienteFrecuenteRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAdjusters;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +39,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/caja")
 public class CajaController {
-
+	private final MesaService mesaService;
     private final MenuService menuService;
     private final CategoriaService categoriaService;
     private final FacturaRepository facturaRepository;
@@ -50,16 +58,17 @@ public class CajaController {
             PedidoRepository pedidoRepository,
             UsuarioRepository usuarioRepository,
             PedidoService pedidoService,
-            ClienteFrecuenteRepository clienteFrecuenteRepository) { 
+            ClienteFrecuenteRepository clienteFrecuenteRepository,
+            MesaService mesaService) {
 this.menuService = menuService;
 this.categoriaService = categoriaService;
 this.facturaRepository = facturaRepository;
 this.pedidoRepository = pedidoRepository;
 this.usuarioRepository = usuarioRepository;
 this.pedidoService = pedidoService;
-this.clienteFrecuenteRepository = clienteFrecuenteRepository;           
-    }
-
+this.clienteFrecuenteRepository = clienteFrecuenteRepository;
+this.mesaService = mesaService;
+}
     @GetMapping
     public String panelCaja(
             @RequestParam(required = false) String section,
@@ -150,6 +159,9 @@ this.clienteFrecuenteRepository = clienteFrecuenteRepository;
             }
 
             model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
+
+           
+            model.addAttribute("mesas", mesaService.findAll());
         }
 
         if ("pagos".equals(activeSection)) {
@@ -254,8 +266,72 @@ this.clienteFrecuenteRepository = clienteFrecuenteRepository;
         }
 
         return "redirect:/caja";
+        
+        
     }
-    
+  
+ // VENTA RÁPIDA DESDE PUNTO DE VENTA (POS)
+    @PostMapping("/punto-venta/registrar")
+    public String registrarVentaPuntoVenta(
+            @RequestParam(value = "total", required = false) Double total,
+            @RequestParam(value = "montoRecibido", required = false) Double montoRecibido,
+            @RequestParam(value = "mesaId", required = false) Integer mesaId,
+            @RequestParam(value = "metodoPago", defaultValue = "EFECTIVO") String metodoPago,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        if (total == null || total <= 0) {
+            redirectAttributes.addFlashAttribute("mensajeError", "El total de la venta no es válido.");
+            return "redirect:/caja?section=punto-venta";
+        }
+
+        try {
+            BigDecimal totalBD = BigDecimal.valueOf(total);
+            LocalDateTime ahora = LocalDateTime.now();
+
+            Factura factura = new Factura();
+            factura.setMonto(totalBD);
+            factura.setSubtotal(totalBD);
+            factura.setTotalPagar(totalBD);
+            factura.setValorDescuento(BigDecimal.ZERO);
+            factura.setFechaEmision(ahora);
+            factura.setFechaPago(ahora);
+            factura.setNumeroFactura("POS-" + ahora.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS")));
+            factura.setMetodoPago(metodoPago);
+            factura.setEstadoPago("PAGADO");
+            factura.setEstadoFactura("GENERADA");
+
+            // Mesa opcional
+            if (mesaId != null && mesaId > 0) {
+                mesaService.findById(mesaId).ifPresent(mesa -> factura.setNumeroMesa(mesa.getId()));
+            }
+
+         // CAJERO LOGUEADO (FUNCIONA EN TODOS LOS CASOS, SIN ERRORES)
+            if (authentication != null && authentication.getPrincipal() != null) {
+                String correoLogin = authentication.getName(); // Este es el correo del cajero
+
+                usuarioRepository.findByCorreo(correoLogin)
+                    .ifPresent(usuario -> {
+                        factura.setUsuario(usuario);
+                        // Opcional: para depuración
+                        System.out.println("Venta registrada por: " + usuario.getNombre() + " " + usuario.getApellido());
+                    });
+            }
+
+            facturaRepository.save(factura);
+
+            redirectAttributes.addFlashAttribute("mensajeExito",
+                    "Venta registrada con éxito → Factura: " + factura.getNumeroFactura());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al registrar la venta.");
+        }
+
+        return "redirect:/caja?section=punto-venta";
+    }
+  
 }
+    
 
 

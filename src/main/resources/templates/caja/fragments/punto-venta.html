@@ -1,158 +1,237 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
-<div th:fragment="punto-venta">
-    <div class="section-header">
-        <h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
-        <div class="acciones-cabecera">
-        </div>
-    </div>
-
-    <div class="contenedor-pos">
-        <div class="panel-productos">
-            <div class="busqueda-productos">
-                <input type="text" class="form-control" placeholder="Buscar productos..." id="buscar-productos">
-                <button class="btn btn-primary btn-sm" id="btn-buscar">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-
-            <div class="filtros-categoria">
-                <a th:href="@{/caja(section='punto-venta', categoria='todos')}" class="btn btn-primary btn-sm">Todos</a>
-                <a th:each="cat : ${categorias}"
-                   th:text="${cat.nombre}"
-                   th:href="@{/caja(section='punto-venta', categoria=${cat.nombre})}"
-                   class="btn btn-primary btn-sm"></a>
-            </div>
-
-			<div class="grid-productos">
-			    <div th:each="menu : ${menus}" 
-			         class="producto-card"
-			         th:data-id="${menu.id}"
-			         th:data-nombre="${menu.nombreProducto}"
-			         th:data-precio="${menu.precio}">
-			        <img th:src="@{${menu.imagen}}" alt="Producto">
-			        <h4 th:text="${menu.nombreProducto}"></h4>
-			        <p th:text="${menu.descripcion}"></p>
-			        <p th:text="${#strings.concat('$', #numbers.formatDecimal(menu.precio, 0, 'POINT', 0, 'POINT'))}"></p>
-
-			        <button class="btn btn-success btn-sm btn-agregar">
-			            <i class="fas fa-cart-plus"></i> Agregar
-			        </button>
-			    </div> 
+	<div th:fragment="punto-venta">
+		<div class="section-header">
+			<h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
+			<div class="acciones-cabecera">
 			</div>
-        </div>
+		</div>
 
-        <div class="panel-carrito">
-            <div class="cabecera-carrito">
-                <h3><i class="fas fa-shopping-cart"></i> Carrito</h3>
-                <button class="btn btn-outline-danger btn-sm" id="btn-vaciar-carrito">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-
-            <div class="items-carrito" id="items-carrito"></div>
-
-            <div class="total-carrito">
-                <span>Total:</span>
-                <span id="total-carrito">$0.00</span>
-            </div>
-
-            <div class="acciones-carrito">
-                <button class="btn btn-secondary" id="btn-imprimir">
-                    <i class="fas fa-print"></i> Imprimir
-                </button>
-                <button class="btn btn-success" id="btn-finalizar-venta">
-                    <i class="fas fa-check"></i> Finalizar Venta
-                </button>
-            </div>
-        </div>
-    </div>
-	<!-- Modal Métodos de Pago y Clientes Frecuentes -->
-	<div class="modal fade" id="metodosPagoModal" tabindex="-1" aria-hidden="true">
-	    <div class="modal-dialog modal-lg">
-	        <div class="modal-content">
-	            <div class="modal-header">
-	                <h5 class="modal-title">Métodos de pago</h5>
-	                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-	            </div>
-	            <div class="modal-body">
-	                <!-- Métodos de pago -->
-	                <div class="mb-3">
-	                    <h6 class="mb-2">Seleccione método de pago</h6>
-	                    <div class="d-flex flex-wrap gap-2">
-	                        <button type="button" class="btn btn-outline-primary" data-metodo="TARJETA">
-	                            Tarjeta
-	                        </button>
-	                        <button type="button" class="btn btn-outline-primary" data-metodo="EFECTIVO">
-	                            Efectivo
-	                        </button>
-	                        <button type="button" class="btn btn-outline-primary" data-metodo="TRANSFERENCIA">
-	                            Transferencia
-	                        </button>
-	                        <button type="button" class="btn btn-outline-primary" data-metodo="MIXTO">
-	                            Mixto
-	                        </button>
-	                    </div>
-	                </div>
-	                <hr>
-					<div class="mb-2">
-					    <input type="text"
-					           id="buscar-cliente-frecuente-pos"
-					           class="form-control form-control-sm"
-					           placeholder="Buscar cliente por nombre...">
+		<div class="contenedor-pos">
+			<div class="panel-productos">
+				<div class="busqueda-productos">
+					<input type="text" class="form-control" placeholder="Buscar productos..." id="buscar-productos">
+					<button class="btn btn-primary btn-sm" id="btn-buscar">
+						<i class="fas fa-search"></i>
+					</button>
+				</div>
+				<div class="filtros-categoria">
+					<a th:href="@{/caja(section='punto-venta', categoria='todos')}"
+						class="btn btn-primary btn-sm">Todos</a>
+					<a th:each="cat : ${categorias}" th:text="${cat.nombre}"
+						th:href="@{/caja(section='punto-venta', categoria=${cat.nombre})}"
+						class="btn btn-primary btn-sm"></a>
+				</div>
+				<div class="grid-productos">
+					<div th:each="menu : ${menus}" class="producto-card" th:data-id="${menu.id}"
+						th:data-nombre="${menu.nombreProducto}" th:data-precio="${menu.precio}">
+						<img th:src="@{${menu.imagen}}" alt="Producto">
+						<h4 th:text="${menu.nombreProducto}"></h4>
+						<p th:text="${menu.descripcion}"></p>
+						<p
+							th:text="${#strings.concat('$', #numbers.formatDecimal(menu.precio, 0, 'POINT', 0, 'POINT'))}">
+						</p>
+						<button class="btn btn-success btn-sm btn-agregar">
+							<i class="fas fa-cart-plus"></i> Agregar
+						</button>
 					</div>
-	                <!-- Clientes frecuentes -->
-	                <div>
-	                    <h6 class="mb-2">Clientes frecuentes</h6>
-						<div class="table-responsive">
-						          <table class="table table-striped table-hover align-middle text-center">
-						              <thead class="table-dark">
-						              <tr>
-						                  <th>Nombre</th>
-										  <th>Nota</th>
-										   <th>Consumo</th>
-										   <th>Acciones</th>
-						              </tr>
-						              </thead>
-						              <tbody id="clientesFrecuentesTableBody">
-						              <tr th:each="c : ${clientes}" data-row>
-						                  <td th:text="${c.nombre}"></td>
-						                  <td>
-						                      <span th:text="${c.nota != null ? c.nota : '—'}"></span>
-						                  </td>
-						                  <td>
+				</div>
+			</div>
+			<div class="panel-carrito">
+				<div class="cabecera-carrito">
+					<h3><i class="fas fa-shopping-cart"></i> Carrito</h3>
+					<button class="btn btn-outline-danger btn-sm" id="btn-vaciar-carrito">
+						<i class="fas fa-trash-alt"></i>
+					</button>
+				</div>
+
+				<div class="items-carrito" id="items-carrito"></div>
+
+				<div class="total-carrito">
+					<span>Total:</span>
+					<span id="total-carrito">$0.00</span>
+				</div>
+
+				<div class="acciones-carrito">
+					<button class="btn btn-secondary" id="btn-imprimir">
+						<i class="fas fa-print"></i> Imprimir
+					</button>
+					<button class="btn btn-success" id="btn-finalizar-venta">
+						<i class="fas fa-check"></i> Finalizar Venta
+					</button>
+				</div>
+			</div>
+		</div>
+		<!-- Modal Métodos de Pago y Clientes Frecuentes -->
+		<div class="modal fade" id="metodosPagoModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Métodos de pago</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<!-- Métodos de pago -->
+						<div class="mb-3">
+							<h6 class="mb-2">Seleccione método de pago</h6>
+							<div class="d-flex flex-wrap gap-2">
+								<button type="button" class="btn btn-outline-primary" data-metodo="TARJETA">
+									Tarjeta
+								</button>
+								<button type="button" class="btn btn-outline-primary" data-metodo="EFECTIVO">
+									Efectivo
+								</button>
+								<button type="button" class="btn btn-outline-primary" data-metodo="TRANSFERENCIA">
+									Transferencia
+								</button>
+								<button type="button" class="btn btn-outline-primary" data-metodo="MIXTO">
+									Mixto
+								</button>
+							</div>
+						</div>
+						<hr>
+						<div class="mb-2">
+							<input type="text" id="buscar-cliente-frecuente-pos" class="form-control form-control-sm"
+								placeholder="Buscar cliente por nombre...">
+						</div>
+						<!-- Clientes frecuentes -->
+						<div>
+							<h6 class="mb-2">Clientes frecuentes</h6>
+							<div class="table-responsive">
+								<table class="table table-striped table-hover align-middle text-center">
+									<thead class="table-dark">
+										<tr>
+											<th>Nombre</th>
+											<th>Nota</th>
+											<th>Acciones</th>
+										</tr>
+									</thead>
+									<tbody id="clientesFrecuentesTableBody">
+										<tr th:each="c : ${clientes}" data-row>
+											<td th:text="${c.nombre}"></td>
 											<td>
-											    <button type="button"
-											            class="btn btn-success btn-sm rounded-pill px-3 btn-pagar-con-abono"
-											            th:data-cliente-id="${c.id}"
-											            th:data-cliente-nombre="${c.nombre}">
-											        <i class="fas fa-check"></i> Pagar
-											    </button>
+												<span th:text="${c.nota != null ? c.nota : '—'}"></span>
 											</td>
-						                  </td>
-						              </tr>
-						              <tr th:if="${clientes == null or clientes.isEmpty()}">
-						                  <td colspan="8" class="text-center py-4 text-muted">
-						                      <i class="fas fa-id-card fa-2x mb-3"></i>
-						                      <p>No hay clientes frecuentes registrados.</p>
-						                  </td>
-						              </tr>
-						              </tbody>
-						          </table>
-	                </div>
-	            </div>
-	            <div class="modal-footer">
-	                <button type="button" class="btn btn-success">
-	                    Confirmar
-	                </button>
-	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-	                    Cancelar
-	                </button>
-	            </div>
-	        </div>
-	    </div>
-	</div>
-</div>
+											<td>
+												<button type="button"
+													class="btn btn-success btn-sm rounded-pill px-3 btn-pagar-con-abono"
+													th:data-cliente-id="${c.id}" th:data-cliente-nombre="${c.nombre}">
+													<i class="fas fa-check"></i> Pagar
+												</button>
+											</td>
+										</tr>
+										<tr th:if="${clientes == null or clientes.isEmpty()}">
+											<td colspan="8" class="text-center py-4 text-muted">
+												<i class="fas fa-id-card fa-2x mb-3"></i>
+												<p>No hay clientes frecuentes registrados.</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-success">
+								Confirmar
+							</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+								Cancelar
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal de Pago efectivo -->
+		<div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalPagoLabel">
+							<i class="fas fa-credit-card"></i> Procesar Pago
+						</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-header">
+										<h6 class="mb-0"><i class="fas fa-receipt"></i> Detalles del Pedido</h6>
+									</div>
+									<div class="card-body">
+										<div class="mb-3">
+										    <label for="modal-mesa" class="form-label">
+										        <strong>Mesa (opcional):</strong>
+										    </label>
+										    <select id="modal-mesa" name="mesaId" class="form-select">
+										        <option value="">Seleccionar mesa</option>
+										        <option th:each="mesa : ${mesas}"
+										                th:value="${mesa.id}"
+										                th:text="${'Mesa ' + mesa.numero}">
+										        </option>
+										    </select>
+										</div>
+										<p><strong>Detalle:</strong></p>
+										<hr>
+										<h5 class="text-primary"><strong>Total a pagar: <span
+													id="modal-total">$0.00</span></strong></h5>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-header">
+										<h6 class="mb-0"><i class="fas fa-calculator"></i> Cálculo de Pago</h6>
+									</div>
+									<div class="card-body">
+										<div class="mb-3">
+											<label for="modal-recibido" class="form-label">Monto recibido del
+												cliente:</label>
+											<input type="number" step="0.01" min="0"
+												class="form-control form-control-lg" id="modal-recibido"
+												placeholder="0">
+										</div>
+										<div class="mb-3">
+											<label for="modal-cambio" class="form-label">Cambio a devolver:</label>
+											<input type="text" class="form-control form-control-lg" id="modal-cambio"
+												value="$0" readonly>
+										</div>
+										<div class="alert alert-info" id="modal-info" style="display: none;">
+											<i class="fas fa-info-circle"></i> Ingrese el monto recibido para calcular
+											el cambio.
+										</div>
+										<div class="alert alert-danger" id="modal-error" style="display: none;">
+											<i class="fas fa-exclamation-triangle"></i> El monto recibido debe ser igual
+											o mayor al total.
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+							<i class="fas fa-times"></i> Cancelar
+						</button>
+						<form id="form-confirmar-pago"
+						      th:action="@{/caja/punto-venta/registrar}"
+						      method="post"
+						      class="d-inline">
+						    <input type="hidden" name="montoRecibido" id="modal-monto-recibido-hidden">
+						    <input type="hidden" name="total" id="modal-total-hidden">
+						    <!-- mesaId viene del <select id="modal-mesa" name="mesaId"> -->
+						    <button type="submit" class="btn btn-success" id="btn-confirmar-pago" disabled>
+						        <i class="fas fa-check"></i> Ya está pagado
+						    </button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
 </body>
+
 </html>

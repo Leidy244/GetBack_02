@@ -243,4 +243,105 @@ btnBuscar.addEventListener('click', filtrarProductos);
 	            run();
 	        }
 	    })();
+		document.addEventListener('DOMContentLoaded', function () {
+		    const btnEfectivo = document.querySelector('#metodosPagoModal [data-metodo="EFECTIVO"]');
+		    const metodosPagoModalEl = document.getElementById('metodosPagoModal');
+		    const modalPagoEl = document.getElementById('modalPago');
 
+		    if (!btnEfectivo || !metodosPagoModalEl || !modalPagoEl) return;
+
+		    // Instancias Bootstrap 5
+		    const metodosPagoModal = bootstrap.Modal.getOrCreateInstance(metodosPagoModalEl);
+		    const modalPago = bootstrap.Modal.getOrCreateInstance(modalPagoEl);
+
+		    const totalCarritoEl = document.getElementById('total-carrito');
+		    const modalTotalEl = document.getElementById('modal-total');
+		    const modalDetalleEl = document.getElementById('modal-detalle');
+
+		    btnEfectivo.addEventListener('click', function () {
+		        // 1) Cerrar modal de métodos de pago
+		        metodosPagoModal.hide();
+
+		        // 2) Rellenar datos básicos en el modal de pago
+		        const totalTexto = totalCarritoEl ? totalCarritoEl.textContent.trim() : '$0.00';
+		        if (modalTotalEl) modalTotalEl.textContent = totalTexto;
+
+		        // Detalle del pedido (puedes ajustar esto a tu estructura real)
+		        if (modalDetalleEl) {
+		            modalDetalleEl.textContent = 'Consumo bar / restaurante';
+		        }
+
+		        // 3) Limpiar campos de efectivo/cambio
+		        const recibidoInput = document.getElementById('modal-recibido');
+		        const cambioInput = document.getElementById('modal-cambio');
+		        const infoAlert = document.getElementById('modal-info');
+		        const errorAlert = document.getElementById('modal-error');
+		        const hiddenMontoRecibido = document.getElementById('modal-monto-recibido-hidden');
+		        const btnConfirmar = document.getElementById('btn-confirmar-pago');
+
+		        if (recibidoInput) recibidoInput.value = '';
+		        if (cambioInput) cambioInput.value = '$0';
+		        if (infoAlert) infoAlert.style.display = 'block';
+		        if (errorAlert) errorAlert.style.display = 'none';
+		        if (hiddenMontoRecibido) hiddenMontoRecibido.value = '';
+		        if (btnConfirmar) btnConfirmar.disabled = true;
+
+		        // 4) Mostrar modal de pago
+		        modalPago.show();
+		    });
+
+		    // Cálculo de cambio en tiempo real
+		    const recibidoInput = document.getElementById('modal-recibido');
+		    const cambioInput = document.getElementById('modal-cambio');
+		    const infoAlert = document.getElementById('modal-info');
+		    const errorAlert = document.getElementById('modal-error');
+		    const hiddenMontoRecibido = document.getElementById('modal-monto-recibido-hidden');
+		    const btnConfirmar = document.getElementById('btn-confirmar-pago');
+
+		    if (recibidoInput && cambioInput && modalTotalEl) {
+		        recibidoInput.addEventListener('input', function () {
+		            const totalStr = modalTotalEl.textContent.replace('$','').replace('.','').replace(',','.');
+		            const total = parseFloat(totalStr) || 0;
+		            const recibido = parseFloat(recibidoInput.value) || 0;
+
+		            if (!recibidoInput.value) {
+		                cambioInput.value = '$0';
+		                if (infoAlert) infoAlert.style.display = 'block';
+		                if (errorAlert) errorAlert.style.display = 'none';
+		                if (btnConfirmar) btnConfirmar.disabled = true;
+		                if (hiddenMontoRecibido) hiddenMontoRecibido.value = '';
+		                return;
+		            }
+
+		            if (recibido < total) {
+		                cambioInput.value = '$0';
+		                if (infoAlert) infoAlert.style.display = 'none';
+		                if (errorAlert) errorAlert.style.display = 'block';
+		                if (btnConfirmar) btnConfirmar.disabled = true;
+		                if (hiddenMontoRecibido) hiddenMontoRecibido.value = '';
+		            } else {
+		                const cambio = recibido - total;
+		                cambioInput.value = '$' + cambio.toFixed(2);
+		                if (infoAlert) infoAlert.style.display = 'none';
+		                if (errorAlert) errorAlert.style.display = 'none';
+		                if (btnConfirmar) btnConfirmar.disabled = false;
+		                if (hiddenMontoRecibido) hiddenMontoRecibido.value = recibido.toFixed(2);
+		            }
+		        });
+		    }
+		});
+		
+		const hiddenTotal = document.getElementById('modal-total-hidden');
+
+		// al abrir el modal (en btnEfectivo.click):
+		const totalTexto = totalCarritoEl ? totalCarritoEl.textContent.trim() : '$0.00';
+		if (modalTotalEl) modalTotalEl.textContent = totalTexto;
+		if (hiddenTotal) {
+		    const totalNum = parseFloat(
+		        totalTexto.replace('$','').replace(/\./g,'').replace(',','.')
+		    ) || 0;
+		    hiddenTotal.value = totalNum.toFixed(2);
+		}
+
+		// en el listener de input de modal-recibido, donde ya habilitas el botón:
+		if (hiddenMontoRecibido) hiddenMontoRecibido.value = recibido.toFixed(2);

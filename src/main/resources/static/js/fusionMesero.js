@@ -1,70 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
-    function sendOrder() {
-        if (orderItems.length === 0) {
-            showNotification('❌ No hay productos en el pedido', 'error');
-            return;
-        }
-
-        const comments = orderComments ? orderComments.value : '';
-        const mesaId = confirmBtn ? confirmBtn.getAttribute('data-mesa') : '1';
-
-        // Recalcular total por si hubo cambios recientes
-        totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
-
-        const itemsData = {
-            items: orderItems.map(item => ({
-                productoId: parseInt(item.id),
-                productoNombre: item.name,
-                cantidad: item.quantity,
-                precio: item.price,
-                subtotal: item.price * item.quantity,
-                comentarios: ''
-            })),
-            total: totalOrder
-        };
-
-        const itemsJson = JSON.stringify(itemsData);
-
-        const formData = new URLSearchParams();
-        formData.append('mesaId', parseInt(mesaId));
-        formData.append('itemsJson', itemsJson);
-        formData.append('comentarios', comments);
-        formData.append('total', totalOrder);
-
-        fetch('/pedidos/preparar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
-                orderModal.style.display = 'none';
-                // Reset order after successful preparation
-                resetOrder();
-                setTimeout(() => {
-                    const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
-                    window.location.href = redirectUrl;
-                }, 800);
-            } else {
-                showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('❌ Error de conexión', 'error');
-        });
-    }
-    
     // Botón flotante para volver a mesas
     const backToMesasBtn = document.getElementById('btn-back-to-mesas');
     if (backToMesasBtn) {
         backToMesasBtn.addEventListener('click', () => {
-            // Redirigir a la vista de mesas
             window.location.href = '/mesero';
         });
     }
@@ -95,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmBtn = orderModal?.querySelector('.btn-confirm');
     const orderBtn = document.querySelector('.btn-order');
 
-    // Quantity controls and order total (declarados antes de usar borrador)
+    // Quantity controls and order total
     const quantityControls = document.querySelectorAll('.quantity-control');
     const pedidoTotalValue = document.getElementById('pedido-total-value');
     let totalOrder = 0;
@@ -179,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error al inicializar borrador de pedido:', e);
     }
 
+    // Setup quantity controls
     quantityControls.forEach(control => {
         const minusBtn = control.querySelector('.minus');
         const plusBtn = control.querySelector('.plus');
@@ -205,19 +144,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = parseFloat(priceElement.textContent.replace('$', '').replace('.', '').replace(',', '.'));
             const productId = productItem.getAttribute('data-producto-id');
             const productName = productItem.querySelector('.product-name')?.textContent || 'Producto';
-            
+
             if (minusBtn) {
                 minusBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent product click event
+                    e.stopPropagation();
                     let currentValue = parseInt(quantityInput.value);
                     if (currentValue > 0) {
                         const newQuantity = currentValue - 1;
                         quantityInput.value = newQuantity;
                         updateOrderItem(productId, productName, price, newQuantity);
-                        // Recalculate total from all items
                         totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
                         updateTotal();
-                        
+
                         if (newQuantity === 0) {
                             showNotification(`❌ Eliminado: ${productName}`);
                         } else {
@@ -229,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (plusBtn) {
                 plusBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent product click event
+                    e.stopPropagation();
                     let currentValue = parseInt(quantityInput.value);
 
                     if (isBarProduct && stock >= 0 && currentValue >= stock) {
@@ -240,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const newQuantity = currentValue + 1;
                     quantityInput.value = newQuantity;
                     updateOrderItem(productId, productName, price, newQuantity);
-                    // Recalculate total from all items
                     totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
                     updateTotal();
                     showNotification(`➕ ${productName}: ${newQuantity}`);
@@ -261,21 +198,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Click on product to add functionality
+    const clickableProducts = document.querySelectorAll('.clickable-product');
+    clickableProducts.forEach(product => {
+        const productInfo = product.querySelector('.product-info');
+        if (productInfo) {
+            productInfo.addEventListener('click', (e) => {
+                if (e.target.closest('.quantity-control')) {
+                    return;
+                }
+
+                const area = product.getAttribute('data-area') || '';
+                const stockAttr = product.getAttribute('data-stock');
+                const stock = stockAttr !== null ? parseInt(stockAttr) : -1;
+                const isBarProduct = area.toLowerCase() === 'bar';
+
+                const productId = product.getAttribute('data-producto-id');
+                const productName = product.getAttribute('data-producto-nombre');
+                const productPrice = parseFloat(product.getAttribute('data-precio'));
+
+                const existingItem = orderItems.find(item => item.id === productId);
+                let newQuantity = existingItem ? existingItem.quantity + 1 : 1;
+
+                if (isBarProduct && stock >= 0 && newQuantity > stock) {
+                    showNotification(`Stock máximo alcanzado para ${productName} (${stock} uds)`, 'warning');
+                    return;
+                }
+
+                updateOrderItem(productId, productName, productPrice, newQuantity);
+                totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+                updateTotal();
+                showNotification(` Agregado: ${newQuantity} x ${productName}`);
+
+                const quantityInput = product.querySelector('.quantity-input');
+                if (quantityInput) {
+                    quantityInput.value = newQuantity;
+                }
+            });
+        }
+    });
+
     function updateOrderItem(productId, productName, price, quantity) {
         const existingItemIndex = orderItems.findIndex(item => item.id === productId);
-        
+
         if (quantity === 0) {
-            // Remove item if quantity is 0
             if (existingItemIndex !== -1) {
                 orderItems.splice(existingItemIndex, 1);
             }
         } else {
             if (existingItemIndex !== -1) {
-                // Update existing item
                 orderItems[existingItemIndex].quantity = quantity;
                 orderItems[existingItemIndex].subtotal = price * quantity;
             } else {
-                // Add new item
                 orderItems.push({
                     id: productId,
                     name: productName,
@@ -300,66 +274,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Click on product to add functionality (only on product info, not buttons)
-    const clickableProducts = document.querySelectorAll('.clickable-product');
-    clickableProducts.forEach(product => {
-        const productInfo = product.querySelector('.product-info');
-        if (productInfo) {
-            productInfo.addEventListener('click', (e) => {
-                // Prevent event if clicking on quantity controls
-                if (e.target.closest('.quantity-control')) {
-                    return;
-                }
-                
-                const area = product.getAttribute('data-area') || '';
-                const stockAttr = product.getAttribute('data-stock');
-                const stock = stockAttr !== null ? parseInt(stockAttr) : -1;
-                const isBarProduct = area.toLowerCase() === 'bar';
-
-                const productId = product.getAttribute('data-producto-id');
-                const productName = product.getAttribute('data-producto-nombre');
-                const productPrice = parseFloat(product.getAttribute('data-precio'));
-                
-                // Find existing item or get current quantity
-                const existingItem = orderItems.find(item => item.id === productId);
-                let newQuantity = existingItem ? existingItem.quantity + 1 : 1;
-
-                if (isBarProduct && stock >= 0 && newQuantity > stock) {
-                    showNotification(`Stock máximo alcanzado para ${productName} (${stock} uds)`, 'warning');
-                    return;
-                }
-                
-                // Update order item with new quantity
-                updateOrderItem(productId, productName, productPrice, newQuantity);
-                
-                // Recalculate total from all items
-                totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
-                updateTotal();
-                
-                showNotification(` Agregado: ${newQuantity} x ${productName}`);
-                
-                // Update the quantity input
-                const quantityInput = product.querySelector('.quantity-input');
-                if (quantityInput) {
-                    quantityInput.value = newQuantity;
-                }
-            });
-        }
-    });
-
     // Filter functionality by category
     const filterButtons = document.querySelectorAll('.nav-links .filter-btn');
     const productItems = document.querySelectorAll('.product-item');
-    
+
     filterButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Remove active class from all buttons
             filterButtons.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
             btn.classList.add('active');
-            
+
             const categoriaId = btn.getAttribute('data-categoria');
             filterProductsByCategory(categoriaId);
         });
@@ -367,10 +291,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function filterProductsByCategory(categoriaId) {
         let hasVisibleProducts = false;
-        
+
         productItems.forEach(item => {
             const itemCategoria = item.getAttribute('data-categoria');
-            
+
             if (categoriaId === 'todas' || itemCategoria === categoriaId) {
                 item.style.display = 'flex';
                 hasVisibleProducts = true;
@@ -378,8 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.style.display = 'none';
             }
         });
-        
-        // Show/hide no products message
+
         const noProductsMessage = document.getElementById('no-products');
         if (noProductsMessage) {
             noProductsMessage.style.display = hasVisibleProducts ? 'none' : 'block';
@@ -391,21 +314,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase().trim();
-            
+
             if (searchTerm === '') {
-                // If search is empty, restore category filter
                 const activeFilter = document.querySelector('.nav-links .filter-btn.active');
                 const activeCategory = activeFilter ? activeFilter.getAttribute('data-categoria') : 'todas';
                 filterProductsByCategory(activeCategory);
                 return;
             }
-            
+
             let hasVisibleProducts = false;
-            
+
             productItems.forEach(item => {
                 const productName = item.querySelector('.product-name')?.textContent.toLowerCase() || '';
                 const productDesc = item.querySelector('.product-description')?.textContent.toLowerCase() || '';
-                
+
                 if (productName.includes(searchTerm) || productDesc.includes(searchTerm)) {
                     item.style.display = 'flex';
                     hasVisibleProducts = true;
@@ -413,8 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.style.display = 'none';
                 }
             });
-            
-            // Show/hide no products message
+
             const noProductsMessage = document.getElementById('no-products');
             if (noProductsMessage) {
                 noProductsMessage.style.display = hasVisibleProducts ? 'none' : 'block';
@@ -425,14 +346,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Comments functionality
     const commentsBtn = document.getElementById('btn-comments');
     const commentsContainer = document.getElementById('comments-container');
-    
+
     if (commentsBtn && commentsContainer) {
         commentsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             commentsContainer.classList.toggle('active');
         });
 
-        // Close comments when clicking outside
         document.addEventListener('click', (e) => {
             if (!commentsContainer.contains(e.target) && e.target !== commentsBtn) {
                 commentsContainer.classList.remove('active');
@@ -476,27 +396,81 @@ document.addEventListener('DOMContentLoaded', () => {
         orderSummary.innerHTML = summaryHTML;
     }
 
+    function sendOrder() {
+        if (orderItems.length === 0) {
+            showNotification('❌ No hay productos en el pedido', 'error');
+            return;
+        }
+
+        const comments = orderComments ? orderComments.value : '';
+        const mesaId = confirmBtn ? confirmBtn.getAttribute('data-mesa') : '1';
+
+        totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        const itemsData = {
+            items: orderItems.map(item => ({
+                productoId: parseInt(item.id),
+                productoNombre: item.name,
+                cantidad: item.quantity,
+                precio: item.price,
+                subtotal: item.price * item.quantity,
+                comentarios: ''
+            })),
+            total: totalOrder
+        };
+
+        const itemsJson = JSON.stringify(itemsData);
+
+        const formData = new URLSearchParams();
+        formData.append('mesaId', parseInt(mesaId));
+        formData.append('itemsJson', itemsJson);
+        formData.append('comentarios', comments);
+        formData.append('total', totalOrder);
+
+        fetch('/pedidos/preparar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
+                    orderModal.style.display = 'none';
+                    resetOrder();
+                    setTimeout(() => {
+                        const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
+                        window.location.href = redirectUrl;
+                    }, 800);
+                } else {
+                    showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('❌ Error de conexión', 'error');
+            });
+    }
+
     function resetOrder() {
         orderItems = [];
         totalOrder = 0;
         updateTotal();
-        
-        // Reset all quantity inputs
+
         quantityControls.forEach(control => {
             const quantityInput = control.querySelector('.quantity-input');
             if (quantityInput) quantityInput.value = 0;
         });
-        
-        // Reset comments
+
         if (orderComments) orderComments.value = '';
-        
-        // Close comments container
+
         if (commentsContainer) commentsContainer.classList.remove('active');
     }
 
     // Notification system
     function showNotification(message, type = 'success') {
-        // Remove existing notification
         const existingNotification = document.querySelector('.notification');
         if (existingNotification) {
             existingNotification.remove();
@@ -528,7 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.appendChild(notification);
 
-        // Auto remove after 3 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.style.animation = 'slideOut 0.3s ease';
@@ -558,30 +531,41 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
 
-});
-
-document.addEventListener("DOMContentLoaded", function () {
+    // User dropdown functionality
     const userDropdownBtn = document.getElementById("userDropdown");
     const dropdownMenu = document.querySelector(".user-dropdown .dropdown-menu");
 
-    // Toggle al hacer click en "Administrador"
-    userDropdownBtn.addEventListener("click", function (e) {
-        e.preventDefault();   // evita que afecte la barra
-        e.stopPropagation();  // evita cierre inmediato
-        dropdownMenu.classList.toggle("show");
-    });
+    if (userDropdownBtn && dropdownMenu) {
+        userDropdownBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdownMenu.classList.toggle("show");
+        });
 
-    // Cerrar si se hace click fuera
-    document.addEventListener("click", function (e) {
-        if (!dropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)) {
-            dropdownMenu.classList.remove("show");
-        }
-    });
+        document.addEventListener("click", function(e) {
+            if (!dropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+                dropdownMenu.classList.remove("show");
+            }
+        });
 
-    // Cerrar con tecla ESC
-    document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-            dropdownMenu.classList.remove("show");
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                dropdownMenu.classList.remove("show");
+            }
+        });
+    }
+
+    // Apply color theme
+    try {
+        const saved = JSON.parse(localStorage.getItem('meseroSettings')) || {};
+        const theme = saved.theme || 'default';
+
+        if (theme && theme !== 'default') {
+            document.documentElement.setAttribute('data-color', theme);
+        } else {
+            document.documentElement.removeAttribute('data-color');
         }
-    });
+    } catch (e) {
+        console.warn('No se pudo aplicar el tema del mesero en Fusion Mesero', e);
+    }
 });

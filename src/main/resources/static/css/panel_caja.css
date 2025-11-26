@@ -2214,6 +2214,154 @@ body[data-admin-theme="gris"] {
     color: white;
 }
 
+
+/*cerrar sesion*/
+.logout-btn {
+    background: linear-gradient(135deg, var(--danger-color), var(--primary-dark));
+}
+/* ===== Modal Métodos de Pago (Punto de Venta) ===== */
+#metodosPagoModal .modal-dialog {
+    max-width: 850px;
+}
+
+#metodosPagoModal .modal-content {
+    border-radius: 18px;
+    border: none;
+    overflow: hidden;
+    background: var(--bg-primary);          /* se adapta a claro/oscuro */
+    color: var(--text-primary);
+    box-shadow: var(--shadow-xl);
+}
+
+#metodosPagoModal .modal-header {
+    /* degradado usando los colores del tema */
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    align-items: center;
+}
+
+#metodosPagoModal .modal-title {
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+#metodosPagoModal .btn-close {
+    filter: invert(1);
+    opacity: 0.85;
+}
+#metodosPagoModal .btn-close:hover {
+    opacity: 1;
+}
+
+/* Cuerpo */
+#metodosPagoModal .modal-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+    background: var(--bg-secondary);        /* se adapta a claro/oscuro */
+}
+
+/* Botones de método de pago */
+#metodosPagoModal [data-metodo] {
+    border-radius: 999px;
+    border-width: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.5rem 1.1rem;
+    background-color: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    transition: all 0.2s ease;
+}
+
+#metodosPagoModal [data-metodo]:hover,
+#metodosPagoModal [data-metodo].active {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Búsqueda de clientes frecuentes */
+#metodosPagoModal #buscar-cliente-frecuente-pos {
+    background-color: var(--bg-primary);
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+#metodosPagoModal #buscar-cliente-frecuente-pos::placeholder {
+    color: var(--text-light);
+}
+
+/* Tabla de clientes frecuentes dentro del modal de métodos de pago */
+#metodosPagoModal .table-responsive {
+    max-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+}
+
+/* Ajustes para que la tabla se vea bien dentro del contenedor con scroll */
+#metodosPagoModal .table {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+#metodosPagoModal .table thead {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+#metodosPagoModal .table tbody tr {
+    background-color: var(--bg-primary);
+}
+#metodosPagoModal .table tbody tr:nth-child(even) {
+    background-color: var(--bg-secondary);
+}
+
+#metodosPagoModal .table tbody tr:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Botón "Pagar" en la tabla */
+#metodosPagoModal .btn-pagar-con-abono {
+    border-radius: 999px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(46, 163, 26, 0.35);
+}
+
+/* Footer */
+#metodosPagoModal .modal-footer {
+    border-top: none;
+    padding: 1rem 1.5rem 1.25rem;
+    background: var(--bg-secondary);        
+}
+
+#metodosPagoModal .modal-footer .btn-success {
+    border-radius: 999px;
+    padding-inline: 1.6rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+}
+
+#metodosPagoModal .modal-footer .btn-secondary {
+    border-radius: 999px;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    #metodosPagoModal .modal-dialog {
+        margin: 0.75rem;
+    }
+    #metodosPagoModal .modal-content {
+        border-radius: 14px;
+    }
+}
+
 /* Botón Cancelar del modal de pago con el mismo look que
    .dropdown-item.logout-btn (usa danger sólido y respeta tema) */
 #modalPago .btn-secondary {
