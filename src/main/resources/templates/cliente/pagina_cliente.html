@@ -35,19 +35,23 @@
 
 	<!-- Hero -->
 	<header id="inicio" class="hero">
-		<div class="video-background">
-			<div class="image-background">
-				<div class="overlay"></div>
+		<div class="hero-carousel">
+			<div class="hero-slide active" th:style="'background-image: url(' + @{/images/event-getback.jpg} + ');'"></div>
+			<div class="hero-slide" style="background-image: url('https://getbackcafebar.wordpress.com/wp-content/uploads/2024/05/get-back-cafe-bar-duitama-rock-y-licores-cocienrtos-lo-mejor-de-duitama-boyaca-colombia-musica-en-vivo.jpg');"></div>
+			<div class="hero-slide" th:style="'background-image: url(' + @{/images/imagen-escalera.jpg} + ');'"></div>
+			<div class="hero-slide" th:style="'background-image: url(' + @{/images/imagen-fumadora.jpg} + ');'"></div>
+			<div class="hero-slide" th:style="'background-image: url(' + @{/images/imagen-tarima.jpg} + ');'"></div>
+			<div class="hero-overlay"></div>
+		</div>
+		<div class="hero-content">
+			<h1 class="hero-title"><span class="highlight">GET BACK</span><span class="subtitle">CAFÉ BAR</span>
+			</h1>
+			<p class="hero-text">Donde el rock, el buen café, la comida y los cócteles se encuentran</p>
+			<div class="hero-buttons">
+				<a href="#eventos" class="btn btn-primary">Ver Eventos</a>
 			</div>
-			<div class="hero-content">
-				<h1 class="hero-title"><span class="highlight">GET BACK</span><span class="subtitle">CAFÉ BAR</span>
-				</h1>
-				<p class="hero-text">Donde el rock, el buen café, la comida y los cócteles se encuentran</p>
-				<div class="hero-buttons">
-					<a href="#eventos" class="btn btn-primary">Ver Eventos</a>
-				</div>
-			</div>
-			<div class="scroll-down"><i class="fas fa-chevron-down"></i></div>
+		</div>
+		<div class="scroll-down"><i class="fas fa-chevron-down"></i></div>
 	</header>
 
 	<!-- Sección de eventos -->
@@ -118,31 +122,48 @@
 		</div>
 	</section>
 
-	<!-- Galería -->
+	<!-- Galería con Thymeleaf -->
 	<section id="galeria" class="section gallery">
-		<div class="section-header">
-			<h2 class="section-title">GALERÍA <span class="highlight">GET BACK</span></h2>
-			<p class="section-subtitle">Momentos que rockean</p>
-		</div>
-		<div class="gallery-grid">
+	    <div class="section-header">
+	        <h2 class="section-title">GALERÍA <span class="highlight">GET BACK</span></h2>
+	        <p class="section-subtitle">Momentos que rockean</p>
+	    </div>
+	    <div class="gallery-grid">
 
-			<div class="gallery-item"
-				style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/1a/9c/82/85/tarima-get-back-duitama.jpg');">
-			</div>
+	        <!-- Imágenes usando Thymeleaf -->
+	        <div class="gallery-item"
+	            th:style="'background-image: url(' + @{/images/event-getback.jpg} + ');'">
+	        </div>
 
-			<div class="gallery-item"
-				style="background-image: url('https://getbackcafebar.wordpress.com/wp-content/uploads/2024/05/get-back-cafe-bar-duitama-rock-y-licores-cocienrtos-lo-mejor-de-duitama-boyaca-colombia-musica-en-vivo.jpg');">
-			</div>
+	        <div class="gallery-item"
+			style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/1b/8d/84/61/eventos-rock-get-back.jpg');">
+	        </div>
 
-			<div class="gallery-item">
-				<img th:src="@{/images/event-getback.jpg}" alt="Evento Get Back">
-			</div>
+	        <div class="gallery-item"
+			style="background-image: url('https://getbackcafebar.wordpress.com/wp-content/uploads/2024/05/get-back-cafe-bar-duitama-rock-y-licores-cocienrtos-lo-mejor-de-duitama-boyaca-colombia-musica-en-vivo.jpg');">
+	        </div>
 
-			<div class="gallery-item"
-				style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/1b/8d/84/61/eventos-rock-get-back.jpg');">
-			</div>
+	        <div class="gallery-item"
+style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/1a/9c/82/85/tarima-get-back-duitama.jpg');">
+</div>
 
-		</div>
+	        <div class="gallery-item"
+	            th:style="'background-image: url(' + @{/images/imagen-comida.jpg} + ');'">
+	        </div>
+
+	        <div class="gallery-item"
+	            th:style="'background-image: url(' + @{/images/imagen-escalera.jpg} + ');'">
+	        </div>
+
+	        <div class="gallery-item"
+	            th:style="'background-image: url(' + @{/images/imagen-fumadora.jpg} + ');'">
+	        </div>
+
+	        <div class="gallery-item"
+	            th:style="'background-image: url(' + @{/images/imagen-tarima.jpg} + ');'">
+	        </div>
+
+	    </div>
 	</section>
 
 	<!-- Footer -->
@@ -234,12 +255,12 @@
 			  if (!pager) return;
 			  pager.innerHTML = '';
 			  if (total <= pageSize) return; // sin paginación si caben en una sola página
-
+			
 			  const prev = document.createElement('button');
 			  prev.type = 'button'; prev.className = 'btn-pager'; prev.textContent = '«';
 			  prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
 			  pager.appendChild(prev);
-
+			
 			  for (let i = 1; i <= pages; i++){
 				const b = document.createElement('button');
 				b.type = 'button'; b.className = 'btn-pager ' + (i===page?'active':'');
@@ -247,7 +268,7 @@
 				b.onclick = () => { page = i; render(); };
 				pager.appendChild(b);
 			  }
-
+			
 			  const next = document.createElement('button');
 			  next.type = 'button'; next.className = 'btn-pager'; next.textContent = '»';
 			  next.disabled = page >= pages; next.onclick = () => { page++; render(); };
@@ -262,6 +283,27 @@
 
 			if (filterInput) filterInput.addEventListener('input', applyFilter);
 			render();
+
+			// Carrusel del header (hero)
+			const hero = document.querySelector('.hero');
+			const slides = hero ? hero.querySelectorAll('.hero-slide') : null;
+			if (slides && slides.length > 1) {
+			  let current = 0;
+			  slides.forEach((s, i) => {
+				if (i === 0) {
+				  s.classList.add('active');
+				} else {
+				  s.classList.remove('active');
+				}
+			  });
+			  setInterval(() => {
+				const total = slides.length;
+				if (total < 2) return;
+				slides[current].classList.remove('active');
+				current = (current + 1) % total;
+				slides[current].classList.add('active');
+			  }, 3000);
+			}
 		  };
 		  if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', run);
@@ -270,6 +312,7 @@
 		  }
 		})();
 	</script>
+
 </body>
 
 </html>
