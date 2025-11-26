@@ -1486,31 +1486,9 @@ document.addEventListener('DOMContentLoaded', function(){
                 });
             }
 
-            // Dropdown de usuario del header admin en la sección de ventas
-            const userDropdownBtn = document.getElementById('userDropdown');
-            const dropdownMenu = document.querySelector('.user-dropdown .dropdown-menu');
-            if (userDropdownBtn && dropdownMenu) {
-                userDropdownBtn.addEventListener('click', function(e){
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle('show');
-                    userDropdownBtn.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function(e){
-                    if (!dropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)){
-                        dropdownMenu.classList.remove('show');
-                        userDropdownBtn.classList.remove('active');
-                    }
-                });
-
-                document.addEventListener('keydown', function(e){
-                    if (e.key === 'Escape'){
-                        dropdownMenu.classList.remove('show');
-                        userDropdownBtn.classList.remove('active');
-                    }
-                });
-            }
+            // Nota: el dropdown de usuario del header (#userDropdown) se maneja solo
+            // con el comportamiento nativo de Bootstrap (data-bs-toggle="dropdown"),
+            // sin lógica personalizada adicional aquí para evitar conflictos.
 
           };
 
