@@ -91,4 +91,26 @@ public class InventarioService {
     public void eliminarIngreso(Long id) {
         inventarioRepository.deleteById(id);
     }
+
+    /**
+     * Registra una salida de inventario (consumo) para el producto indicado.
+     * La cantidad se almacena como negativa para que calcularStockPorProducto la descuente.
+     */
+    @Transactional
+    public void registrarConsumo(String nombreProducto, int cantidadConsumida) {
+        if (nombreProducto == null || nombreProducto.isBlank()) {
+            return;
+        }
+        if (cantidadConsumida <= 0) {
+            return;
+        }
+
+        Inventario movimiento = new Inventario();
+        movimiento.setRemision("CONSUMO PEDIDO");
+        movimiento.setProducto(nombreProducto.trim());
+        movimiento.setCantidad(-cantidadConsumida);
+        movimiento.setObservaciones("Consumo automático por pedido");
+
+        inventarioRepository.save(movimiento);
+    }
 }

@@ -120,6 +120,20 @@ public class PedidoService {
         estadoRepository.findById(1)
                 .ifPresent(pedido::setEstado);
 
+        // 2) Registrar consumo real de inventario por los productos del pedido
+        try {
+            Map<String, Integer> requeridos = extraerCantidadesPorProducto(itemsJson);
+            for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
+                String nombre = entry.getKey();
+                int cantidad = entry.getValue();
+                if (cantidad > 0) {
+                    inventarioService.registrarConsumo(nombre, cantidad);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al registrar consumo de inventario para el pedido: " + e.getMessage());
+        }
+
         return pedidoRepository.save(pedido);
     }
 
@@ -132,33 +146,13 @@ public class PedidoService {
             return;
         }
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
-            Object itemsObj = root.get("items");
-            if (!(itemsObj instanceof List<?> itemsList)) {
-                return;
-            }
-
-            // Acumular cantidad requerida por productoNombre
-            Map<String, Integer> requeridos = new HashMap<>();
-            for (Object o : itemsList) {
-                if (!(o instanceof Map<?, ?> itemMap)) continue;
-                Object nombreObj = itemMap.get("productoNombre");
-                Object cantidadObj = itemMap.get("cantidad");
-                if (nombreObj == null || cantidadObj == null) continue;
-                String nombre = String.valueOf(nombreObj);
-                int cant = (cantidadObj instanceof Number)
-                        ? ((Number) cantidadObj).intValue()
-                        : Integer.parseInt(String.valueOf(cantidadObj));
-                if (cant <= 0) continue;
-                requeridos.merge(nombre, cant, Integer::sum);
-            }
+            Map<String, Integer> requeridos = extraerCantidadesPorProducto(itemsJson);
 
             // Validar contra inventario
             for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
                 String nombre = entry.getKey();
                 int solicitado = entry.getValue();
+
                 int disponible = inventarioService.obtenerStockDisponible(nombre);
                 if (solicitado > disponible) {
                     throw new IllegalStateException(
@@ -173,6 +167,39 @@ public class PedidoService {
             // Si hay un error al parsear, no bloqueamos el pedido pero registramos en logs
             System.err.println("Error al validar stock para itemsJson: " + e.getMessage());
         }
+    }
+
+    /**
+     * Parsea itemsJson y devuelve un mapa productoNombre -> cantidad total solicitada.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Integer> extraerCantidadesPorProducto(String itemsJson) throws Exception {
+        Map<String, Integer> requeridos = new HashMap<>();
+        if (itemsJson == null || itemsJson.isBlank()) {
+            return requeridos;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
+        Object itemsObj = root.get("items");
+        if (!(itemsObj instanceof List<?> itemsList)) {
+            return requeridos;
+        }
+
+        for (Object o : itemsList) {
+            if (!(o instanceof Map<?, ?> itemMap)) continue;
+            Object nombreObj = itemMap.get("productoNombre");
+            Object cantidadObj = itemMap.get("cantidad");
+            if (nombreObj == null || cantidadObj == null) continue;
+            String nombre = String.valueOf(nombreObj);
+            int cant = (cantidadObj instanceof Number)
+                    ? ((Number) cantidadObj).intValue()
+                    : Integer.parseInt(String.valueOf(cantidadObj));
+            if (cant <= 0) continue;
+            requeridos.merge(nombre, cant, Integer::sum);
+        }
+
+        return requeridos;
     }
 
     // Obtener historial por mesa
@@ -291,7 +318,33 @@ public class PedidoService {
         return pedidoRepository.buscarHistorial(mesa, estado, desdeDateTime, hastaDateTime, usuarioId, pageable);
     }
 
-	public void marcarPedidoComoPagado(Integer pedidoId, Double montoRecibido) {
-		// TODO Auto-generated method stub
-	}
+    // Marcar pedido como pagado desde caja y liberar la mesa
+    public void marcarPedidoComoPagado(Integer pedidoId, Double montoRecibido) {
+        if (pedidoId == null) {
+            return;
+        }
+
+        Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
+        if (pedido == null) {
+            return;
+        }
+
+        // Cambiar estado del pedido a PAGADO (ID 2)
+        estadoRepository.findById(2).ifPresent(pedido::setEstado);
+
+        if (montoRecibido != null && pedido.getTotal() != null) {
+            pedido.setMontoRecibido(montoRecibido);
+            pedido.setCambio(montoRecibido - pedido.getTotal());
+        }
+
+        pedidoRepository.save(pedido);
+
+        // Liberar mesa asociada
+        if (pedido.getMesa() != null && pedido.getMesa().getId() != null) {
+            mesaRepository.findById(pedido.getMesa().getId()).ifPresent(mesa -> {
+                mesa.setEstado("DISPONIBLE");
+                mesaRepository.save(mesa);
+            });
+        }
+    }
 }

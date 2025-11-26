@@ -69,7 +69,10 @@
                                 </td>
                                 <td th:text="${ingreso.producto != null ? ingreso.producto : '—'}"></td>
                                 <td>
-                                    <span class="badge bg-success rounded-pill" th:text="${ingreso.cantidad}"></span>
+                                    <span class="badge rounded-pill"
+                                          th:with="stockActual=${stockPorProducto != null ? stockPorProducto[ingreso.producto] : ingreso.cantidad}"
+                                          th:classappend="${bajoStock != null and bajoStock.containsKey(ingreso.producto)} ? ' bg-warning text-dark' : ' bg-success'"
+                                          th:text="${stockActual != null ? stockActual : 0}"></span>
                                 </td>
                                 <td th:text="${ingreso.proveedor != null && !ingreso.proveedor.isEmpty() ? ingreso.proveedor : '—'}"></td>
                                 <td th:text="${ingreso.telefonoProveedor != null && !ingreso.telefonoProveedor.isEmpty() ? ingreso.telefonoProveedor : '—'}"></td>

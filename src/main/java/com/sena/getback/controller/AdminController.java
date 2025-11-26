@@ -278,6 +278,12 @@ public class AdminController {
 					.limit(5)
 					.collect(java.util.stream.Collectors.toList());
 				model.addAttribute("actividadReciente", actividadReciente);
+
+				// Resumen de stock para el panel de control
+				int stockThreshold = 5;
+				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
+				model.addAttribute("bajoStock", inventarioService.obtenerProductosBajoStock(stockThreshold));
+				model.addAttribute("stockThreshold", stockThreshold);
 			}
 
 			// LOCATIONS

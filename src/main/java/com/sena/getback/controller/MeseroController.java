@@ -8,6 +8,7 @@ import com.sena.getback.repository.UsuarioRepository;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
 import com.sena.getback.service.LocationService;
+import com.sena.getback.service.InventarioService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,16 +37,19 @@ public class MeseroController {
 	private final MesaService mesaService;
 	private final LocationService locationService;
 	private final UsuarioRepository usuarioRepository;
+    private final InventarioService inventarioService;
 
 	public MeseroController(MenuService menuService, CategoriaService categoriaService,
 			PedidoService pedidoService, MesaService mesaService,
-			LocationService locationService, UsuarioRepository usuarioRepository) {
+			LocationService locationService, UsuarioRepository usuarioRepository,
+			InventarioService inventarioService) {
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
 		this.pedidoService = pedidoService;
 		this.mesaService = mesaService;
 		this.locationService = locationService;
 		this.usuarioRepository = usuarioRepository;
+		this.inventarioService = inventarioService;
 	}
 
 	@GetMapping("/mesero")
@@ -86,8 +90,19 @@ public class MeseroController {
 			var mesaOpt = mesaService.findById(mesaId);
 			var mesa = mesaOpt.isPresent() ? mesaOpt.get() : null;
 
+			// Calcular stock para productos del área BAR usando InventarioService
+			Map<Long, Integer> stockBarPorProducto = new HashMap<>();
+			for (var p : productos) {
+				if (p.getCategoria() != null && p.getCategoria().getArea() != null
+						&& "BAR".equalsIgnoreCase(p.getCategoria().getArea())) {
+					int stock = inventarioService.obtenerStockDisponible(p.getNombreProducto());
+					stockBarPorProducto.put(p.getId(), stock);
+				}
+			}
+
 			model.addAttribute("categorias", categorias);
 			model.addAttribute("productos", productos);
+			model.addAttribute("stockBarPorProducto", stockBarPorProducto);
 			model.addAttribute("mesaId", mesaId);
 			model.addAttribute("mesa", mesa);
 
