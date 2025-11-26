@@ -278,6 +278,12 @@ public class AdminController {
 					.limit(5)
 					.collect(java.util.stream.Collectors.toList());
 				model.addAttribute("actividadReciente", actividadReciente);
+
+				// Resumen de stock para el panel de control
+				int stockThreshold = 5;
+				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
+				model.addAttribute("bajoStock", inventarioService.obtenerProductosBajoStock(stockThreshold));
+				model.addAttribute("stockThreshold", stockThreshold);
 			}
 
 			// LOCATIONS
@@ -303,6 +309,15 @@ public class AdminController {
 				model.addAttribute("categorias", categoriaRepository.findAll());
 				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
 				model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+
+				// Para la sección products, mostrar SOLO los nombres del menú (no incluir nombres desde inventario)
+				java.util.List<String> menuNombres = new java.util.ArrayList<>();
+				menuRepository.findAll().forEach(m -> {
+					if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+						menuNombres.add(m.getNombreProducto().trim());
+					}
+				});
+				model.addAttribute("inventarioNombres", menuNombres);
 			}
 
 			// CATEGORÍAS

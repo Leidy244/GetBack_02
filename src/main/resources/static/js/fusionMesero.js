@@ -186,7 +186,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const addToOrderBtn = control.querySelector('.btn-add-to-order');
         const productItem = control.closest('.product-item');
         const priceElement = productItem?.querySelector('.product-price');
-        
+        const area = productItem?.getAttribute('data-area') || '';
+        const stockAttr = productItem?.getAttribute('data-stock');
+        const stock = stockAttr !== null ? parseInt(stockAttr) : -1;
+        const isBarProduct = area.toLowerCase() === 'bar';
+
+        if (isBarProduct && (isNaN(stock) || stock <= 0)) {
+            if (productItem) {
+                productItem.classList.add('agotado');
+            }
+            if (minusBtn) minusBtn.disabled = true;
+            if (plusBtn) plusBtn.disabled = true;
+            if (addToOrderBtn) addToOrderBtn.disabled = true;
+            return;
+        }
+
         if (priceElement) {
             const price = parseFloat(priceElement.textContent.replace('$', '').replace('.', '').replace(',', '.'));
             const productId = productItem.getAttribute('data-producto-id');
@@ -217,6 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 plusBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent product click event
                     let currentValue = parseInt(quantityInput.value);
+
+                    if (isBarProduct && stock >= 0 && currentValue >= stock) {
+                        showNotification(`Stock máximo alcanzado para ${productName} (${stock} uds)`, 'warning');
+                        return;
+                    }
+
                     const newQuantity = currentValue + 1;
                     quantityInput.value = newQuantity;
                     updateOrderItem(productId, productName, price, newQuantity);
@@ -291,13 +311,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 
+                const area = product.getAttribute('data-area') || '';
+                const stockAttr = product.getAttribute('data-stock');
+                const stock = stockAttr !== null ? parseInt(stockAttr) : -1;
+                const isBarProduct = area.toLowerCase() === 'bar';
+
                 const productId = product.getAttribute('data-producto-id');
                 const productName = product.getAttribute('data-producto-nombre');
                 const productPrice = parseFloat(product.getAttribute('data-precio'));
                 
                 // Find existing item or get current quantity
                 const existingItem = orderItems.find(item => item.id === productId);
-                const newQuantity = existingItem ? existingItem.quantity + 1 : 1;
+                let newQuantity = existingItem ? existingItem.quantity + 1 : 1;
+
+                if (isBarProduct && stock >= 0 && newQuantity > stock) {
+                    showNotification(`Stock máximo alcanzado para ${productName} (${stock} uds)`, 'warning');
+                    return;
+                }
                 
                 // Update order item with new quantity
                 updateOrderItem(productId, productName, productPrice, newQuantity);

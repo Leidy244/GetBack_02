@@ -69,7 +69,10 @@
                                 </td>
                                 <td th:text="${ingreso.producto != null ? ingreso.producto : '—'}"></td>
                                 <td>
-                                    <span class="badge bg-success rounded-pill" th:text="${ingreso.cantidad}"></span>
+                                    <span class="badge rounded-pill"
+                                          th:with="stockActual=${stockPorProducto != null ? stockPorProducto[ingreso.producto] : ingreso.cantidad}"
+                                          th:classappend="${bajoStock != null and bajoStock.containsKey(ingreso.producto)} ? ' bg-warning text-dark' : ' bg-success'"
+                                          th:text="${stockActual != null ? stockActual : 0}"></span>
                                 </td>
                                 <td th:text="${ingreso.proveedor != null && !ingreso.proveedor.isEmpty() ? ingreso.proveedor : '—'}"></td>
                                 <td th:text="${ingreso.telefonoProveedor != null && !ingreso.telefonoProveedor.isEmpty() ? ingreso.telefonoProveedor : '—'}"></td>
@@ -128,10 +131,19 @@
                             <input type="date" class="form-control" name="fechaRemision"
                                    th:value="${ingreso.fechaRemision != null ? #temporals.format(ingreso.fechaRemision, 'yyyy-MM-dd') : ''}">
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3" th:with="isMenu=${#lists.contains(products.![nombreProducto], ingreso.producto)}">
                             <label class="form-label">Producto</label>
-                            <input type="text" maxlength="150" class="form-control" name="producto"
-                                   th:value="${ingreso.producto}" required>
+                            <select class="form-select" th:id="${'productoSelect' + ingreso.id}">
+                                <option value="" disabled th:if="${ingreso.producto == null or ingreso.producto == ''}">Selecciona un producto</option>
+                                <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.nombreProducto}"
+                                        th:selected="${p.nombreProducto == ingreso.producto}"></option>
+                                <option value="__other" th:selected="${ingreso.producto != null and ingreso.producto != '' and !#lists.contains(products.![nombreProducto], ingreso.producto)}">Otro...</option>
+                            </select>
+                            <input type="text" maxlength="150" class="form-control mt-2" th:id="${'productoOther' + ingreso.id}"
+                                   th:value="${(!#lists.contains(products.![nombreProducto], ingreso.producto) and ingreso.producto != null) ? ingreso.producto : ''}"
+                                   placeholder="Escribe nombre de producto" style="display:none;" />
+                            <input type="hidden" name="producto" th:id="${'productoHidden' + ingreso.id}" th:value="${ingreso.producto}" />
+                            <input type="hidden" name="productoId" th:id="${'productoId' + ingreso.id}" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Cantidad ingresada</label>
@@ -210,7 +222,17 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Producto</label>
-                        <input type="text" maxlength="150" class="form-control" name="producto" placeholder="Ej: Pan, Helado, Cerveza" required>
+                        <select class="form-select" id="productoSelectNew">
+                            <option value="" disabled selected>Selecciona un producto</option>
+                            <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.nombreProducto}"></option>
+                            <option value="__other">Otro...</option>
+                        </select>
+                        <input type="text" maxlength="150" class="form-control mt-2" id="productoOtherNew" name="productoOtherNew"
+                               placeholder="Si seleccionas Otro, escribe el nombre aquí" style="display:none;" />
+                            <input type="hidden" name="producto" id="productoHiddenNew" />
+                        
+                        <!-- Enviar también el id del producto seleccionado (si aplica) -->
+                        <input type="hidden" name="productoId" id="productoIdHiddenNew" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Cantidad ingresada</label>
@@ -236,6 +258,11 @@
             </form>
         </div>
     </div>
+
+    <!-- Datalist para autocompletar producto (toma nombres del menú y del inventario) -->
+    <datalist id="inventarioNombres">
+        <option th:each="n : ${inventarioNombres}" th:value="${n}"></option>
+    </datalist>
 
     <script>
         (function(){
@@ -297,6 +324,79 @@
 
             if (filterInput) filterInput.addEventListener('input', applyFilter);
             render();
+
+            // ---------- Sync selects/other inputs for inventario ----------
+            function setupInventarioSelects(){
+                // Nuevo ingreso
+                const selectNew = document.getElementById('productoSelectNew');
+                const otherNew = document.getElementById('productoOtherNew');
+                const hiddenNew = document.getElementById('productoHiddenNew');
+                if(selectNew){
+                    // inicializar hidden values para nuevo
+                    if(selectNew.value === '__other'){
+                        otherNew.style.display = '';
+                        hiddenNew.value = otherNew.value || '';
+                        if(document.getElementById('productoIdHiddenNew')) document.getElementById('productoIdHiddenNew').value = '';
+                    } else if(selectNew.selectedIndex >= 0) {
+                        const opt = selectNew.options[selectNew.selectedIndex];
+                        hiddenNew.value = opt ? opt.text : '';
+                        if(document.getElementById('productoIdHiddenNew')) document.getElementById('productoIdHiddenNew').value = selectNew.value || '';
+                    }
+
+                    selectNew.addEventListener('change', () => {
+                        if(selectNew.value === '__other'){
+                            otherNew.style.display = '';
+                            hiddenNew.value = otherNew.value || '';
+                            if(document.getElementById('productoIdHiddenNew')) document.getElementById('productoIdHiddenNew').value = '';
+                        } else {
+                            otherNew.style.display = 'none';
+                            const opt = selectNew.options[selectNew.selectedIndex];
+                            hiddenNew.value = opt ? opt.text : '';
+                            if(document.getElementById('productoIdHiddenNew')) document.getElementById('productoIdHiddenNew').value = selectNew.value || '';
+                        }
+                    });
+                    otherNew.addEventListener('input', () => { hiddenNew.value = otherNew.value; if(document.getElementById('productoIdHiddenNew')) document.getElementById('productoIdHiddenNew').value = ''; });
+                }
+
+                // Edit modals: todos los selects cuyo id comienza con productoSelect
+                document.querySelectorAll('select[id^="productoSelect"]').forEach(sel => {
+                    const idSuffix = sel.id.replace('productoSelect','');
+                    const other = document.getElementById('productoOther' + idSuffix);
+                    const hidden = document.getElementById('productoHidden' + idSuffix);
+                    // Inicializar visibilidad y valores hidden
+                    if(sel.value === '__other' || (sel.selectedIndex >=0 && sel.options[sel.selectedIndex].value === '__other')){
+                        if(other) other.style.display = '';
+                        if(hidden) hidden.value = other ? other.value : '';
+                        const pid = document.getElementById('productoId' + idSuffix);
+                        if(pid) pid.value = '';
+                    } else {
+                        if(other) other.style.display = 'none';
+                        const optInit = sel.options[sel.selectedIndex];
+                        if(hidden) hidden.value = optInit ? optInit.text : '';
+                        const pid = document.getElementById('productoId' + idSuffix);
+                        if(pid) pid.value = sel.value || '';
+                    }
+
+                    sel.addEventListener('change', () => {
+                        const pid = document.getElementById('productoId' + idSuffix);
+                        if(sel.value === '__other'){
+                            if(other) other.style.display = '';
+                            if(hidden) hidden.value = other ? other.value : '';
+                            if(pid) pid.value = '';
+                        } else {
+                            if(other) other.style.display = 'none';
+                            const opt = sel.options[sel.selectedIndex];
+                            if(hidden) hidden.value = opt ? opt.text : '';
+                            if(pid) pid.value = sel.value || '';
+                        }
+                    });
+                    if(other){
+                        other.addEventListener('input', () => { if(hidden) hidden.value = other.value; });
+                    }
+                });
+            }
+
+            setupInventarioSelects();
           };
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', run);

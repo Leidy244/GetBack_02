@@ -124,6 +124,20 @@ public class PedidoService {
         estadoRepository.findById(1)
                 .ifPresent(pedido::setEstado);
 
+        // 2) Registrar consumo real de inventario por los productos del pedido
+        try {
+            Map<String, Integer> requeridos = extraerCantidadesPorProducto(itemsJson);
+            for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
+                String nombre = entry.getKey();
+                int cantidad = entry.getValue();
+                if (cantidad > 0) {
+                    inventarioService.registrarConsumo(nombre, cantidad);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al registrar consumo de inventario para el pedido: " + e.getMessage());
+        }
+
         return pedidoRepository.save(pedido);
     }
 
@@ -138,36 +152,13 @@ public class PedidoService {
             return;
         }
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
-            Object itemsObj = root.get("items");
-            if (!(itemsObj instanceof List<?> itemsList)) {
-                return;
-            }
-
-            // Acumular cantidad requerida por productoNombre
-            Map<String, Integer> requeridos = new HashMap<>();
-            for (Object o : itemsList) {
-                if (!(o instanceof Map<?, ?> itemMap))
-                    continue;
-                Object nombreObj = itemMap.get("productoNombre");
-                Object cantidadObj = itemMap.get("cantidad");
-                if (nombreObj == null || cantidadObj == null)
-                    continue;
-                String nombre = String.valueOf(nombreObj);
-                int cant = (cantidadObj instanceof Number)
-                        ? ((Number) cantidadObj).intValue()
-                        : Integer.parseInt(String.valueOf(cantidadObj));
-                if (cant <= 0)
-                    continue;
-                requeridos.merge(nombre, cant, Integer::sum);
-            }
+            Map<String, Integer> requeridos = extraerCantidadesPorProducto(itemsJson);
 
             // Validar contra inventario
             for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
                 String nombre = entry.getKey();
                 int solicitado = entry.getValue();
+
                 int disponible = inventarioService.obtenerStockDisponible(nombre);
                 if (solicitado > disponible) {
                     throw new IllegalStateException(
@@ -182,6 +173,39 @@ public class PedidoService {
             // Si hay un error al parsear, no bloqueamos el pedido pero registramos en logs
             System.err.println("Error al validar stock para itemsJson: " + e.getMessage());
         }
+    }
+
+    /**
+     * Parsea itemsJson y devuelve un mapa productoNombre -> cantidad total solicitada.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Integer> extraerCantidadesPorProducto(String itemsJson) throws Exception {
+        Map<String, Integer> requeridos = new HashMap<>();
+        if (itemsJson == null || itemsJson.isBlank()) {
+            return requeridos;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
+        Object itemsObj = root.get("items");
+        if (!(itemsObj instanceof List<?> itemsList)) {
+            return requeridos;
+        }
+
+        for (Object o : itemsList) {
+            if (!(o instanceof Map<?, ?> itemMap)) continue;
+            Object nombreObj = itemMap.get("productoNombre");
+            Object cantidadObj = itemMap.get("cantidad");
+            if (nombreObj == null || cantidadObj == null) continue;
+            String nombre = String.valueOf(nombreObj);
+            int cant = (cantidadObj instanceof Number)
+                    ? ((Number) cantidadObj).intValue()
+                    : Integer.parseInt(String.valueOf(cantidadObj));
+            if (cant <= 0) continue;
+            requeridos.merge(nombre, cant, Integer::sum);
+        }
+
+        return requeridos;
     }
 
     // Obtener historial por mesa
@@ -236,6 +260,20 @@ public class PedidoService {
                         && p.getEstado().getId() != null
                         && p.getEstado().getId() == 2)
                 .toList();
+    }
+
+    // Estadísticas de pedidos por mesero (nombre completo -> cantidad de pedidos)
+    public Map<String, Long> obtenerEstadisticasPorMesero(Integer usuarioId) {
+        return pedidoRepository.findAll().stream()
+                .filter(p -> p.getUsuario() != null)
+                .filter(p -> usuarioId == null || (p.getUsuario().getId() != null
+                        && p.getUsuario().getId().intValue() == usuarioId))
+                .collect(Collectors.groupingBy(p -> {
+                    String nombre = p.getUsuario().getNombre() != null ? p.getUsuario().getNombre() : "";
+                    String apellido = p.getUsuario().getApellido() != null ? p.getUsuario().getApellido() : "";
+                    String nombreCompleto = (nombre + " " + apellido).trim();
+                    return nombreCompleto.isEmpty() ? ("Usuario " + p.getUsuario().getId()) : nombreCompleto;
+                }, Collectors.counting()));
     }
 
     // Obtener pedidos PENDIENTES para el panel de inicio de caja
@@ -354,27 +392,5 @@ public class PedidoService {
         }
 
         return pedidoRepository.buscarHistorial(mesa, estado, desdeDateTime, hastaDateTime, usuarioId, pageable);
-    }
-
-    /**
-     * Devuelve estadísticas de pedidos agrupadas por mesero (usuario).
-     * Si usuarioId es null, se consideran todos los meseros; si no, solo ese mesero.
-     * La clave del mapa es el nombre completo del usuario y el valor es el número de pedidos.
-     */
-    public Map<String, Long> obtenerEstadisticasPorMesero(Integer usuarioId) {
-        return pedidoRepository.findAll().stream()
-                .filter(p -> p.getUsuario() != null)
-                .filter(p -> usuarioId == null
-                        || (p.getUsuario().getId() != null && p.getUsuario().getId().intValue() == usuarioId))
-                .collect(Collectors.groupingBy(
-                        p -> {
-                            Usuario u = p.getUsuario();
-                            String nombre = u.getNombre() != null ? u.getNombre() : "";
-                            String apellido = u.getApellido() != null ? u.getApellido() : "";
-                            String nombreCompleto = (nombre + " " + apellido).trim();
-                            return !nombreCompleto.isEmpty() ? nombreCompleto : (u.getCorreo() != null ? u.getCorreo() : "Sin nombre");
-                        },
-                        Collectors.counting()
-                ));
     }
 }
