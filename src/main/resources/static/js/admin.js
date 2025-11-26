@@ -1052,3 +1052,471 @@ document.addEventListener('DOMContentLoaded', function(){
   } catch(_) {}
 });
 
+(function(){
+          const run = function() {
+            const form = document.getElementById('ventas-filtros-form');
+            const fechaInicioInput = document.getElementById('filtro-fecha-inicio');
+            const fechaFinInput = document.getElementById('filtro-fecha-fin');
+            const estadoSelect = document.getElementById('filtro-estado');
+            const metodoSelect = document.getElementById('filtro-metodo-pago');
+            const numeroFacturaInput = document.getElementById('filtro-numero-factura');
+            const clienteInput = document.getElementById('filtro-cliente');
+            const mesaInput = document.getElementById('filtro-mesa');
+
+            function aplicarFiltros(event) {
+                if (event) event.preventDefault();
+
+                const fechaInicio = fechaInicioInput.value;
+                const fechaFin = fechaFinInput.value;
+                const estado = estadoSelect.value;
+                const metodo = metodoSelect.value;
+                const numeroFactura = numeroFacturaInput.value.trim().toLowerCase();
+                const cliente = clienteInput.value.trim().toLowerCase();
+                const mesa = mesaInput.value.trim();
+
+                const filas = document.querySelectorAll('table.table tbody tr[th\\:each], table.table tbody tr[data-fecha-dia]');
+
+                filas.forEach(fila => {
+                    const fechaDia = fila.getAttribute('data-fecha-dia') || '';
+                    const estadoFila = (fila.getAttribute('data-estado') || '').toUpperCase();
+                    const metodoFila = (fila.getAttribute('data-metodo') || '').toUpperCase();
+                    const numFacturaFila = (fila.getAttribute('data-factura') || '').toLowerCase();
+                    const clienteFila = (fila.getAttribute('data-cliente') || '').toLowerCase();
+                    const mesaFila = (fila.getAttribute('data-mesa') || '').toString();
+
+                    let visible = true;
+
+                    if (fechaInicio && (!fechaDia || fechaDia < fechaInicio)) {
+                        visible = false;
+                    }
+                    if (visible && fechaFin && (!fechaDia || fechaDia > fechaFin)) {
+                        visible = false;
+                    }
+                    if (visible && estado && estadoFila !== estado.toUpperCase()) {
+                        visible = false;
+                    }
+                    if (visible && metodo && metodoFila !== metodo.toUpperCase()) {
+                        visible = false;
+                    }
+                    if (visible && numeroFactura && !numFacturaFila.includes(numeroFactura)) {
+                        visible = false;
+                    }
+                    if (visible && cliente && !clienteFila.includes(cliente)) {
+                        visible = false;
+                    }
+                    if (visible && mesa && mesaFila !== mesa) {
+                        visible = false;
+                    }
+
+                    fila.style.display = visible ? '' : 'none';
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', aplicarFiltros);
+            }
+
+            // Opcional: filtrar en tiempo real al cambiar los campos
+            [fechaInicioInput, fechaFinInput, estadoSelect, metodoSelect,
+             numeroFacturaInput, clienteInput, mesaInput]
+                .forEach(el => {
+                    if (el) {
+                        el.addEventListener('change', aplicarFiltros);
+                        if (el.tagName === 'INPUT') {
+                            el.addEventListener('keyup', aplicarFiltros);
+                        }
+                    }
+                });
+
+            // Helpers
+            const fmt = (n) => {
+                const x = Number(n ?? 0);
+                return x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            };
+            const parseMoney = (raw) => {
+                if (raw == null) return 0;
+                let s = String(raw);
+                // quitar símbolos excepto separadores
+                s = s.replace(/[^0-9.,-]/g, '');
+                // si la coma parece ser el separador decimal (caso es_CO y similares)
+                const lastComma = s.lastIndexOf(',');
+                const lastDot = s.lastIndexOf('.');
+                if (lastComma > lastDot) {
+                    // miles con punto, decimales con coma -> normalizar a punto
+                    s = s.replace(/\./g, '').replace(/,/g, '.');
+                } else {
+                    // miles con coma, decimales con punto o solo miles con coma
+                    s = s.replace(/,/g, '');
+                }
+                const num = Number(s);
+                return isNaN(num) ? 0 : num;
+            };
+            const parseOrden = (ordenStr) => {
+                if (!ordenStr) return [];
+                try {
+                    // Si empieza con { o [, intentar parsear directo
+                    let raw = ordenStr;
+                    const first = raw.trim().charAt(0);
+                    if (first !== '{' && first !== '[') {
+                        // intentar Base64 -> texto
+                        try { raw = atob(raw); } catch (_) {}
+                    }
+                    const data = JSON.parse(raw);
+
+                    // Caso 1: array directo
+                    if (Array.isArray(data)) return data;
+                    // Caso 2: objeto con items como array
+                    if (data && Array.isArray(data.items)) return data.items;
+                    // Caso 3: items es un objeto con propiedad items (anidado)
+                    if (data && data.items && typeof data.items === 'object' && Array.isArray(data.items.items)) {
+                        return data.items.items;
+                    }
+                    // Caso 4: items es string JSON
+                    if (data && typeof data.items === 'string') {
+                        try {
+                            let inner = data.items;
+                            const ch = inner.trim().charAt(0);
+                            if (ch !== '{' && ch !== '[') {
+                                try { inner = atob(inner); } catch (_) {}
+                            }
+                            const parsed = JSON.parse(inner);
+                            if (Array.isArray(parsed)) return parsed;
+                            if (parsed && Array.isArray(parsed.items)) return parsed.items;
+                        } catch (e) {}
+                    }
+                } catch (e) {}
+                return [];
+            };
+
+            const extraFromItem = (it) => {
+                const parts = [];
+                const campos = ['notas','nota','comentarios','mods','modificadores','adiciones','observaciones'];
+                campos.forEach(k => { if (it && it[k]) parts.push(String(it[k])); });
+                return parts.join(' · ');
+            };
+
+            // Detalle por fila
+            const modalEl = document.getElementById('modalDetalleVenta');
+            const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+            let ultimoContexto = null; // guarda datos actuales para imprimir desde el modal
+
+            document.querySelectorAll('.btn-detalle').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    const tr = ev.currentTarget.closest('tr');
+                    if (!tr) return;
+                    const numero = tr.getAttribute('data-factura') || '';
+                    const fecha = tr.children[1]?.textContent?.trim() || '';
+                    const cliente = tr.children[2]?.textContent?.trim() || '';
+                    const mesa = tr.getAttribute('data-mesa') || '';
+                    const subtotalVal = parseMoney(tr.children[4]?.textContent || '0');
+                    const descuentoVal = parseMoney(tr.children[5]?.textContent || '0');
+                    const totalVal = parseMoney(tr.children[6]?.textContent || '0');
+
+                    const metodo = tr.getAttribute('data-metodo') || tr.children[7]?.textContent?.trim() || '';
+                    const estado = tr.getAttribute('data-estado') || '';
+                    const orden = tr.getAttribute('data-orden') || '';
+                    const items = parseOrden(orden);
+                    let comentariosGenerales = '';
+                    try {
+                        const root = JSON.parse(orden);
+                        if (root && !Array.isArray(root) && root.comentarios) comentariosGenerales = String(root.comentarios);
+                    } catch(_) {}
+
+                    // Poblar modal
+                    document.getElementById('det-numero').textContent = numero;
+                    const fechaHdr = document.getElementById('det-fecha-hdr');
+                    if (fechaHdr) fechaHdr.textContent = fecha;
+
+                    document.getElementById('det-cliente').textContent = cliente || '—';
+                    document.getElementById('det-mesa').textContent = mesa || '—';
+                    document.getElementById('det-metodo').textContent = metodo || '—';
+                    const estEl = document.getElementById('det-estado');
+                    estEl.textContent = estado || '—';
+                    estEl.className = 'badge ' + (estado === 'PAGADO' ? 'bg-success' : estado === 'PENDIENTE' ? 'bg-warning text-dark' : 'bg-danger');
+                    document.getElementById('det-subtotal').textContent = `$${fmt(subtotalVal)}`;
+                    document.getElementById('det-descuento').textContent = `$${fmt(descuentoVal)}`;
+                    document.getElementById('det-total').textContent = `$${fmt(totalVal)}`;
+
+                    const ul = document.getElementById('det-items-list');
+                    if (ul) {
+                        ul.innerHTML = '';
+                        items.forEach(it => {
+                            const nombre = it.productoNombre || it.nombre || it.producto || it.name || 'Item';
+                            const cantidad = Math.max(1, Number(it.cantidad || it.quantity || it.qty || 1));
+                            const precio = Number(it.precio || it.price || 0);
+                            const total = cantidad * precio;
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item px-0 py-1 d-flex justify-content-between align-items-center';
+                            li.innerHTML = `<span>${nombre} <span class="text-muted">x${cantidad}</span></span><strong>$${fmt(total)}</strong>`;
+                            ul.appendChild(li);
+                        });
+                    }
+
+                    const comentariosEl = document.getElementById('det-comentarios');
+                    if (comentariosEl) {
+                        if (comentariosGenerales) {
+                            comentariosEl.style.display = '';
+                            comentariosEl.textContent = `Comentarios generales: ${comentariosGenerales}`;
+                        } else {
+                            comentariosEl.style.display = 'none';
+                            comentariosEl.textContent = '';
+                        }
+                    }
+
+                    ultimoContexto = { numero, fecha, cliente, mesa, metodo, estado, items, subtotal: subtotalVal, descuento: descuentoVal, total: totalVal };
+                    if (modal) modal.show();
+                });
+            });
+
+            // Imprimir por fila (térmica 58mm)
+            function imprimirTicket(ctx) {
+                const w = window.open('', '_blank');
+                const rows = (ctx.items || []).map(it => {
+                    const nombre = (it.productoNombre || it.nombre || it.producto || it.name || 'Item');
+                    const cantidad = Number(it.cantidad || it.quantity || it.qty || 1);
+                    const precio = Number(it.precio || it.price || 0);
+                    const importe = cantidad * precio;
+                    const notas = extraFromItem(it);
+                    return `
+                        <tr><td colspan="4"><strong>${nombre}</strong></td></tr>
+                        <tr><td colspan="2" class="text-start">x${cantidad} @ $${fmt(precio)}</td><td colspan="2" class="text-end">$${fmt(importe)}</td></tr>
+                        ${notas ? `<tr><td colspan="4" class="text-muted small">Notas: ${notas}</td></tr>` : ''}
+                    `;
+                }).join('');
+                const html = `
+                <html>
+                  <head>
+                    <title>Ticket ${ctx.numero || ''}</title>
+                    <meta charset="utf-8" />
+                    <style>
+                      @page { size: 58mm auto; margin: 5mm; }
+                      body{font-family: 'Courier New', monospace; width: 58mm; margin: 0 auto;}
+                      h2{margin:0 0 4px 0; font-size: 14px;}
+                      .muted{color:#666;font-size:10px}
+                      table{width:100%; border-collapse:collapse;}
+                      th,td{padding:3px 0; border-bottom:1px dashed #ccc; font-size:11px}
+                      .text-end{text-align:right}
+                      .text-center{text-align:center}
+                      hr{border:none; border-top:1px dashed #ccc; margin:6px 0}
+                    </style>
+                  </head>
+                  <body>
+                    <div style="text-align:center; margin-bottom:6px;">
+                      <h2>GET BACK</h2>
+                      <div class="muted">Ticket de Venta</div>
+                    </div>
+                    <div class="muted">Factura: ${ctx.numero || ''} | Mesa: ${ctx.mesa || '—'} | ${ctx.fecha || ''}</div>
+                    <div class="muted">Cliente: ${ctx.cliente || '—'} | Pago: ${ctx.metodo || '—'} | Estado: ${ctx.estado || '—'}</div>
+                    <hr>
+                    <table>
+                      <thead><tr><th colspan="4" class="text-start">Detalle</th></tr></thead>
+                      <tbody>${rows}</tbody>
+                    </table>
+                    <div class="text-end" style="margin-top:6px;">
+                      <div>Subtotal: <strong>$${fmt(ctx.subtotal)}</strong></div>
+                      <div>Descuento: <strong>$${fmt(ctx.descuento)}</strong></div>
+                      <div>Total: <strong>$${fmt(ctx.total)}</strong></div>
+                    </div>
+                    <p style="text-align:center; margin-top:8px;">¡Gracias por su compra!</p>
+                  </body>
+                </html>`;
+                w.document.write(html);
+
+                w.document.close();
+                w.focus();
+                w.print();
+            }
+
+            document.querySelectorAll('.btn-imprimir').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    const tr = ev.currentTarget.closest('tr');
+                    if (!tr) return;
+                    const ctx = {
+                        numero: tr.getAttribute('data-factura') || '',
+                        fecha: tr.children[1]?.textContent?.trim() || '',
+                        cliente: tr.children[2]?.textContent?.trim() || '',
+                        mesa: tr.getAttribute('data-mesa') || '',
+                        metodo: tr.getAttribute('data-metodo') || tr.children[7]?.textContent?.trim() || '',
+                        estado: tr.getAttribute('data-estado') || '',
+                        items: parseOrden(tr.getAttribute('data-orden') || ''),
+                        subtotal: parseMoney(tr.children[4]?.textContent || '0'),
+                        descuento: parseMoney(tr.children[5]?.textContent || '0'),
+                        total: parseMoney(tr.children[6]?.textContent || '0'),
+                    };
+
+                    imprimirTicket(ctx);
+                });
+            });
+
+            const btnImprimirModal = document.getElementById('btn-imprimir-modal');
+            if (btnImprimirModal) {
+                btnImprimirModal.addEventListener('click', () => {
+                    if (ultimoContexto) imprimirTicket(ultimoContexto);
+                });
+            }
+
+            // Descargar ticket como PDF (58mm)
+            function descargarTicketPDF(ctx) {
+                const { jsPDF } = window.jspdf || {};
+                if (!jsPDF) {
+                    alert('No se pudo cargar jsPDF');
+                    return;
+                }
+                // 58mm de ancho, fuente monoespaciada
+                const doc = new jsPDF({ unit: 'mm', format: [58, 200] });
+                doc.setFont('courier', 'normal');
+                doc.setFontSize(11);
+                doc.text('GET BACK', 29, 6, { align: 'center' });
+                doc.setFontSize(9);
+                doc.text('Ticket de Venta', 29, 10, { align: 'center' });
+
+                const linea1 = `Factura: ${ctx.numero || ''}  Mesa: ${ctx.mesa || '—'}`;
+                const linea2 = `Cliente: ${ctx.cliente || '—'}`;
+                const linea3 = `Pago: ${ctx.metodo || '—'}  Estado: ${ctx.estado || '—'}`;
+                doc.text(linea1, 2, 16);
+                doc.text(linea2, 2, 20);
+                doc.text(linea3, 2, 24);
+
+                let y = 28;
+                const maxW = 56; // ancho útil aproximado
+                const items = ctx.items || [];
+                items.forEach(it => {
+                    const nombre = String(it.productoNombre || it.nombre || it.producto || it.name || 'Item');
+                    const cantidad = Number(it.cantidad || it.quantity || it.qty || 1);
+                    const precio = Number(it.precio || it.price || 0);
+                    const importe = (cantidad * precio);
+                    const notas = extraFromItem(it);
+
+                    // Nombre en negrilla ligera
+                    doc.setFontSize(9);
+                    doc.text(nombre.substring(0, 40), 2, y);
+                    y += 4;
+
+                    // Línea de cantidad, precio e importe (importe a la derecha)
+                    const linea = `x${cantidad} @ $${precio.toFixed(2)}`;
+                    doc.text(linea, 2, y);
+                    const importeStr = `$${importe.toFixed(2)}`;
+                    const iw = doc.getTextWidth(importeStr);
+                    doc.text(importeStr, 2 + maxW - iw, y);
+                    y += 4;
+
+                    if (notas) {
+                        doc.setFontSize(8);
+                        const wrapped = doc.splitTextToSize(`Notas: ${notas}`, maxW);
+                        doc.text(wrapped, 2, y);
+                        y += wrapped.length * 3.5 + 1;
+                    }
+                });
+
+                // Totales
+                y += 2;
+                doc.setFontSize(9);
+                doc.text(`Subtotal: $${fmt(ctx.subtotal)}`, 2, y); y += 4;
+                doc.text(`Descuento: $${fmt(ctx.descuento)}`, 2, y); y += 4;
+                doc.text(`Total: $${fmt(ctx.total)}`, 2, y);
+
+                doc.save(`ticket_${(ctx.numero||'').replace(/\W+/g,'_')}.pdf`);
+            }
+
+            const btnDescargarPdf = document.getElementById('btn-descargar-pdf');
+            if (btnDescargarPdf) {
+                btnDescargarPdf.addEventListener('click', () => {
+                    if (ultimoContexto) descargarTicketPDF(ultimoContexto);
+                });
+            }
+
+            // Imprimir tabla completa
+            const btnImprimirTabla = document.getElementById('btn-imprimir-tabla');
+            if (btnImprimirTabla) {
+                btnImprimirTabla.addEventListener('click', () => {
+                    const tabla = document.querySelector('.card-body .table-responsive').innerHTML;
+                    const w = window.open('', '_blank');
+                    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Historial de Ventas</title><style>body{font-family:Arial,sans-serif;padding:16px} table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #eee}</style></head><body>${tabla}</body></html>`);
+                    w.document.close();
+                    w.focus();
+                    w.print();
+                });
+            }
+
+            // Exportar a PDF (Historial)
+            const btnExportar = document.getElementById('btn-exportar-ventas');
+            if (btnExportar) {
+                btnExportar.addEventListener('click', async () => {
+                    const { jsPDF } = window.jspdf || {};
+                    if (!jsPDF || !window.jspdf || !('autoTable' in (jsPDF.API || {}))) {
+                        alert('No se pudo cargar el generador de PDF. Verifique su conexión.');
+                        return;
+                    }
+                    const doc = new jsPDF('l', 'pt', 'a4'); // horizontal para más columnas
+
+                    const rows = Array.from(document.querySelectorAll('table.table tbody tr'))
+                        .filter(tr => tr.querySelector('td')) // omitir fila de empty-state
+                        .filter(tr => tr.style.display !== 'none') // respetar filtros actuales
+                        .map(tr => {
+                            const tds = tr.querySelectorAll('td');
+                            return [
+                                tds[0]?.textContent?.trim() || '', // factura
+                                tds[1]?.textContent?.trim() || '', // fecha
+                                tds[2]?.textContent?.trim() || '', // cliente
+                                tds[3]?.textContent?.trim() || '', // mesa
+                                tds[4]?.textContent?.trim() || '', // subtotal
+                                tds[5]?.textContent?.trim() || '', // descuento
+                                tds[6]?.textContent?.trim() || '', // total
+                                tds[7]?.textContent?.trim() || '', // método
+                                (tr.getAttribute('data-estado') || tds[8]?.innerText?.trim() || ''), // estado
+                            ];
+                        });
+
+                    const fecha = new Date();
+                    const titulo = 'Historial de Ventas';
+                    doc.setFontSize(16);
+                    doc.text(titulo, 40, 40);
+                    doc.setFontSize(10);
+                    doc.text(`Generado: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`, 40, 58);
+
+                    doc.autoTable({
+                        head: [[
+                            '# Factura','Fecha','Cliente','Mesa','Subtotal','Descuento','Total','Método','Estado'
+                        ]],
+                        body: rows,
+                        startY: 70,
+                    });
+
+                    doc.save(`historial_ventas_${fecha.getFullYear()}-${fecha.getMonth()+1}-${fecha.getDate()}.pdf`);
+                });
+            }
+
+            // Dropdown de usuario del header admin en la sección de ventas
+            const userDropdownBtn = document.getElementById('userDropdown');
+            const dropdownMenu = document.querySelector('.user-dropdown .dropdown-menu');
+            if (userDropdownBtn && dropdownMenu) {
+                userDropdownBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                    userDropdownBtn.classList.toggle('active');
+                });
+
+                document.addEventListener('click', function(e){
+                    if (!dropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)){
+                        dropdownMenu.classList.remove('show');
+                        userDropdownBtn.classList.remove('active');
+                    }
+                });
+
+                document.addEventListener('keydown', function(e){
+                    if (e.key === 'Escape'){
+                        dropdownMenu.classList.remove('show');
+                        userDropdownBtn.classList.remove('active');
+                    }
+                });
+            }
+
+          };
+
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', run);
+          } else {
+            run();
+          }
+        })();
