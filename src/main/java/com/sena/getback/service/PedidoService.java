@@ -40,9 +40,9 @@ public class PedidoService {
     private final InventarioService inventarioService;
 
     public PedidoService(PedidoRepository pedidoRepository, MesaRepository mesaRepository,
-                         UsuarioRepository usuarioRepository, MenuRepository menuRepository,
-                         EstadoRepository estadoRepository, FacturaRepository facturaRepository,
-                         InventarioService inventarioService) {
+            UsuarioRepository usuarioRepository, MenuRepository menuRepository,
+            EstadoRepository estadoRepository, FacturaRepository facturaRepository,
+            InventarioService inventarioService) {
         this.pedidoRepository = pedidoRepository;
         this.mesaRepository = mesaRepository;
         this.usuarioRepository = usuarioRepository;
@@ -90,11 +90,13 @@ public class PedidoService {
 
         Pedido pedido = new Pedido();
 
-        // Guardamos el JSON de items en la columna orden para que la vista pueda parsearlo
+        // Guardamos el JSON de items en la columna orden para que la vista pueda
+        // parsearlo
         // Si hay comentarios generales, los combinamos con el JSON
         if (comentarios != null && !comentarios.trim().isEmpty()) {
             // Crear un objeto que contenga tanto los items como los comentarios
-            String combinedData = "{\"items\":" + itemsJson + ",\"comentarios\":\"" + comentarios.replace("\"", "\\\"") + "\"}";
+            String combinedData = "{\"items\":" + itemsJson + ",\"comentarios\":\"" + comentarios.replace("\"", "\\\"")
+                    + "\"}";
             pedido.setOrden(combinedData);
             pedido.setComentariosGenerales(comentarios.trim());
         } else {
@@ -103,14 +105,16 @@ public class PedidoService {
         // Total del pedido
         pedido.setTotal(total);
 
-        // Asociar la mesa (obligatorio) y marcarla como OCUPADA mientras haya pedido pendiente
+        // Asociar la mesa (obligatorio) y marcarla como OCUPADA mientras haya pedido
+        // pendiente
         mesaRepository.findById(mesaId).ifPresent(mesa -> {
             mesa.setEstado("OCUPADA");
             mesaRepository.save(mesa);
             pedido.setMesa(mesa);
         });
 
-        // Configurar usuario por defecto (primer usuario disponible o crear uno genérico)
+        // Configurar usuario por defecto (primer usuario disponible o crear uno
+        // genérico)
         usuarioRepository.findAll().stream().findFirst().ifPresent(pedido::setUsuario);
 
         // Configurar menú por defecto (primer menú disponible)
@@ -124,8 +128,10 @@ public class PedidoService {
     }
 
     /**
-     * Valida el stock disponible en Inventario para los productos incluidos en itemsJson.
-     * itemsJson tiene la forma: { items: [{ productoNombre, cantidad, ... }], total: ... }
+     * Valida el stock disponible en Inventario para los productos incluidos en
+     * itemsJson.
+     * itemsJson tiene la forma: { items: [{ productoNombre, cantidad, ... }],
+     * total: ... }
      */
     private void validarStockParaItems(String itemsJson) {
         if (itemsJson == null || itemsJson.isBlank()) {
@@ -143,15 +149,18 @@ public class PedidoService {
             // Acumular cantidad requerida por productoNombre
             Map<String, Integer> requeridos = new HashMap<>();
             for (Object o : itemsList) {
-                if (!(o instanceof Map<?, ?> itemMap)) continue;
+                if (!(o instanceof Map<?, ?> itemMap))
+                    continue;
                 Object nombreObj = itemMap.get("productoNombre");
                 Object cantidadObj = itemMap.get("cantidad");
-                if (nombreObj == null || cantidadObj == null) continue;
+                if (nombreObj == null || cantidadObj == null)
+                    continue;
                 String nombre = String.valueOf(nombreObj);
                 int cant = (cantidadObj instanceof Number)
                         ? ((Number) cantidadObj).intValue()
                         : Integer.parseInt(String.valueOf(cantidadObj));
-                if (cant <= 0) continue;
+                if (cant <= 0)
+                    continue;
                 requeridos.merge(nombre, cant, Integer::sum);
             }
 
@@ -189,9 +198,6 @@ public class PedidoService {
         return pedidoRepository.findAll().stream()
                 .filter(p -> p.getEstado() != null
                         && p.getEstado().getId() != null
-                        
-                        
-                        
                         && p.getEstado().getId() == 1) // 1 = PENDIENTE
                 .count();
     }
@@ -214,7 +220,7 @@ public class PedidoService {
         });
     }
 
-    // Obtener todos los pedidos con estado de pago PENDIENTE (ID 1)
+    // Obtener todos los pedidos con estado de pago PENDIENTE (ID 1 o 3)
     public List<Pedido> obtenerPedidosPendientes() {
         return pedidoRepository.findAll().stream()
                 .filter(p -> p.getEstado() != null
@@ -265,30 +271,60 @@ public class PedidoService {
         pedidoRepository.save(pedido);
     }
 
-    // Obtener pedidos PAGADOS para el panel de inicio de caja
-    public List<Pedido> obtenerPedidosPagadosBar() {
-        return obtenerPedidosPagados();
-    }
+    /**
+     * Marca un pedido como PAGADO desde caja, actualizando montos y generando la factura asociada.
+     */
+    public void marcarPedidoComoPagado(Integer pedidoId, Double montoRecibido) {
+        Pedido pedido = findById(pedidoId);
+        if (pedido == null) {
+            return;
+        }
 
-    // Obtener estadísticas de pedidos por mesero
-    public Map<String, Long> obtenerEstadisticasPorMesero(Integer usuarioId) {
-        List<Pedido> todosLosPedidos = pedidoRepository.findAll();
+        Double total = pedido.getTotal() != null ? pedido.getTotal() : 0.0;
+        if (montoRecibido == null) {
+            montoRecibido = total;
+        }
 
-        return todosLosPedidos.stream()
-                .filter(p -> p.getUsuario() != null && p.getUsuario().getNombre() != null)
-                .filter(p -> usuarioId == null || p.getUsuario().getId().equals(usuarioId.longValue()))
-                .collect(Collectors.groupingBy(
-                        p -> p.getUsuario().getNombre() + " " + p.getUsuario().getApellido(),
-                        Collectors.counting()
-                ))
-                .entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new
-                ));
+        pedido.setMontoRecibido(montoRecibido);
+        pedido.setCambio(montoRecibido - total);
+
+        // Cambiar estado del pedido a PAGADO (id = 2) si existe
+        estadoRepository.findById(2)
+                .ifPresent(pedido::setEstado);
+
+        // Actualizar estado de la mesa a DISPONIBLE si aplica
+        if (pedido.getMesa() != null) {
+            pedido.getMesa().setEstado("DISPONIBLE");
+            mesaRepository.save(pedido.getMesa());
+        }
+
+        // Crear factura asociada al pedido si aún no existe
+        if (pedido.getFactura() == null) {
+            Factura factura = new Factura();
+
+            factura.setPedido(pedido);
+            factura.setUsuario(pedido.getUsuario());
+
+            // Estado de la factura: PAGADO (usamos el mismo estado id=2 si existe)
+            estadoRepository.findById(2).ifPresent(factura::setEstado);
+
+            factura.setNumeroFactura("F-" + System.currentTimeMillis());
+            factura.setMonto(BigDecimal.valueOf(total));
+            factura.setSubtotal(BigDecimal.valueOf(total));
+            factura.setTotalPagar(BigDecimal.valueOf(total));
+            factura.setValorDescuento(BigDecimal.ZERO);
+            factura.setMetodoPago("EFECTIVO");
+            factura.setEstadoPago("PAGADO");
+
+            if (pedido.getMesa() != null) {
+                factura.setNumeroMesa(pedido.getMesa().getId());
+            }
+
+            facturaRepository.save(factura);
+            pedido.setFactura(factura);
+        }
+
+        pedidoRepository.save(pedido);
     }
 
     // Historial paginado y filtrado para la vista de mesero / admin
@@ -318,5 +354,27 @@ public class PedidoService {
         }
 
         return pedidoRepository.buscarHistorial(mesa, estado, desdeDateTime, hastaDateTime, usuarioId, pageable);
+    }
+
+    /**
+     * Devuelve estadísticas de pedidos agrupadas por mesero (usuario).
+     * Si usuarioId es null, se consideran todos los meseros; si no, solo ese mesero.
+     * La clave del mapa es el nombre completo del usuario y el valor es el número de pedidos.
+     */
+    public Map<String, Long> obtenerEstadisticasPorMesero(Integer usuarioId) {
+        return pedidoRepository.findAll().stream()
+                .filter(p -> p.getUsuario() != null)
+                .filter(p -> usuarioId == null
+                        || (p.getUsuario().getId() != null && p.getUsuario().getId().intValue() == usuarioId))
+                .collect(Collectors.groupingBy(
+                        p -> {
+                            Usuario u = p.getUsuario();
+                            String nombre = u.getNombre() != null ? u.getNombre() : "";
+                            String apellido = u.getApellido() != null ? u.getApellido() : "";
+                            String nombreCompleto = (nombre + " " + apellido).trim();
+                            return !nombreCompleto.isEmpty() ? nombreCompleto : (u.getCorreo() != null ? u.getCorreo() : "Sin nombre");
+                        },
+                        Collectors.counting()
+                ));
     }
 }
