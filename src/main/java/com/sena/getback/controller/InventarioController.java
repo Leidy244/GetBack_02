@@ -28,7 +28,13 @@ public class InventarioController {
 
     @GetMapping
     public String listarInventario(Model model) {
-        model.addAttribute("ingresosInventario", inventarioService.listarIngresosRecientes());
+        var ingresos = inventarioService.listarIngresosRecientes()
+                .stream()
+                .filter(i -> i.getRemision() == null
+                        || !"CONSUMO PEDIDO".equalsIgnoreCase(i.getRemision()))
+                .toList();
+
+        model.addAttribute("ingresosInventario", ingresos);
         model.addAttribute("nuevoIngreso", new Inventario());
         // Proveer lista de productos del menú para autocompletar y nombres existentes en inventario
         model.addAttribute("products", menuService.findAll());
@@ -47,8 +53,10 @@ public class InventarioController {
         model.addAttribute("inventarioNombres", new java.util.ArrayList<>(nombresSet));
 
 		// Stock total por producto e items en bajo stock (umbral fijo por ahora)
+		int stockThreshold = 5;
 		model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
-		model.addAttribute("bajoStock", inventarioService.obtenerProductosBajoStock(5));
+		model.addAttribute("bajoStock", inventarioService.obtenerProductosBajoStock(stockThreshold));
+		model.addAttribute("stockThreshold", stockThreshold);
         model.addAttribute("activeSection", "inventario");
         model.addAttribute("title", "Gestión de Inventario");
         return "admin";

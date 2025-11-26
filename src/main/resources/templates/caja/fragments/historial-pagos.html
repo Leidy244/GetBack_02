@@ -4,10 +4,33 @@
 <div th:fragment="historial-pagos">
     <div class="section-header">
         <h2><i class="fas fa-receipt"></i> Historial de Pagos</h2>
+        <p class="text-muted mb-0">
+            <span>Mostrando: </span>
+            <span th:switch="${filtro}">
+                <span th:case="'hoy'">Hoy</span>
+                <span th:case="'semana'">Última semana (lunes a domingo)</span>
+                <span th:case="'mes'">Este mes</span>
+                <span th:case="'anio'">Este año</span>
+                <span th:case="*">Todo el historial</span>
+            </span>
+        </p>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <div></div>
+        <div class="d-flex align-items-center gap-2">
+            <form th:action="@{/caja}" method="get" class="d-flex align-items-center gap-2">
+                <input type="hidden" name="section" value="historial-pagos"/>
+                <label for="historial-filtro" class="form-label mb-0">Ver:</label>
+                <select id="historial-filtro" name="filtro" class="form-select form-select-sm" style="width: auto;">
+                    <option value="" th:selected="${filtro == null or #strings.isEmpty(filtro)}">Todo</option>
+                    <option th:value="hoy" th:selected="${filtro == 'hoy'}">Hoy</option>
+                    <option th:value="semana" th:selected="${filtro == 'semana'}">Última semana</option>
+                    <option th:value="mes" th:selected="${filtro == 'mes'}">Este mes</option>
+                    <option th:value="anio" th:selected="${filtro == 'anio'}">Este año</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">Aplicar</button>
+            </form>
+        </div>
         <div class="d-flex align-items-center gap-2">
             <label for="historial-orden" class="form-label mb-0">Ordenar por:</label>
             <select id="historial-orden" class="form-select form-select-sm" style="width: auto;">
@@ -35,7 +58,7 @@
                     <td>
                         <strong th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</strong>
                         <br>
-                        <small th:text="${pago.fechaCreacion}">2025-11-12 18:30</small>
+                        <small th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}">12/11/2025 18:30</small>
                     </td>
                     <td>
                         <button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"

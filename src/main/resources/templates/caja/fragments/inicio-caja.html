@@ -16,7 +16,7 @@
 
 		<!-- Tarjetas resumen (clicables) -->
 		<div class="stats-grid">
-			<a th:href="@{/caja(section='historial-pagos', filtro='hoy')}" class="stat-card stat-card-link" title="Ver pagos realizados hoy">
+			<a th:href="@{/caja(section='historial-pagos')}" class="stat-card stat-card-link" title="Ver historial de pagos">
 				<div class="stat-icon bg-primary"><i class="fas fa-dollar-sign"></i></div>
 				<div class="stat-info">
 					<h3 th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
@@ -25,14 +25,14 @@
 				</div>
 			</a>
 		
-			<div class="stat-card stat-card-link">
+			<a th:href="@{/caja(section='pedidos')}" class="stat-card stat-card-link" title="Ver pedidos pendientes y completados">
 				<div class="stat-icon bg-warning"><i class="fas fa-undo"></i></div>
 				<div class="stat-info">
 					<h3 th:text="${pedidosPendientes}">0</h3>
 					<p>Pedidos Pendientes</p>
 					<small>Pedidos en proceso</small>
 				</div>
-			</div>
+			</a>
 		
 			<a th:href="@{/caja(section='pagos')}" class="stat-card stat-card-link" title="Ir a pedidos pendientes de cobro">
 				<div class="stat-icon bg-success"><i class="fas fa-list"></i></div>
@@ -42,105 +42,6 @@
 					<small th:text="${pedidosPendientesPago} + ' pedidos pendientes'">0 pedidos pendientes</small>
 				</div>
 			</a>
-		</div>
-
-		<!-- Sección 1: Pedidos generados (pendientes, área BAR) -->
-		<div class="pedidos-section mb-4">
-			<h3 class="pedidos-section-title"><i class="fas fa-list-alt"></i> Pedidos generados (BAR)</h3>
-
-			<div class="pedidos-grid" th:if="${pedidosPendientesBar != null and !#lists.isEmpty(pedidosPendientesBar)}">
-				<div class="pedido-card pedido-card-pendiente"
-					 th:each="pago, iStat : ${pedidosPendientesBar}"
-					 th:attr="data-pedido-id=${pago.id}">
-
-					<div class="pedido-card-header">
-						<div>
-							<span class="pedido-mesa" th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</span>
-							<span class="pedido-fecha" th:text="${pago.fechaCreacion}">2025-11-12 18:30</span>
-						</div>
-						<div class="pedido-total" th:text="${#strings.concat('$', #numbers.formatDecimal(pago.total, 0, 'POINT', 0, 'POINT'))}">$0</div>
-					</div>
-
-					<div class="pedido-card-body">
-						<div class="pedido-detalle-resumen">
-							<button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"
-									th:attr="data-pedido-id=${pago.id}, 
-											 data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
-											 data-total=${pago.total},
-											 data-detalle=${pago.orden}">
-								<span class="detalle-resumen-text">
-									Ver detalle del pedido
-								</span>
-							</button>
-						</div>
-						<div class="pedido-acciones">
-							<span class="badge bg-warning"
-								  th:text="${pago.estado != null ? pago.estado.nombreEstado : 'PENDIENTE'}">PENDIENTE</span>
-
-							<form th:action="@{/caja/marcar-completado}" method="post" class="d-inline">
-								<input type="hidden" name="pedidoId" th:value="${pago.id}" />
-								<button type="submit" class="btn btn-success btn-sm">
-									<i class="fas fa-check"></i> Completado
-								</button>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="pedidos-empty" th:if="${pedidosPendientesBar == null or #lists.isEmpty(pedidosPendientesBar)}">
-				<i class="fas fa-check-circle"></i>
-				<p>No hay pedidos generados pendientes de BAR.</p>
-			</div>
-		</div>
-
-		<!-- Sección 2: Pedidos completados (pagados, área BAR) -->
-		<div class="pedidos-section">
-			<h3 class="pedidos-section-title"><i class="fas fa-clipboard-check"></i> Pedidos completados (BAR)</h3>
-
-			<div class="pedidos-grid" th:if="${pedidosPagadosBar != null and !#lists.isEmpty(pedidosPagadosBar)}">
-				<div class="pedido-card pedido-card-completado collapsed"
-					 th:each="pago, iStat : ${pedidosPagadosBar}"
-					 th:attr="data-pedido-id=${pago.id}">
-
-					<div class="pedido-card-header pedido-toggle">
-						<div>
-							<span class="pedido-mesa" th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</span>
-							<span class="pedido-fecha" th:text="${pago.fechaCreacion}">2025-11-12 18:30</span>
-						</div>
-						<div class="pedido-total" th:text="${#strings.concat('$', #numbers.formatDecimal(pago.total, 0, 'POINT', 0, 'POINT'))}">$0</div>
-						<button type="button" class="pedido-toggle-btn" aria-label="Mostrar/ocultar detalle">
-							<i class="fas fa-chevron-down"></i>
-						</button>
-					</div>
-
-					<div class="pedido-card-body">
-						<div class="pedido-detalle-resumen">
-							<button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"
-									th:attr="data-origen='historial',
-											 data-pedido-id=${pago.id},
-											 data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
-											 data-total=${pago.total},
-											 data-recibido=${pago.montoRecibido},
-											 data-cambio=${pago.cambio},
-											 data-detalle=${pago.orden}">
-								<span class="detalle-resumen-text">
-									Ver detalle del pedido
-								</span>
-							</button>
-						</div>
-						<div class="pedido-acciones">
-							<span class="badge bg-success"
-								  th:text="${pago.estado != null ? pago.estado.nombreEstado : 'COMPLETADO'}">COMPLETADO</span>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="pedidos-empty" th:if="${pedidosPagadosBar == null or #lists.isEmpty(pedidosPagadosBar)}">
-				<i class="fas fa-inbox"></i>
-				<p>Aún no hay pedidos completados de BAR.</p>
-			</div>
 		</div>
 	</div>
 </section>

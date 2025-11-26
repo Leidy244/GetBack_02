@@ -64,10 +64,17 @@
 		<div class="menu-grid" id="menu-grid">
 			<div th:each="producto : ${productos}" class="product-item clickable-product" th:data-categoria="${producto.categoria.id}"
 				th:data-producto-id="${producto.id}" th:data-nombre="${producto.nombreProducto.toLowerCase()}"
-				th:data-precio="${producto.precio}" th:data-producto-nombre="${producto.nombreProducto}">
+				th:data-precio="${producto.precio}" th:data-producto-nombre="${producto.nombreProducto}"
+				th:data-area="${producto.categoria.area}"
+				th:data-stock="${stockBarPorProducto[producto.id]} != null ? ${stockBarPorProducto[producto.id]} : -1">
 				<div class="product-info">
-					<img th:if="${producto.imagen}" th:src="${producto.imagen}" alt="Imagen del evento"
-						th:alt="${producto.nombreProducto}" class="product-img">
+					<div class="product-image-wrapper">
+						<img th:if="${producto.imagen}" th:src="${producto.imagen}" alt="Imagen del evento"
+							th:alt="${producto.nombreProducto}" class="product-img">
+						<span class="product-out-of-stock-badge" th:if="${stockBarPorProducto[producto.id]} == 0">
+							<i class="fas fa-ban"></i> Agotado
+						</span>
+					</div>
 					<div class="product-text">
 						<div class="product-name" th:text="${producto.nombreProducto}">Nombre del producto</div>
 						<div class="product-description" th:text="${producto.descripcion}">Descripción del producto

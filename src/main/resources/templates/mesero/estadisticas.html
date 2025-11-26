@@ -7,60 +7,6 @@
     <link rel="icon" type="image/png" th:href="@{/images/Logo_Ignitia.png}">
     <link rel="stylesheet" th:href="@{/css/configuracionMesero.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .stats-container {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .stats-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #fff;
-            margin-bottom: 10px;
-        }
-        .stats-header h3 {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .chart-wrapper {
-            background: #111;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.5);
-            min-height: 360px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #chart-loading {
-            color: #f0f0f0;
-            text-align: center;
-        }
-        #chart-loading .spinner {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.2);
-            border-top-color: #00c6ff;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        #chart-image {
-            max-width: 100%;
-            height: auto;
-            display: none;
-        }
-        .chart-error {
-            color: #ff6b6b;
-            font-size: 0.9rem;
-        }
-    </style>
 </head>
 <body>
 <header class="header">
