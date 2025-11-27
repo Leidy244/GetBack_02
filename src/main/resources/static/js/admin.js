@@ -946,7 +946,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const next = document.getElementById('activityNext');
   const pageLabel = document.getElementById('activityPageLabel');
   let activityPage = 0;
-  const activitySize = 5;
+  const activitySize = 6;
   function fmtDate(iso){ try{ const d = new Date(iso); return d.toLocaleString(); } catch(_){ return iso || ''; } }
   function typeIcon(type){
     const t = (type||'').toUpperCase();
@@ -993,6 +993,59 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btn) btn.addEventListener('click', (e)=>{ e.preventDefault(); loadActivity(); });
   if (prev) prev.addEventListener('click', (e)=>{ e.preventDefault(); activityPage = Math.max(0, activityPage-1); loadActivity(); });
   if (next) next.addEventListener('click', (e)=>{ e.preventDefault(); activityPage = activityPage+1; loadActivity(); });
+  const modalOpen = document.getElementById('activityModalOpen');
+  const modalList = document.getElementById('activityModalList');
+  const modalInfo = document.getElementById('activityModalInfo');
+  const modalForm = document.getElementById('activityModalForm');
+  const modalReset = document.getElementById('activityModalReset');
+  const typeSelect = document.getElementById('activityTypeSelect');
+  const dateStart = document.getElementById('activityDateStart');
+  const dateEnd = document.getElementById('activityDateEnd');
+  const queryInput = document.getElementById('activityQuery');
+  let activityAll = [];
+  function renderModal(items){
+    if (!modalList) return;
+    if (!items || items.length === 0){
+      modalList.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h4>Sin actividad</h4><p>Aquí verás los últimos movimientos del sistema.</p></div>';
+      if (modalInfo) modalInfo.textContent = 'Resultados: 0';
+      return;
+    }
+    const rows = items.map(a => `
+      <div class="activity-item ${a.type ? 'activity-'+String(a.type).toLowerCase() : ''}">
+        <div class="activity-icon"><i class="fas ${typeIcon(a.type)}"></i></div>
+        <div class="activity-content">
+          <div class="activity-title"><strong>${a.type || 'Evento'}</strong> — ${a.message || ''}</div>
+          <div class="activity-meta">
+            <span class="activity-time"><i class="far fa-clock"></i> ${fmtDate(a.timestamp)}</span>
+            ${a.username ? `<span><i class="fas fa-user"></i> ${a.username}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+    modalList.innerHTML = rows;
+    if (modalInfo) modalInfo.textContent = `Resultados: ${items.length}`;
+  }
+  function loadAllActivity(){
+    return fetch('/api/admin/activity?page=0&size=200').then(r=>r.json()).then(data=>{ activityAll = Array.isArray(data)? data : []; renderModal(activityAll); }).catch(()=>{});
+  }
+  function applyModalFilter(){
+    const t = typeSelect ? String(typeSelect.value||'').toUpperCase() : '';
+    const q = queryInput ? String(queryInput.value||'').toLowerCase() : '';
+    const ds = dateStart ? String(dateStart.value||'') : '';
+    const de = dateEnd ? String(dateEnd.value||'') : '';
+    const filtered = activityAll.filter(a => {
+      let ok = true;
+      if (t) ok = ok && String(a.type||'').toUpperCase() === t;
+      if (q) ok = ok && String(a.message||'').toLowerCase().includes(q);
+      if (ds){ try { const ts = new Date(a.timestamp); ok = ok && (ts >= new Date(ds)); } catch(_){} }
+      if (de){ try { const ts = new Date(a.timestamp); const end = new Date(de); end.setHours(23,59,59,999); ok = ok && (ts <= end); } catch(_){} }
+      return ok;
+    });
+    renderModal(filtered);
+  }
+  if (modalOpen) modalOpen.addEventListener('click', () => { loadAllActivity(); });
+  if (modalForm) modalForm.addEventListener('submit', (e) => { e.preventDefault(); applyModalFilter(); });
+  if (modalReset) modalReset.addEventListener('click', () => { if (typeSelect) typeSelect.value=''; if (queryInput) queryInput.value=''; if (dateStart) dateStart.value=''; if (dateEnd) dateEnd.value=''; renderModal(activityAll); });
   
 });
 

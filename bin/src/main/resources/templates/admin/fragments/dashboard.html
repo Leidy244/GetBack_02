@@ -1,106 +1,190 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<section th:fragment="dashboard" class="content-section">
+    <div class="dashboard-container">
 
-<head>
-	<link rel="stylesheet" href="admin-styles.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+        <div class="dashboard-header">
+            <div class="header-left">
+                <h1>Panel de Control</h1>
+                <p class="subtitle">Resumen general del sistema</p>
+            </div>
+            <div class="header-right">
+                <div class="date-badge" title="Fecha y hora actuales">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="dashboardDate"></span>
+                </div>
+            </div>
+        </div>
 
-<body>
-	<section th:fragment="dashboard" class="content-section">
+        <div class="row mt-2 mb-2 g-3 align-items-stretch justify-content-center dashboard-top">
 
-		<!-- Header del dashboard -->
-		<div class="section-header">
-			<h2><i class="fas fa-tachometer-alt"></i> Panel de Control</h2>
-		</div>
-		</div>
-		<div class="stats-grid compact">
-			<!-- Categorías -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-tags"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalCategorias}">0</h3>
-					<p>Categorías agregadas</p>
-					<small>Clasificación del menú</small>
-				</div>
-			</div>
+            <div class="col-12 col-lg-7 ps-lg-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-2" style="display:flex;flex-direction:column;">
+                        <div class="activity-header" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1000px;">
+                                <h5 class="card-title mb-0" id="recent-activity-title"><i class="fas fa-bolt"></i> Actividad reciente</h5>
+                                <button class="btn btn-outline-primary btn-sm btn-view-all" id="activityModalOpen" data-bs-toggle="modal" data-bs-target="#activityModal" title="Ver toda la actividad"><i class="fas fa-list"></i></button>
+                            </div>
+                            <div class="activity-controls" style="display:flex;align-items:center;gap:8px;">
+                                <button class="carousel-btn" id="activityPrev" title="Anterior"><i class="fas fa-chevron-left"></i></button>
+                                <span id="activityPageLabel" style="margin:0;">Página 1</span>
+                                <button class="carousel-btn" id="activityNext" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div id="recentActivity" class="activity-list" aria-live="polite" style="flex:1 1 auto;">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <h4>Sin actividad</h4>
+                                <p>Aquí verás los últimos movimientos del sistema.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-			<!-- Productos -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-cocktail"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalProductos}">0</h3>
-					<p>Productos en el menú</p>
-					<small>Bebidas y snacks disponibles</small>
-				</div>
-			</div>
+            <div class="col-12 col-lg-5 pe-lg-0">
+                <div class="d-flex flex-column gap-2 compact-stat-cards">
+                    <div class="stat-card-compact">
+                        <div class="stat-content">
+                            <div class="stat-icon sales"><i class="fas fa-shopping-cart"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" th:text="${ventasHoy}">0</div>
+                                <div class="stat-label">Ventas Hoy</div>
+                                <div class="stat-description" th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
 
-			<!-- Eventos -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-calendar-alt"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalEventos}">0</h3>
-					<p>Eventos programados</p>
-					<small>Próximos shows en el bar</small>
-				</div>
-			</div>
+                    <div class="stat-card-compact">
+                        <div class="stat-content">
+                            <div class="stat-icon income"><i class="fas fa-chart-line"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                                <div class="stat-label">Ingresos Totales</div>
+                                <div class="stat-description" th:text="${totalVentas} + ' ventas'">0 ventas</div>
+                            </div>
+                        </div>
+                    </div>
 
-			<!-- Usuarios -->
-			<div class="stat-card compact">
-				<div class="stat-icon">
-					<i class="fas fa-users"></i>
-				</div>
-				<div class="stat-info">
-					<h3 th:text="${totalUsuarios}">0</h3>
-					<p>Usuarios registrados</p>
-					<small>Clientes y administradores</small>
-				</div>
-			</div>
-		</div>
+                    <div class="stat-card-compact">
+                        <div class="stat-content">
+                            <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" th:text="${pedidosPendientes}">0</div>
+                                <div class="stat-label">Pedidos Pendientes</div>
+                                <div class="stat-description">Por preparar</div>
+                            </div>
+                        </div>
+                    </div>
 
-		<!-- Actividad reciente -->
-		<div class="recent-activity minimal">
-			<div class="section-header minimal">
-				<h3><i class="fas fa-clock"></i> Actividad Reciente</h3>
-				<a href="#" class="view-all">Ver todo</a>
-			</div>
-			<div class="activity-list minimal">
-				<div class="activity-item minimal">
-					<div class="activity-icon minimal">
-						<i class="fas fa-plus"></i>
-					</div>
-					<div class="activity-content minimal">
-						<p>Nuevo producto <strong>Heineken</strong> agregado</p>
-						<small>Hace 2 horas</small>
-					</div>
-				</div>
-				<div class="activity-item minimal">
-					<div class="activity-icon minimal">
-						<i class="fas fa-edit"></i>
-					</div>
-					<div class="activity-content minimal">
-						<p>Categoría <strong>Bebidas calientes</strong> actualizada</p>
-						<small>Hace 5 horas</small>
-					</div>
-				</div>
-				<div class="activity-item minimal">
-					<div class="activity-icon minimal">
-						<i class="fas fa-user-plus"></i>
-					</div>
-					<div class="activity-content minimal">
-						<p>Nuevo usuario registrado</p>
-						<small>Ayer a las 14:30</small>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-</body>
+                    <div class="stat-card-compact">
+                        <div class="stat-content">
+                            <div class="stat-icon users"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" th:text="${totalUsuarios}">0</div>
+                                <div class="stat-label">Usuarios</div>
+                                <div class="stat-description">Activos</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-</html>
+        <div class="analytics-row mt-3">
+            <div class="charts-section">
+                <div class="charts-header">
+                    <h3><i class="fas fa-chart-pie"></i> Estadísticas Detalladas</h3>
+                    <div class="chart-filters">
+                        <div class="chart-filter-btn active" data-filter="products">Productos</div>
+                        <div class="chart-filter-btn" data-filter="categories">Categorías</div>
+                        <div class="chart-filter-btn" data-filter="events">Eventos</div>
+                        <div class="chart-filter-btn" data-filter="users">Usuarios</div>
+                        <div class="chart-filter-btn" data-filter="mesas">Mesas</div>
+                    </div>
+                    <div class="d-flex" style="gap:8px;align-items:center;">
+                        <button class="carousel-btn btn btn-light btn-sm" id="carouselPrev" title="Anterior"><i class="fas fa-chevron-left"></i></button>
+                        <button class="carousel-btn btn btn-light btn-sm" id="carouselNext" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="charts-container active" id="charts-products">
+                    <div class="charts-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-title"><i class="fas fa-chart-bar"></i> Productos por Categoría</div>
+                            <canvas id="chartCategorias2" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container" id="charts-categories">
+                    <div class="charts-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-title"><i class="fas fa-chart-pie"></i> Distribución de Productos por Categoría</div>
+                            <canvas id="chartCategorias3" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container" id="charts-events">
+                    <div class="charts-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-title"><i class="fas fa-chart-line"></i> Eventos por Mes</div>
+                            <canvas id="chartEventos2" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container" id="charts-users">
+                    <div class="charts-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-title"><i class="fas fa-user-friends"></i> Usuarios por Rol</div>
+                            <canvas id="chartUsuarios2" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container" id="charts-mesas">
+                    <div class="charts-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-title"><i class="fas fa-chair"></i> Estado de Mesas</div>
+                            <canvas id="chartMesas2" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="activity-section" aria-label="Stock por producto">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-2" style="display:flex;flex-direction:column;">
+                        <h5 class="card-title mb-2"><i class="fas fa-chart-bar me-2"></i>Stock actual por producto</h5>
+                        
+                        <div class="table-responsive" style="flex:1 1 auto; overflow-y: auto; overflow-x: hidden;">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-end">Stock</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="entry : ${stockPorProducto.entrySet()}">
+                                    <td th:text="${entry.key}"></td>
+                                    <td class="text-end">
+                                        <span th:classappend="${bajoStock != null and bajoStock.containsKey(entry.key)} ? 'badge bg-warning text-dark' : 'badge bg-success'"
+                                              th:text="${entry.value}"></span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${stockPorProducto.isEmpty()}">
+                                    <td colspan="2" class="text-center text-muted py-3">Sin datos de stock aún.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+</section>

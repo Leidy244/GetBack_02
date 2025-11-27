@@ -25,6 +25,54 @@
             </div>
         </div>
 
+        <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="activityModalLabel"><i class="fas fa-bolt"></i> Actividad del sistema</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="activityModalForm" class="row g-2 align-items-end">
+                            <div class="col-sm-6 col-md-3">
+                                <label class="form-label">Desde</label>
+                                <input type="date" class="form-control" id="activityDateStart">
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <label class="form-label">Hasta</label>
+                                <input type="date" class="form-control" id="activityDateEnd">
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <label class="form-label">Sección</label>
+                                <select class="form-select" id="activityTypeSelect">
+                                    <option value="">Todas</option>
+                                    <option value="PRODUCT">PRODUCT</option>
+                                    <option value="CATEGORY">CATEGORY</option>
+                                    <option value="USER">USER</option>
+                                    <option value="PROFILE">PROFILE</option>
+                                    <option value="EVENT">EVENT</option>
+                                    <option value="TABLE">TABLE</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <label class="form-label">Buscar</label>
+                                <input type="text" class="form-control" id="activityQuery" placeholder="Texto">
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary" id="activityModalApply">Aplicar</button>
+                                <button type="button" class="btn btn-secondary" id="activityModalReset">Reset</button>
+                            </div>
+                        </form>
+                        <div id="activityModalInfo" class="text-muted small mt-2"></div>
+                        <div id="activityModalList" class="mt-2" style="max-height: 500px; overflow-y: auto;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
      
 </body>
 </html>

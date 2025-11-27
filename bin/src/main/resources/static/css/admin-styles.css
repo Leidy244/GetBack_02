@@ -2588,3 +2588,37 @@ body {
   font-weight: 600;
   margin-bottom: 0;
 }
+/* Tarjetas KPI más estrechas en desktop */
+.compact-stat-cards {
+    align-items: flex-start;
+}
+
+.compact-stat-cards .stat-card-compact {
+    width: 100%;
+    max-width: 320px;
+}
+
+@media (max-width: 992px) {
+    .compact-stat-cards {
+        align-items: stretch;
+    }
+    .compact-stat-cards .stat-card-compact {
+        max-width: none;
+    }
+}
+.dashboard-container { text-align: initial; }
+.dashboard-container .dashboard-header { flex-direction: row; align-items: center; justify-content: space-between; }
+.dashboard-container .charts-header { justify-content: center; }
+.dashboard-container .chart-filters { display: flex; justify-content: center; }
+.dashboard-container .analytics-row { justify-items: center; }
+.compact-stat-cards { align-items: center; }
+.compact-stat-cards .stat-card-compact { margin-left: auto; margin-right: auto; }
+.dashboard-container .charts-grid, .dashboard-container .charts-section, .dashboard-container .activity-section { margin-left: auto; margin-right: auto; }
+.dashboard-container .table th, .dashboard-container .table td { text-align: center; }
+.dashboard-container .charts-header { display:flex; align-items:center; gap:10px; margin-bottom:.5rem !important; padding-bottom:.5rem !important; }
+.dashboard-container .chart-filters { display:flex; justify-content:center; flex-wrap: nowrap; }
+.dashboard-container .chart-filter-btn { padding: 4px 10px !important; }
+.dashboard-container .carousel-btn { height: 28px; }
+.dashboard-container .dashboard-top { max-width: 1000px; margin-left: auto; margin-right: auto; }
+.dashboard-container .charts-section, .dashboard-container .activity-section { max-width: 1000px; }
+.btn-view-all{ padding:2px 8px !important; line-height:1 !important; }
