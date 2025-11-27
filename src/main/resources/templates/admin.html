@@ -118,9 +118,13 @@
 			</div>
 			
 			<!-- Sección de ventas -->
-			<div th:if="${activeSection == 'ventas'}">
-			    <div th:replace="admin/fragments/ventas :: ventas"></div>
-			</div>
+            <div th:if="${activeSection == 'ventas'}">
+                <div th:replace="admin/fragments/ventas :: ventas"></div>
+            </div>
+
+            <div th:if="${activeSection == 'estadisticas'}" class="content-section">
+                <div th:replace="~{admin/fragments/estadisticas :: estadisticas}"></div>
+            </div>
 		</div>
 	</main>
 

@@ -345,6 +345,14 @@ public class AdminController {
 				model.addAttribute("roles", rolRepository.findAll());
 			}
 
+			// ESTADISTICAS
+			if ("estadisticas".equals(section)) {
+				int stockThreshold = 5;
+				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
+				model.addAttribute("bajoStock", inventarioService.obtenerProductosBajoStock(stockThreshold));
+				model.addAttribute("stockThreshold", stockThreshold);
+			}
+
 			// VENTAS - NUEVA SECCIÓN
 			if ("ventas".equals(section)) {
 				java.util.List<Factura> facturas = facturaRepository.findAll();

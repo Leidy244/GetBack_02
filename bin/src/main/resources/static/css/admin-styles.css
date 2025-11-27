@@ -2621,4 +2621,9 @@ body {
 .dashboard-container .carousel-btn { height: 28px; }
 .dashboard-container .dashboard-top { max-width: 1000px; margin-left: auto; margin-right: auto; }
 .dashboard-container .charts-section, .dashboard-container .activity-section { max-width: 1000px; }
-.btn-view-all{ padding:2px 8px !important; line-height:1 !important; }
+.btn-view-all{ padding:2px 8px !important; line-height:1 !important; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.btn-view-all i{ font-size:1rem; }
+.btn-view-all .btn-view-all-text{ font-size:.7rem; }
+.activity-top-row{ position:relative; width:100%; max-width:1000px; min-height:32px; }
+.activity-top-row h5{ position:absolute; left:50%; transform:translateX(-50%); margin:0; }
+.activity-top-row .btn-view-all{ position:absolute; right:0; top:50%; transform:translateY(-50%); }

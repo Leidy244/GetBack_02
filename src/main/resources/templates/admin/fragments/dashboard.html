@@ -24,9 +24,9 @@
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-2" style="display:flex;flex-direction:column;">
                         <div class="activity-header" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1000px;">
+                            <div class="activity-top-row">
                                 <h5 class="card-title mb-0" id="recent-activity-title"><i class="fas fa-bolt"></i> Actividad reciente</h5>
-                                <button class="btn btn-outline-primary btn-sm btn-view-all" id="activityModalOpen" data-bs-toggle="modal" data-bs-target="#activityModal" title="Ver toda la actividad"><i class="fas fa-list"></i></button>
+                                <button class="btn btn-outline-primary btn-sm btn-view-all" id="activityModalOpen" data-bs-toggle="modal" data-bs-target="#activityModal" title="Ver toda la actividad"><i class="fas fa-list"></i><span class="btn-view-all-text">Ver todo</span></button>
                             </div>
                             <div class="activity-controls" style="display:flex;align-items:center;gap:8px;">
                                 <button class="carousel-btn" id="activityPrev" title="Anterior"><i class="fas fa-chevron-left"></i></button>
@@ -99,109 +99,7 @@
             </div>
         </div>
 
-        <!-- Analítica Graficas + Actividad reciente lado a lado -->
-        <div class="analytics-row mt-3">
-
-            <!-- Gráficas -->
-            <div class="charts-section">
-                <div class="charts-header">
-                    <h3><i class="fas fa-chart-pie"></i> Estadísticas Detalladas</h3>
-                    <div class="chart-filters">
-                        <div class="chart-filter-btn active" data-filter="products">Productos</div>
-                        <div class="chart-filter-btn" data-filter="categories">Categorías</div>
-                        <div class="chart-filter-btn" data-filter="events">Eventos</div>
-                        <div class="chart-filter-btn" data-filter="users">Usuarios</div>
-                        <div class="chart-filter-btn" data-filter="mesas">Mesas</div>
-                    </div>
-                    <div class="d-flex" style="gap:8px;align-items:center;">
-                        <button class="carousel-btn btn btn-light btn-sm" id="carouselPrev" title="Anterior"><i class="fas fa-chevron-left"></i></button>
-                        <button class="carousel-btn btn btn-light btn-sm" id="carouselNext" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                </div>
-
-                <!-- Productos -->
-                <div class="charts-container active" id="charts-products">
-                    <div class="charts-grid">
-                        <div class="chart-card full-width">
-                            <div class="chart-title"><i class="fas fa-chart-bar"></i> Productos por Categoría</div>
-                            <canvas id="chartCategorias2" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Categorías -->
-                <div class="charts-container" id="charts-categories">
-                    <div class="charts-grid">
-                        <div class="chart-card full-width">
-                            <div class="chart-title"><i class="fas fa-chart-pie"></i> Distribución de Productos por Categoría</div>
-                            <canvas id="chartCategorias3" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Eventos -->
-                <div class="charts-container" id="charts-events">
-                    <div class="charts-grid">
-                        <div class="chart-card full-width">
-                            <div class="chart-title"><i class="fas fa-chart-line"></i> Eventos por Mes</div>
-                            <canvas id="chartEventos2" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Usuarios -->
-                <div class="charts-container" id="charts-users">
-                    <div class="charts-grid">
-                        <div class="chart-card full-width">
-                            <div class="chart-title"><i class="fas fa-user-friends"></i> Usuarios por Rol</div>
-                            <canvas id="chartUsuarios2" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mesas -->
-                <div class="charts-container" id="charts-mesas">
-                    <div class="charts-grid">
-                        <div class="chart-card full-width">
-                            <div class="chart-title"><i class="fas fa-chair"></i> Estado de Mesas</div>
-                            <canvas id="chartMesas2" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stock actual (movido abajo en lugar de actividad) -->
-            <section class="activity-section" aria-label="Stock por producto">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body p-2" style="display:flex;flex-direction:column;">
-                        <h5 class="card-title mb-2"><i class="fas fa-chart-bar me-2"></i>Stock actual por producto</h5>
-                        
-                        <div class="table-responsive" style="flex:1 1 auto; overflow-y: auto; overflow-x: hidden;">
-                            <table class="table table-sm align-middle mb-0">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>Producto</th>
-                                    <th class="text-end">Stock</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="entry : ${stockPorProducto.entrySet()}">
-                                    <td th:text="${entry.key}"></td>
-                                    <td class="text-end">
-                                        <span th:classappend="${bajoStock != null and bajoStock.containsKey(entry.key)} ? 'badge bg-warning text-dark' : 'badge bg-success'"
-                                              th:text="${entry.value}"></span>
-                                    </td>
-                                </tr>
-                                <tr th:if="${stockPorProducto.isEmpty()}">
-                                    <td colspan="2" class="text-center text-muted py-3">Sin datos de stock aún.</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
+        
 
     </div>
 

@@ -84,6 +84,10 @@
 				<div th:replace="~{admin/fragments/users :: users}"></div>
 			</div>
 
+			<div th:if="${activeSection == 'estadisticas'}" class="content-section">
+				<div th:replace="~{admin/fragments/estadisticas :: estadisticas}"></div>
+			</div>
+
 		</div>
 	</main>
 

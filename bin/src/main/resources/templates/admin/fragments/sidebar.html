@@ -39,6 +39,10 @@
 			<a th:href="@{/users}" class="nav-link">
 				<i class="fas fa-users"></i> Usuarios
 			</a>
+			<a th:href="@{/admin(activeSection='estadisticas')}"
+			   th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-chart-pie"></i> Estadísticas
+			</a>
 		</nav>
 
 		

@@ -10,7 +10,7 @@
 			</div>
 		</div>
 
-		<nav class="nav flex-column sidebar-section">
+        <nav class="nav flex-column sidebar-section">
 			<a th:href="@{/admin(activeSection = 'perfil')}"
 				th:classappend="${(activeSection == 'perfil' or activeSection == null)} ? 'nav-link active' : 'nav-link'">
 				<i class="fas fa-user"></i> Perfil Usuario
@@ -54,11 +54,15 @@
 				<i class="fas fa-id-card"></i>Clientes frecuentes
 			</a>
 
-			<a th:href="@{/admin(activeSection='ventas')}"
-			   th:classappend="${activeSection == 'ventas'} ? 'nav-link active' : 'nav-link'">
-			    <i class="fas fa-history"></i> Historial de ventas
-			</a>
-		</nav>
+            <a th:href="@{/admin(activeSection='ventas')}"
+               th:classappend="${activeSection == 'ventas'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-history"></i> Historial de ventas
+            </a>
+            <a th:href="@{/admin(activeSection='estadisticas')}"
+               th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-chart-pie"></i> Estadísticas
+            </a>
+        </nav>
 		<!-- Footer compacto -->
 		<div class="sidebar-footer">
 			<p class="text-secondary small mb-0">
