@@ -79,49 +79,83 @@
 
 /* ===== TEMAS DE COLOR DEL ADMIN (configuración independiente) ===== */
 body[data-admin-theme="azul"] {
-	--primary-color: #1D4ED8;
-	--primary-light: #3B82F6;
-	--primary-dark: #1E3A8A;
-	--secondary-color: #0EA5E9;
-	--primary-gradient: linear-gradient(135deg, #1D4ED8, #0EA5E9);
-	--sidebar-gradient: var(--primary-gradient);
+	--primary-color: #0066FF;        /* Azul puro y brillante */
+	--primary-light: #5E9AFF;        /* Azul luz suave */
+	--primary-dark: #0047CC;         /* Azul intenso */
+	--secondary-color: #00C2FF;      /* Azul cyan vibrante */
+	--accent-color: #0088FF;         /* Azul intermedio */
+	--primary-gradient: linear-gradient(135deg, #0047CC, #0066FF, #00C2FF);
+	--sidebar-gradient: linear-gradient(150deg, #0047CC 0%, #5E9AFF 50%, #00C2FF 100%);
 }
 
-body[data-admin-theme="verde"] {
+[data-color="verde"] {
+	/* Manteniendo compatibilidad con nombres originales */
+	--morado: var(--primary-color);
+	--turquesa: var(--secondary-color);
+	--rosado: var(--primary-light);
+	--gradiente: var(--primary-gradient);
+	
+	/* Sistema de colores verde */
 	--primary-color: #065F46;
 	--primary-light: #10B981;
 	--primary-dark: #064E3B;
 	--secondary-color: #22C55E;
-	--primary-gradient: linear-gradient(135deg, #065F46, #22C55E);
-	--sidebar-gradient: var(--primary-gradient);
+	--accent-color: #34D399;
+	--primary-gradient: linear-gradient(135deg, #064E3B, #065F46, #22C55E);
+	--sidebar-gradient: linear-gradient(160deg, #064E3B, #10B981, #22C55E);
 }
 
 body[data-admin-theme="rojo"] {
-	--primary-color: #B91C1C;
-	--primary-light: #F97373;
-	--primary-dark: #7F1D1D;
-	--secondary-color: #F97316;
-	--primary-gradient: linear-gradient(135deg, #B91C1C, #F97316);
-	--sidebar-gradient: var(--primary-gradient);
+	--primary-color: #8B5CF6;        /* Morado eléctrico */
+	--primary-light: #C4B5FD;        /* Morado pastel luminoso */
+	--primary-dark: #6D28D9;         /* Morado real */
+	--secondary-color: #E879F9;      /* Rosa morado neón */
+	--accent-color: #A855F7;         /* Morado intermedio */
+	--primary-gradient: linear-gradient(135deg, #6D28D9, #8B5CF6, #E879F9);
+	--sidebar-gradient: linear-gradient(150deg, #6D28D9 0%, #C4B5FD 100%);
 }
 
-body[data-admin-theme="dorado"] {
-	--primary-color: #92400E;
-	--primary-light: #D97706;
-	--primary-dark: #78350F;
-	--secondary-color: #FBBF24;
-	--primary-gradient: linear-gradient(135deg, #92400E, #FBBF24);
-	--sidebar-gradient: var(--primary-gradient);
+[data-color="dorado"] {
+	--morado: #A47E1B;         /* Dorado oscuro (primary-dark) */
+	--turquesa: #E8D9A6;       /* Dorado claro (primary-light) */
+	--rosado: #C9A227;         /* Dorado principal (primary-color) */
+	--gradiente: linear-gradient(135deg, #A47E1B, #C9A227, #E8D9A6);
+	
+	/* Variables del tema dorado completo */
+	--primary-color: #C9A227;
+	--primary-light: #E8D9A6;
+	--primary-dark: #A47E1B;
+	--secondary-color: #D6B94C;
+	--accent-color: #E8C04B;
+	--primary-gradient: linear-gradient(135deg, #A47E1B, #C9A227, #E8D9A6);
+	--sidebar-gradient: linear-gradient(150deg, #A47E1B 0%, #C9A227 70%);
 }
 
 body[data-admin-theme="rosa"] {
-	--primary-color: #BE185D;
-	--primary-light: #EC4899;
-	--primary-dark: #9D174D;
-	--secondary-color: #F9A8D4;
-	--primary-gradient: linear-gradient(135deg, #BE185D, #F9A8D4);
-	--sidebar-gradient: var(--primary-gradient);
+  --primary-color:    #DB2777;   /* Rosa intenso perfecto (Pink 600 de Tailwind) */
+  --primary-light:   #F472B6;   /* Rosa suave y luminoso */
+  --primary-dark:    #BE185D;   /* Rosa profundo (lo mantengo como dark, pero más rico) */
+  --secondary-color: #FBCFE8;   /* Rosa muy claro, casi polvo (reemplaza el #F9A8D4 que era muy saturado) */
+  --accent-color:    #FDA4AF;   /* Rosa salmón suave para detalles */
+
+  /* Gradientes suaves y con profundidad (parecen pétalos o cristal rosa) */
+  --primary-gradient: linear-gradient(135deg,
+                      #BE185D 0%,
+                      #DB2777 35%,
+                      #F472B6 70%,
+                      #FBCFE8 100%);
+
+  --sidebar-gradient: linear-gradient(145deg,
+                      #BE185D 0%,
+                      #DB2777 40%,
+                      #FBCFE8 100%);
+
+  /* Extras para que quede de lujo */
+  --pink-glow:       0 0 20px rgba(219, 39, 119, 0.3);
+  --pink-border:     1px solid rgba(251, 207, 232, 0.5);
+  --text-on-pink:    #ffffff;
 }
+
 
 body[data-admin-theme="gris"] {
 	--primary-color: #4B5563;
@@ -219,80 +253,74 @@ body.admin-font-large {
 	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
 	--shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
 }
+/* ===== MODO CLARO ===== */
 
-/* ===== CONTRASTE MODO CLARO ===== */
-
-/* 0: BAJO - EXTREMADAMENTE suave, casi sin contraste */
+/* ===== MODO CLARO - CONTRASTE 0: CASI INVISIBLE ===== */
 body:not([data-theme="dark"])[data-admin-contrast="0"] {
-	--bg-primary: #FFFFFF;
-	--bg-secondary: #FFFFFF;
-	--bg-tertiary: #F9FAFB;
-	--text-primary: #4A5568;
-	/* más oscuro, muy legible */
-	--text-secondary: #718096;
-	/* gris medio (letra pequeña) */
-	--text-light: #A0AEC0;
-	/* gris claro */
-	--border-color: #E5E7EB;
+  --bg-primary:     #FEFEFE;
+  --bg-secondary:   #FEFEFE;
+  --bg-tertiary:    #FDFDFD;
+  --text-primary:   #B8BEC5;   /* Gris más claro aún */
+  --text-secondary: #C5CAD0;
+  --text-light:     #D0D4D8;
+  --border-color:   #F9F9F9;   /* Casi indistinguible del fondo */
 }
 
-/* 1: NORMAL - Contraste estándar */
+/* 1: NORMAL - Tus valores originales (los más equilibrados) */
 body:not([data-theme="dark"])[data-admin-contrast="1"] {
-	--bg-primary: #FFFFFF;
-	--bg-secondary: #F8F9FA;
-	--bg-tertiary: #E9ECEF;
-	--text-primary: #212529;
-	--text-secondary: #6C757D;
-	--border-color: #DEE2E6;
+  --bg-primary:     #FFFFFF;
+  --bg-secondary:   #F8F9FA;
+  --bg-tertiary:    #E9ECEF;
+  --text-primary:   #212529;
+  --text-secondary: #6C757D;
+  --border-color:   #DEE2E6;
 }
 
-/* 2: MUY ALTO - Contraste extremo */
+/* 2: MUY ALTO - Contraste extremo (más fuerte que antes) */
 body:not([data-theme="dark"])[data-admin-contrast="2"] {
-	--bg-primary: #FFFFFF;
-	--bg-secondary: #FFFFFF;
-	--bg-tertiary: #F0F0F0;
-	--text-primary: #000000;
-	--text-secondary: #333333;
-	--border-color: #000000;
+  --bg-primary:     #FFFFFF;
+  --bg-secondary:   #FFFFFF;
+  --bg-tertiary:    #EEEEEE;
+  --text-primary:   #000000;
+  --text-secondary: #111111;
+  --text-light:     #222222;
+  --border-color:   #000000;   /* bordes negros puros */
 }
 
-/* ===== CONTRASTE MODO OSCURO ===== */
+/* ===== MODO OSCURO ===== */
 
-/* 0: BAJO - EXTREMADAMENTE suave en oscuro */
+/* ===== MODO OSCURO - CONTRASTE 0: CASI INVISIBLE ===== */
 body[data-theme="dark"][data-admin-contrast="0"] {
-	--bg-primary: #2A2E38;
-	/* Oscuro muy suave */
-	--bg-secondary: #272B34;
-	--bg-tertiary: #242831;
-	--text-primary: #8C929E;
-	/* Gris medio-bajo, poco contraste */
-	--text-secondary: #6A707D;
-	--text-light: #5A606D;
-	--border-color: #3A3E48;
-	/* Casi igual al fondo */
+  --bg-primary:     #191B20;
+  --bg-secondary:   #1A1C21;
+  --bg-tertiary:    #1B1D23;
+  --text-primary:   #4B4F56;   /* gris tan oscuro que apenas se distingue del fondo */
+  --text-secondary: #44474E;
+  --text-light:     #3F4248;
+  --border-color:   #21242A;   /* solo 5-8% más claro que el fondo → prácticamente desaparece */
 }
 
-/* 1: NORMAL - Oscuro estándar */
+/* 1: NORMAL - Tus valores originales (perfectos) */
 body[data-theme="dark"][data-admin-contrast="1"] {
-	--bg-primary: #1A1A1A;
-	--bg-secondary: #151515;
-	--bg-tertiary: #101010;
-	--text-primary: #FFFFFF;
-	--text-secondary: #CCCCCC;
-	--text-light: #999999;
-	--border-color: #404040;
+  --bg-primary:     #1A1A1A;
+  --bg-secondary:   #151515;
+  --bg-tertiary:    #101010;
+  --text-primary:   #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-light:     #999999;
+  --border-color:   #404040;
 }
 
-/* 2: MUY ALTO - Contraste extremo en oscuro */
+/* 2: MUY ALTO - Contraste salvaje (más extremo que antes) */
 body[data-theme="dark"][data-admin-contrast="2"] {
-	--bg-primary: #000000;
-	--bg-secondary: #000000;
-	--bg-tertiary: #0A0A0A;
-	--text-primary: #FFFFFF;
-	--text-secondary: #FFFFFF;
-	--border-color: #FFFFFF;
+  --bg-primary:     #000000;
+  --bg-secondary:   #000000;
+  --bg-tertiary:    #0F0F0F;
+  --text-primary:   #FFFFFF;
+  --text-secondary: #FFFFFF;
+  --text-light:     #EEEEEE;
+  --border-color:   #FFFFFF;   /* bordes blancos puros, arde la retina */
 }
-
 /* ===== RESET MEJORADO ===== */
 * {
 	margin: 0;

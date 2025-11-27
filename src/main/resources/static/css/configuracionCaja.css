@@ -29,57 +29,61 @@
 
 /* Tema azul */
 html[data-admin-theme="azul"] {
-  --primary-color: #1D4ED8;
-  --primary-light: #3B82F6;
-  --primary-dark: #1E3A8A;
-  --secondary-color: #0EA5E9;
-  --accent-color: #0EA5E9;
-  --primary-gradient: linear-gradient(135deg, #1D4ED8, #0EA5E9);
-  --sidebar-gradient: linear-gradient(135deg, #1D4ED8, #0EA5E9);
+  --primary-color: #0066FF;        /* Azul puro y brillante */
+  --primary-light: #5E9AFF;        /* Azul luz suave */
+  --primary-dark: #0047CC;         /* Azul intenso */
+  --secondary-color: #00C2FF;      /* Azul cyan vibrante */
+  --accent-color: #0088FF;         /* Azul intermedio */
+  --primary-gradient: linear-gradient(135deg, #0047CC, #0066FF, #00C2FF);
+  --sidebar-gradient: linear-gradient(150deg, #0047CC 0%, #5E9AFF 50%, #00C2FF 100%);
 }
 
-/* Tema verde */
+/* Tema verde  */
 html[data-admin-theme="verde"] {
   --primary-color: #065F46;
   --primary-light: #10B981;
   --primary-dark: #064E3B;
   --secondary-color: #22C55E;
-  --accent-color: #22C55E;
-  --primary-gradient: linear-gradient(135deg, #065F46, #22C55E);
-  --sidebar-gradient: linear-gradient(135deg, #065F46, #22C55E);
+  --accent-color: #34D399;
+  --primary-gradient: linear-gradient(135deg, #064E3B, #065F46, #22C55E);
+  --sidebar-gradient: linear-gradient(160deg, #064E3B, #10B981, #22C55E);
 }
 
-/* Tema rojo */
+/* Tema morado */
 html[data-admin-theme="rojo"] {
-  --primary-color: #B91C1C;
-  --primary-light: #F97373;
-  --primary-dark: #7F1D1D;
-  --secondary-color: #F97316;
-  --accent-color: #F97316;
-  --primary-gradient: linear-gradient(135deg, #B91C1C, #F97316);
-  --sidebar-gradient: linear-gradient(135deg, #B91C1C, #F97316);
+  --primary-color: #8B5CF6;        /* Morado eléctrico */
+  --primary-light: #C4B5FD;        /* Morado pastel luminoso */
+  --primary-dark: #6D28D9;         /* Morado real */
+  --secondary-color: #E879F9;      /* Rosa morado neón */
+  --accent-color: #A855F7;         /* Morado intermedio */
+  --primary-gradient: linear-gradient(135deg, #6D28D9, #8B5CF6, #E879F9);
+  --sidebar-gradient: linear-gradient(150deg, #6D28D9 0%, rgb(172, 152, 252) 100%);
 }
 
-/* Tema dorado */
+/* Tema dorado*/
 html[data-admin-theme="dorado"] {
-  --primary-color: #92400E;
-  --primary-light: #D97706;
-  --primary-dark: #78350F;
-  --secondary-color: #FBBF24;
-  --accent-color: #FBBF24;
-  --primary-gradient: linear-gradient(135deg, #92400E, #FBBF24);
-  --sidebar-gradient: linear-gradient(135deg, #92400E, #FBBF24);
+  --primary-color: #C9A227;
+  --primary-light: #E8D9A6;
+  --primary-dark: #A47E1B;
+  --secondary-color: #D6B94C;
+  --accent-color: #E8C04B;
+  --primary-gradient: linear-gradient(135deg, #A47E1B, #C9A227, #E8D9A6);
+  --sidebar-gradient: linear-gradient(150deg, #A47E1B 0%, #C9A227 70%);
 }
 
-/* Tema rosa */
 html[data-admin-theme="rosa"] {
-  --primary-color: #BE185D;
-  --primary-light: #EC4899;
-  --primary-dark: #9D174D;
-  --secondary-color: #F9A8D4;
-  --accent-color: #F9A8D4;
-  --primary-gradient: linear-gradient(135deg, #BE185D, #F9A8D4);
-  --sidebar-gradient: linear-gradient(135deg, #BE185D, #F9A8D4);
+  --primary-color: #DB2777;
+  --primary-light: #F472B6;
+  --primary-dark: #BE185D;
+  --secondary-color: #FBCFE8;
+  --accent-color: #FBCFE8;         /* Para mantener la estructura del original */
+  
+  --primary-gradient: linear-gradient(135deg, #BE185D, #DB2777, #F472B6, #FBCFE8);
+  --sidebar-gradient: linear-gradient(145deg, #BE185D, #DB2777, #FBCFE8);
+  
+  --pink-glow: 0 0 20px rgba(219, 39, 119, 0.3);
+  --pink-border: 1px solid rgba(251, 207, 232, 0.5);
+  --text-on-pink: #ffffff;
 }
 
 /* Tema gris */
@@ -96,17 +100,15 @@ html[data-admin-theme="gris"] {
 
 /* ===== CONTRASTE MODO CLARO ===== */
 
-/* 0: BAJO - EXTREMADAMENTE suave, casi sin contraste */
+/* 0: BAJO - Azul glacial suave */
 html:not([data-theme="dark"])[data-admin-contrast="0"] {
-	--bg-primary: #FFFFFF;
-	--bg-secondary: #FFFFFF;
-	--bg-tertiary: #FEFEFE;
-	--text-primary: #D0D3D9;
-	/* Gris MUY claro, casi blanco */
-	--text-secondary: #E1E3E7;
-	--text-light: #EDEEF0;
-	--border-color: #F5F5F5;
-	/* Casi invisible */
+	--bg-primary: #F8FAFF;     /* Azul casi imperceptible */
+	--bg-secondary: #F6F8FD;
+	--bg-tertiary: #F4F6FB;
+	--text-primary: #6B7280;
+	--text-secondary: #8B95A5;
+	--text-light: #B8C0CC;
+	--border-color: #F0F2F7;
 }
 
 /* 1: NORMAL - Contraste estándar */
