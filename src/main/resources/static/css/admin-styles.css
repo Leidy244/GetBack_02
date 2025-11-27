@@ -148,7 +148,7 @@ body[data-admin-theme="rosa"] {
   --sidebar-gradient: linear-gradient(145deg,
                       #BE185D 0%,
                       #DB2777 40%,
-                      #FBCFE8 100%);
+                      rgb(248, 173, 216) 100%);
 
   /* Extras para que quede de lujo */
   --pink-glow:       0 0 20px rgba(219, 39, 119, 0.3);
