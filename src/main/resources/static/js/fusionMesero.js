@@ -39,6 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalOrder = 0;
     let orderItems = [];
 
+    // Helper: formatear montos sin .00, con separador de miles usando punto
+    const formatMonto = (valor) => {
+        const numero = Number(valor) || 0;
+        const entero = Math.round(numero);
+        return entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    // ✅ DECLARAR updateTotal ANTES de cualquier uso
+    const updateTotal = () => {
+        if (pedidoTotalValue) {
+            pedidoTotalValue.textContent = `$${formatMonto(totalOrder)}`;
+        }
+    };
+
     if (orderBtn && orderModal) {
         orderBtn.addEventListener('click', () => {
             orderModal.style.display = 'flex';
@@ -105,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Recalcular SIEMPRE el total a partir de los subtotales
                 totalOrder = orderItems.reduce((sum, it) => sum + (it.subtotal || 0), 0);
-                updateTotal();
+                updateTotal(); // ✅ Ahora funciona correctamente
 
                 // Cargar comentarios del borrador si existen
                 if (typeof draftComentarios !== 'undefined' && draftComentarios && orderComments) {
@@ -261,19 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Helper: formatear montos sin .00, con separador de miles usando punto
-    const formatMonto = (valor) => {
-        const numero = Number(valor) || 0;
-        const entero = Math.round(numero);
-        return entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    };
-
-    const updateTotal = () => {
-        if (pedidoTotalValue) {
-            pedidoTotalValue.textContent = `$${formatMonto(totalOrder)}`;
-        }
-    };
-
+    // ❌ ELIMINAR esta declaración duplicada de updateTotal (está en las líneas ~250-256)
     // Filter functionality by category
     const filterButtons = document.querySelectorAll('.nav-links .filter-btn');
     const productItems = document.querySelectorAll('.product-item');
