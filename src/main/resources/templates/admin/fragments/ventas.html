@@ -28,6 +28,7 @@
                         Lista de Ventas
                         <span class="badge bg-primary" th:text="${facturas != null ? facturas.size() : 0}"></span>
                     </h4>
+                    <div id="ventasPagination" class="btn-group" role="group" aria-label="Paginación"></div>
                 </div>
             </div>
 
@@ -153,7 +154,6 @@
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2"><i class="fas fa-receipt"></i><span>Detalle de Venta</span></h5>
-                <div class="ms-auto text-muted small" id="det-fecha-hdr">-</div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
@@ -165,6 +165,7 @@
                       </div>
                       <div class="card-body">
                         <p class="mb-1"><strong>Factura:</strong> <span id="det-numero">-</span></p>
+                        <p class="mb-1"><strong>Fecha:</strong> <span id="det-fecha">-</span></p>
                         
                         <p class="mb-1"><strong>Cliente:</strong> <span id="det-cliente">-</span></p>
                         <p class="mb-1"><strong>Mesa:</strong> <span id="det-mesa">-</span></p>

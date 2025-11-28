@@ -23,6 +23,10 @@
 				th:classappend="${(activeSection == 'dashboard' or activeSection == null)} ? 'nav-link active' : 'nav-link'">
 				<i class="fas fa-home"></i> Dashboard
 			</a>
+			<a th:href="@{/admin(activeSection='estadisticas')}"
+			   th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
+				<i class="fas fa-chart-pie"></i> Estadísticas
+			</a>
 			<a th:href="@{/admin(activeSection='products')}"
 				th:classappend="${activeSection == 'products'} ? 'nav-link active' : 'nav-link'">
 				<i class="fas fa-box"></i> Productos
@@ -38,10 +42,6 @@
 
 			<a th:href="@{/users}" class="nav-link">
 				<i class="fas fa-users"></i> Usuarios
-			</a>
-			<a th:href="@{/admin(activeSection='estadisticas')}"
-			   th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
-				<i class="fas fa-chart-pie"></i> Estadísticas
 			</a>
 		</nav>
 

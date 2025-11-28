@@ -11,17 +11,18 @@
     </div>
 
 	<!-- Bloque de alertas de bajo stock -->
-	<div class="mb-4" th:if="${bajoStock != null and !bajoStock.isEmpty()}">
-		<div class="alert alert-warning" role="alert">
-			<h5 class="alert-heading mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Productos con bajo stock</h5>
-			<p class="mb-2 small">Estos productos tienen stock menor o igual a
-				<span class="fw-bold" th:text="${stockThreshold}"></span> unidades.</p>
-			<div class="d-flex flex-wrap gap-2">
-				<span class="badge bg-warning text-dark" th:each="entry : ${bajoStock.entrySet()}"
-				      th:text="${entry.key + ' (' + entry.value + ')'}"></span>
-			</div>
-		</div>
-	</div>
+    <div class="mb-4" th:if="${bajoStock != null and !bajoStock.isEmpty()}">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Productos con bajo stock</h5>
+            <p class="mb-2 small">Estos productos tienen stock menor o igual a
+                <span class="fw-bold" th:text="${stockThreshold}"></span> unidades.</p>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-warning text-dark" th:each="entry : ${bajoStock.entrySet()}"
+                      th:text="${entry.key + ' (' + entry.value + ')'}"></span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
 
     <!-- Encabezado con botón para modal -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -53,7 +54,8 @@
                                 <th>Remisión</th>
                                 <th>Fecha remisión</th>
                                 <th>Producto</th>
-                                <th>Cantidad</th>
+                                <th>Cantidad ingresada</th>
+                                <th>Stock actual</th>
                                 <th>Proveedor</th>
                                 <th>Teléfono</th>
                                 <th>Fecha ingreso</th>
@@ -68,10 +70,11 @@
                                     <span th:text="${ingreso.fechaRemision != null ? #temporals.format(ingreso.fechaRemision, 'dd/MM/yyyy') : '—'}"></span>
                                 </td>
                                 <td th:text="${ingreso.producto != null ? ingreso.producto : '—'}"></td>
+                                <td th:text="${ingreso.cantidad}"></td>
                                 <td>
                                     <span class="badge rounded-pill"
-                                          th:with="stockActual=${stockPorProducto != null ? stockPorProducto[ingreso.producto] : ingreso.cantidad}"
-                                          th:classappend="${bajoStock != null and bajoStock.containsKey(ingreso.producto)} ? ' bg-warning text-dark' : ' bg-success'"
+                                          th:with="keyLower=${#strings.toLowerCase(#strings.trim(ingreso.producto))}, stockActual=${stockCanon != null ? stockCanon[keyLower] : null}"
+                                          th:classappend="${bajoStockCanon != null and bajoStockCanon.containsKey(keyLower)} ? ' bg-warning text-dark' : ' bg-success'"
                                           th:text="${stockActual != null ? stockActual : 0}"></span>
                                 </td>
                                 <td th:text="${ingreso.proveedor != null && !ingreso.proveedor.isEmpty() ? ingreso.proveedor : '—'}"></td>
@@ -96,7 +99,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${ingresosInventario == null or ingresosInventario.isEmpty()}">
-                                <td colspan="9" class="text-center py-4 text-muted">
+                                <td colspan="10" class="text-center py-4 text-muted">
                                     <i class="fas fa-box-open fa-2x mb-3"></i>
                                     <p class="mb-0">Aún no registras movimientos de inventario.</p>
                                     <small>Utiliza el formulario para registrar tu primer ingreso.</small>

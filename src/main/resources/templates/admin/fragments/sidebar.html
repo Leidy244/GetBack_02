@@ -19,10 +19,14 @@
 				th:classappend="${(activeSection == 'dashboard' or activeSection == null)} ? 'nav-link active' : 'nav-link'">
 				<i class="fas fa-home"></i>Panel Principal
 			</a>
-			<a th:href="@{/admin(activeSection='products')}"
-				th:classappend="${activeSection == 'products'} ? 'nav-link active' : 'nav-link'">
-				<i class="fas fa-box"></i>Productos
-			</a>
+            <a th:href="@{/admin(activeSection='estadisticas')}"
+               th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-chart-pie"></i> Estadísticas
+            </a>
+            <a th:href="@{/admin(activeSection='products')}"
+               th:classappend="${activeSection == 'products'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-box"></i>Productos
+            </a>
 			<a th:href="@{/admin(activeSection='categories')}"
 				th:classappend="${activeSection == 'categories'} ? 'nav-link active' : 'nav-link'">
 				<i class="fas fa-tags"></i>Categorías
@@ -57,10 +61,6 @@
             <a th:href="@{/admin(activeSection='ventas')}"
                th:classappend="${activeSection == 'ventas'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-history"></i> Historial de ventas
-            </a>
-            <a th:href="@{/admin(activeSection='estadisticas')}"
-               th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-chart-pie"></i> Estadísticas
             </a>
         </nav>
 		<!-- Footer compacto -->

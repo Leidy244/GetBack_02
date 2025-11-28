@@ -686,10 +686,10 @@ const adminApp = {
 			const originalText = submitBtn.innerHTML;
 			submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
-			setTimeout(() => {
-				submitBtn.disabled = false;
-				submitBtn.innerHTML = originalText;
-			}, 5000);
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 1500);
 		}
 	},
 
@@ -867,29 +867,36 @@ document.addEventListener('DOMContentLoaded', function() {
   // Tabs (filters)
   const filterBtns = document.querySelectorAll('.chart-filter-btn');
   const chartContainers = document.querySelectorAll('.charts-container');
+  function activateFilter(filter){
+    const btn = Array.from(filterBtns).find(b => b.getAttribute('data-filter') === filter);
+    if (!btn) return;
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    chartContainers.forEach(c => c.classList.remove('active'));
+    const target = document.getElementById('charts-' + filter);
+    if (target) target.classList.add('active');
+    const grid = document.querySelector('.charts-container.active .charts-grid');
+    if (grid) grid.scrollTo({ left: 0, behavior: 'auto' });
+  }
   filterBtns.forEach(btn => {
     btn.addEventListener('click', function() {
       const filter = this.getAttribute('data-filter');
-      filterBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      chartContainers.forEach(c => c.classList.remove('active'));
-      const target = document.getElementById('charts-' + filter);
-      if (target) target.classList.add('active');
+      activateFilter(filter);
     });
   });
 
   // Carousel controls
   const prevBtn = document.getElementById('carouselPrev');
   const nextBtn = document.getElementById('carouselNext');
-  function getActiveGrid() { return document.querySelector('.charts-container.active .charts-grid'); }
-  function scrollByAmount(dir) {
-    const grid = getActiveGrid();
-    if (!grid) return;
-    const amount = 220 * dir; // approx one card + gap
-    grid.scrollBy({ left: amount, behavior: 'smooth' });
+  function cycleFilter(dir){
+    const arr = Array.from(filterBtns);
+    const idx = arr.findIndex(b => b.classList.contains('active'));
+    const nextIdx = (idx < 0) ? 0 : (idx + dir + arr.length) % arr.length;
+    const nextFilter = arr[nextIdx].getAttribute('data-filter');
+    activateFilter(nextFilter);
   }
-  if (prevBtn) prevBtn.addEventListener('click', () => scrollByAmount(-1));
-  if (nextBtn) nextBtn.addEventListener('click', () => scrollByAmount(1));
+  if (prevBtn) prevBtn.addEventListener('click', () => cycleFilter(-1));
+  if (nextBtn) nextBtn.addEventListener('click', () => cycleFilter(1));
 
   // Charts (Chart.js must be loaded on the page)
   if (typeof Chart === 'undefined') return;
@@ -936,6 +943,26 @@ document.addEventListener('DOMContentLoaded', function() {
       const emCfg = { type: 'doughnut', data: { labels: em.labels, datasets: [{ label: 'Mesas', data: em.data, backgroundColor: ['#2ecc71','#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Estado de mesas' }, tooltip: { callbacks: { label: (ctx) => { const label = (ctx.label && ctx.label.toString().length) ? ctx.label : 'Sin etiqueta'; const val = safeNumber(ctx.parsed); const arr = Array.isArray(ctx.dataset.data) ? ctx.dataset.data : []; const total = arr.reduce((a,b)=>a+safeNumber(b),0); const pct = total ? ((val/total)*100).toFixed(1) : 0; return `${label}: ${val} (${pct}%)`; } } } }, layout: { padding: 0 }, animation: { duration: 0 } } };
       if (document.getElementById('chartMesas')) new Chart(document.getElementById('chartMesas'), emCfg);
       if (document.getElementById('chartMesas2')) new Chart(document.getElementById('chartMesas2'), emCfg);
+
+      // Resumen general del panel
+      const resumenLabels = ['Total Ventas','Pedidos Pendientes','Productos','Categorías','Eventos','Usuarios','Mesas'];
+      const resumenData = [data.totalVentas, data.pedidosPendientes, data.totalProductos, data.totalCategorias, data.totalEventos, data.totalUsuarios, data.totalMesas].map(safeNumber);
+      const resumenCfg = {
+        type: 'bar',
+        data: { labels: resumenLabels, datasets: [{ label: 'Conteos', data: resumenData, backgroundColor: '#7b2ff7' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Resumen general del panel' }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed.y}` } } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { beginAtZero: true } }, layout: { padding: 0 }, animation: { duration: 0 } }
+      };
+      if (document.getElementById('chartResumenAdmin')) new Chart(document.getElementById('chartResumenAdmin'), resumenCfg);
+
+      // Ingresos
+      const ingresosLabels = ['Ingresos hoy','Ingresos totales'];
+      const ingresosData = [safeNumber(data.ingresosHoy), safeNumber(data.ingresosTotales)];
+      const ingresosCfg = {
+        type: 'bar',
+        data: { labels: ingresosLabels, datasets: [{ label: 'Monto (COP)', data: ingresosData, backgroundColor: ['#00c6ff','#00e6b4'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Ingresos' }, tooltip: { callbacks: { label: (ctx) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(ctx.parsed.y) } } }, scales: { y: { beginAtZero: true } }, layout: { padding: 0 }, animation: { duration: 0 } }
+      };
+      if (document.getElementById('chartIngresosAdmin')) new Chart(document.getElementById('chartIngresosAdmin'), ingresosCfg);
     })
     .catch(err => console.error('Error cargando stats del dashboard:', err));
 
@@ -1026,7 +1053,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modalInfo) modalInfo.textContent = `Resultados: ${items.length}`;
   }
   function loadAllActivity(){
-    return fetch('/api/admin/activity?page=0&size=200').then(r=>r.json()).then(data=>{ activityAll = Array.isArray(data)? data : []; renderModal(activityAll); }).catch(()=>{});
+    if (modalInfo) modalInfo.textContent = 'Cargando...';
+    return fetch('/api/admin/activity?page=0&size=120').then(r=>r.json()).then(data=>{ activityAll = Array.isArray(data)? data : []; renderModal(activityAll); }).catch(()=>{ if (modalInfo) modalInfo.textContent = 'Error al cargar'; });
   }
   function applyModalFilter(){
     const t = typeSelect ? String(typeSelect.value||'').toUpperCase() : '';
@@ -1044,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderModal(filtered);
   }
   if (modalOpen) modalOpen.addEventListener('click', () => { loadAllActivity(); });
-  if (modalForm) modalForm.addEventListener('submit', (e) => { e.preventDefault(); applyModalFilter(); });
+  if (modalForm) modalForm.addEventListener('submit', (e) => { e.preventDefault(); if (modalInfo) modalInfo.textContent = 'Filtrando...'; applyModalFilter(); });
   if (modalReset) modalReset.addEventListener('click', () => { if (typeSelect) typeSelect.value=''; if (queryInput) queryInput.value=''; if (dateStart) dateStart.value=''; if (dateEnd) dateEnd.value=''; renderModal(activityAll); });
   
 });
@@ -1167,8 +1195,12 @@ document.addEventListener('DOMContentLoaded', function(){
                 visible = false;
             }
 
+            fila.setAttribute('data-visible', visible ? '1' : '0');
             fila.style.display = visible ? '' : 'none';
         });
+
+        ventasPage = 0;
+        aplicarPaginacion();
     }
 
     if (form) {
@@ -1186,6 +1218,47 @@ document.addEventListener('DOMContentLoaded', function(){
                 }
             }
         });
+
+    // Paginación (4 filas por página)
+    let ventasPage = 0;
+    const ventasSize = 4;
+    const ventasPagination = document.getElementById('ventasPagination');
+
+    function aplicarPaginacion(){
+        const allRows = Array.from(document.querySelectorAll('table.table tbody tr'))
+            .filter(tr => tr.querySelector('td'));
+        const filteredRows = allRows.filter(tr => tr.getAttribute('data-visible') !== '0');
+        const total = filteredRows.length;
+        const totalPages = Math.max(1, Math.ceil(total / ventasSize));
+        ventasPage = Math.max(0, Math.min(ventasPage, totalPages - 1));
+
+        // Ocultar todas las filas filtradas y mostrar sólo el slice actual
+        filteredRows.forEach(tr => { tr.style.display = 'none'; });
+        const start = ventasPage * ventasSize;
+        const end = start + ventasSize;
+        filteredRows.slice(start, end).forEach(tr => { tr.style.display = ''; });
+
+        renderVentasPagination(totalPages);
+    }
+
+    function renderVentasPagination(totalPages){
+        if (!ventasPagination) return;
+        ventasPagination.innerHTML = '';
+        const createBtn = (idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline-primary btn-sm';
+            btn.textContent = String(idx+1);
+            if (idx === ventasPage) btn.classList.add('active');
+            btn.addEventListener('click', (e)=>{ e.preventDefault(); ventasPage = idx; aplicarPaginacion(); });
+            return btn;
+        };
+        for (let i=0; i<totalPages; i++){ ventasPagination.appendChild(createBtn(i)); }
+    }
+
+    // Inicial
+    ventasPage = 0;
+    aplicarPaginacion();
 
     // Helpers
     const fmt = (n) => {
@@ -1283,8 +1356,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
             // Poblar modal
             document.getElementById('det-numero').textContent = numero;
-            const fechaHdr = document.getElementById('det-fecha-hdr');
-            if (fechaHdr) fechaHdr.textContent = fecha;
+            const fechaEl = document.getElementById('det-fecha');
+            if (fechaEl) fechaEl.textContent = fecha;
 
             document.getElementById('det-cliente').textContent = cliente || '—';
             document.getElementById('det-mesa').textContent = mesa || '—';

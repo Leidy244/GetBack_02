@@ -53,10 +53,49 @@ public class InventarioController {
         model.addAttribute("inventarioNombres", new java.util.ArrayList<>(nombresSet));
 
 		// Stock total por producto e items en bajo stock (umbral fijo por ahora)
-		int stockThreshold = 5;
-		model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
-		model.addAttribute("bajoStock", inventarioService.obtenerProductosBajoStock(stockThreshold));
-		model.addAttribute("stockThreshold", stockThreshold);
+        int stockThreshold = 5;
+        var stockPorProducto = inventarioService.calcularStockPorProducto();
+        // Canonical: clave en minúsculas y trim y SUMA valores por clave canónica
+        java.util.Map<String,Integer> stockCanon = new java.util.HashMap<>();
+        stockPorProducto.forEach((k,v) -> {
+            if (k != null) {
+                String canon = k.trim().toLowerCase();
+                int val = v != null ? v : 0;
+                stockCanon.merge(canon, val, Integer::sum);
+            }
+        });
+        // Clamp a >= 0
+        stockCanon.replaceAll((k,v) -> Math.max(0, v));
+
+        // Filtrar bajo stock sólo para productos existentes en menú (evita mostrar los eliminados)
+        java.util.Set<String> menuCanon = new java.util.HashSet<>();
+        menuService.findAll().forEach(m -> {
+            if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+                menuCanon.add(m.getNombreProducto().trim().toLowerCase());
+            }
+        });
+        java.util.Map<String,Integer> bajoStockDisplay = new java.util.LinkedHashMap<>();
+        java.util.Map<String,Integer> bajoStockCanon = new java.util.HashMap<>();
+        // Construir mapa de nombre mostrado -> stock
+        java.util.Map<String,String> canonToDisplay = new java.util.HashMap<>();
+        menuService.findAll().forEach(m -> {
+            if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+                canonToDisplay.put(m.getNombreProducto().trim().toLowerCase(), m.getNombreProducto().trim());
+            }
+        });
+        stockCanon.forEach((k,v) -> {
+            if (menuCanon.contains(k) && v <= stockThreshold) {
+                String display = canonToDisplay.getOrDefault(k, k);
+                bajoStockDisplay.put(display, v);
+                bajoStockCanon.put(k, v);
+            }
+        });
+
+        model.addAttribute("stockPorProducto", stockPorProducto);
+        model.addAttribute("stockCanon", stockCanon);
+        model.addAttribute("bajoStock", bajoStockDisplay);
+        model.addAttribute("bajoStockCanon", bajoStockCanon);
+        model.addAttribute("stockThreshold", stockThreshold);
         model.addAttribute("activeSection", "inventario");
         model.addAttribute("title", "Gestión de Inventario");
         return "admin";
@@ -85,13 +124,14 @@ public class InventarioController {
                     ingreso.setMenu(null);
                     ingreso.setProducto(producto);
                 }
-                ingreso.setCantidad(cantidad);
+                ingreso.setCantidad(cantidad != null && cantidad > 0 ? cantidad : 1);
                 if (fechaRemision != null && !fechaRemision.isBlank()) {
                     ingreso.setFechaRemision(LocalDate.parse(fechaRemision));
                 }
                 ingreso.setProveedor(proveedor);
                 ingreso.setTelefonoProveedor(telefonoProveedor);
                 ingreso.setObservaciones(observaciones);
+                ingreso.setFechaIngreso(java.time.LocalDateTime.now());
                 inventarioService.registrarIngreso(ingreso);
 
                 redirectAttributes.addFlashAttribute("success", "Ingreso de inventario registrado correctamente");
@@ -135,13 +175,16 @@ public class InventarioController {
                 ingreso.setMenu(null);
                 ingreso.setProducto(producto);
             }
-            ingreso.setCantidad(cantidad);
+            ingreso.setCantidad(cantidad != null && cantidad > 0 ? cantidad : 1);
             if (fechaRemision != null && !fechaRemision.isBlank()) {
                 ingreso.setFechaRemision(LocalDate.parse(fechaRemision));
             }
             ingreso.setProveedor(proveedor);
             ingreso.setTelefonoProveedor(telefonoProveedor);
             ingreso.setObservaciones(observaciones);
+            if (ingreso.getFechaIngreso() == null) {
+                ingreso.setFechaIngreso(java.time.LocalDateTime.now());
+            }
             inventarioService.actualizarIngreso(ingreso);
 
             redirectAttributes.addFlashAttribute("success", "Ingreso de inventario actualizado correctamente");

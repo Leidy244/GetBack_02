@@ -10,5 +10,7 @@ import com.sena.getback.model.Inventario;
 @Repository
 public interface InventarioRepository extends JpaRepository<Inventario, Long> {
 
-	List<Inventario> findAllByOrderByFechaIngresoDesc();
+    List<Inventario> findAllByOrderByFechaIngresoDesc();
+
+    List<Inventario> findByMenu_Id(Long menuId);
 }

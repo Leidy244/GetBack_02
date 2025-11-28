@@ -17,11 +17,14 @@ public class MenuService {
 
     private final MenuRepository menuRepository;
     private final ActivityLogService activityLogService;
+    private final InventarioService inventarioService;
 
     // Inyección por constructor
-    public MenuService(MenuRepository menuRepository, ActivityLogService activityLogService) {
+    public MenuService(MenuRepository menuRepository, ActivityLogService activityLogService,
+                       InventarioService inventarioService) {
         this.menuRepository = menuRepository;
         this.activityLogService = activityLogService;
+        this.inventarioService = inventarioService;
     }
 
     // Listar todos los productos
@@ -136,6 +139,9 @@ public class MenuService {
 
     // Eliminar producto por id
     public void delete(Long id) {
+        try {
+            inventarioService.detachMenuReferences(id);
+        } catch (Exception ignored) {}
         menuRepository.deleteById(id);
         try {
             String user = getCurrentUsername();

@@ -42,11 +42,13 @@ public class InventarioService {
      * Calcula el stock total por producto (campo producto en Inventario).
      */
     public Map<String, Integer> calcularStockPorProducto() {
-        return inventarioRepository.findAll().stream()
+        Map<String, Integer> sumados = inventarioRepository.findAll().stream()
             .filter(i -> i.getProducto() != null && !i.getProducto().isBlank())
             .collect(Collectors.groupingBy(
                     Inventario::getProducto,
                     Collectors.summingInt(i -> i.getCantidad() != null ? i.getCantidad() : 0)));
+        return sumados.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> Math.max(0, e.getValue())));
     }
 
     /**
@@ -93,6 +95,19 @@ public class InventarioService {
     }
 
     /**
+     * Desvincula el menú de los movimientos de inventario que lo referencian
+     * para permitir eliminar el producto sin violar la FK.
+     */
+    @Transactional
+    public void detachMenuReferences(Long menuId) {
+        if (menuId == null) return;
+        List<Inventario> ref = inventarioRepository.findByMenu_Id(menuId);
+        if (ref == null || ref.isEmpty()) return;
+        ref.forEach(i -> i.setMenu(null));
+        inventarioRepository.saveAll(ref);
+    }
+
+    /**
      * Registra una salida de inventario (consumo) para el producto indicado.
      * La cantidad se almacena como negativa para que calcularStockPorProducto la descuente.
      */
@@ -105,12 +120,18 @@ public class InventarioService {
             return;
         }
 
+        int disponible = obtenerStockDisponible(nombreProducto);
+        int consumoReal = Math.min(cantidadConsumida, Math.max(0, disponible));
+        if (consumoReal <= 0) {
+            return;
+        }
+
         Inventario movimiento = new Inventario();
         movimiento.setRemision("CONSUMO PEDIDO");
         movimiento.setProducto(nombreProducto.trim());
-        movimiento.setCantidad(-cantidadConsumida);
+        movimiento.setCantidad(-consumoReal);
         movimiento.setObservaciones("Consumo automático por pedido");
-
+        movimiento.setFechaIngreso(java.time.LocalDateTime.now());
         inventarioRepository.save(movimiento);
     }
 }

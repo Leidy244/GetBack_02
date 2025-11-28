@@ -427,7 +427,7 @@ const adminApp = {
             setTimeout(() => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-            }, 5000);
+            }, 1500);
         }
     },
 

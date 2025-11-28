@@ -1382,8 +1382,9 @@ body {
 }
 
 .activity-content {
-	flex: 1;
+    flex: 1;
 }
+.activity-content, .activity-title { word-break: break-word; overflow-wrap: anywhere; }
 
 .activity-content p {
 	margin: 0 0 0.25rem 0;
@@ -2627,3 +2628,55 @@ body {
 .activity-top-row{ position:relative; width:100%; max-width:1000px; min-height:32px; }
 .activity-top-row h5{ position:absolute; left:50%; transform:translateX(-50%); margin:0; }
 .activity-top-row .btn-view-all{ position:absolute; right:0; top:50%; transform:translateY(-50%); }
+.modal#activityModal .modal-body { overflow-x: hidden; }
+#activityModalList { overflow-x: hidden; }
+.dashboard-container .analytics-row {
+    display: grid;
+    grid-template-columns: 7fr 3fr;
+    gap: 48px;
+    align-items: start;
+}
+.dashboard-container .analytics-row .charts-section,
+.dashboard-container .analytics-row .activity-section {
+    height: 100%;
+}
+.dashboard-container .analytics-row .activity-section {
+    min-height: 300px;
+}
+
+.dashboard-container .activity-section .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    color: var(--text-primary);
+    margin-bottom: .5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.dashboard-container .activity-section .card-title i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+.dashboard-container .activity-section .stock-title {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    color: var(--text-primary);
+    margin-bottom: .5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.dashboard-container .activity-section .stock-title i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+.dashboard-container .activity-section .table,
+.dashboard-container .activity-section .table th,
+.dashboard-container .activity-section .table td,
+.dashboard-container .activity-section .table thead tr {
+    border: none !important;
+}
+.dashboard-container .charts-section { background: transparent !important; border: none !important; border-radius: 0 !important; padding: 0 !important; }
+.dashboard-container .charts-header { background: transparent !important; border-bottom: none !important; padding: 8px 0 !important; }
