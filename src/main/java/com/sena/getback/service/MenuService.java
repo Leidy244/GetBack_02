@@ -139,13 +139,29 @@ public class MenuService {
 
     // Eliminar producto por id
     public void delete(Long id) {
-        try {
-            inventarioService.detachMenuReferences(id);
-        } catch (Exception ignored) {}
+        Menu m = findById(id);
+        try { inventarioService.purgeByMenuId(id); } catch (Exception ignored) {}
+        try { inventarioService.detachMenuReferences(id); } catch (Exception ignored) {}
+        try { if (m != null && m.getNombreProducto() != null) inventarioService.purgeByProductName(m.getNombreProducto()); } catch (Exception ignored) {}
         menuRepository.deleteById(id);
         try {
             String user = getCurrentUsername();
             activityLogService.log("PRODUCT", "Se eliminó el producto #" + id, user, null);
         } catch (Exception ignored) {}
+    }
+
+    public void decrementarStockPorNombre(String nombreProducto, int cantidad) {
+        if (nombreProducto == null || nombreProducto.isBlank() || cantidad <= 0) return;
+        List<Menu> menus = menuRepository.findByNombreProductoIgnoreCase(nombreProducto.trim());
+        if (menus == null || menus.isEmpty()) return;
+        menus.forEach(m -> {
+            boolean esBar = m.getCategoria() != null && m.getCategoria().getArea() != null &&
+                    m.getCategoria().getArea().trim().equalsIgnoreCase("Bar");
+            if (!esBar) return;
+            int actual = m.getStock() != null ? m.getStock() : 0;
+            int nuevo = Math.max(0, actual - cantidad);
+            m.setStock(nuevo);
+        });
+        menuRepository.saveAll(menus);
     }
 }

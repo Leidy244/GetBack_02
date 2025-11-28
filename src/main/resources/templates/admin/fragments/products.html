@@ -60,7 +60,9 @@
                         <span th:text="${producto.disponible} ? 'Sí' : 'No'"></span>
                     </td>
                     <td>
-                        <span th:text="${stockPorProducto != null && stockPorProducto.containsKey(producto.nombreProducto) ? stockPorProducto.get(producto.nombreProducto) : 0}"></span>
+                        <span class="badge rounded-pill"
+                              th:classappend="${stockPorProducto != null && stockPorProducto.containsKey(producto.nombreProducto) ? (stockPorProducto.get(producto.nombreProducto) <= stockThreshold ? ' bg-warning text-dark' : ' bg-success') : ' bg-success' }"
+                              th:text="${stockPorProducto != null && stockPorProducto.containsKey(producto.nombreProducto) ? stockPorProducto.get(producto.nombreProducto) : 0}"></span>
                     </td>
                     <td>
                         <img th:if="${producto.imagen}" th:src="@{${producto.imagen}}" alt="Imagen del producto"

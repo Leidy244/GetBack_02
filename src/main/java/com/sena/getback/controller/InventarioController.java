@@ -36,20 +36,25 @@ public class InventarioController {
 
         model.addAttribute("ingresosInventario", ingresos);
         model.addAttribute("nuevoIngreso", new Inventario());
-        // Proveer lista de productos del menú para autocompletar y nombres existentes en inventario
-        model.addAttribute("products", menuService.findAll());
-        model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+        // Proveer lista de productos del menú SOLO área BAR para autocompletar
+        var productosBar = menuService.findAll().stream()
+                .filter(m -> m.getCategoria() != null && m.getCategoria().getArea() != null
+                        && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"))
+                .toList();
+        model.addAttribute("products", productosBar);
+        // Evitar sugerencias desde inventario para mantener nombres consistentes, usar solo menú BAR
+        model.addAttribute("nombresInventario", java.util.Collections.emptyList());
 
         // Construir una lista unificada y deduplicada para el datalist (conserva orden: menú luego inventario)
         java.util.LinkedHashSet<String> nombresSet = new java.util.LinkedHashSet<>();
         menuService.findAll().forEach(m -> {
-            if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+            boolean esBar = m.getCategoria() != null && m.getCategoria().getArea() != null &&
+                    m.getCategoria().getArea().trim().equalsIgnoreCase("Bar");
+            if (esBar && m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
                 nombresSet.add(m.getNombreProducto().trim());
             }
         });
-        inventarioService.listarNombresProductosInventario().forEach(n -> {
-            if (n != null && !n.isBlank()) nombresSet.add(n.trim());
-        });
+        // No mezclar nombres desde inventario: datalist solo con nombres del menú BAR
         model.addAttribute("inventarioNombres", new java.util.ArrayList<>(nombresSet));
 
 		// Stock total por producto e items en bajo stock (umbral fijo por ahora)
@@ -70,7 +75,9 @@ public class InventarioController {
         // Filtrar bajo stock sólo para productos existentes en menú (evita mostrar los eliminados)
         java.util.Set<String> menuCanon = new java.util.HashSet<>();
         menuService.findAll().forEach(m -> {
-            if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+            boolean esBar = m.getCategoria() != null && m.getCategoria().getArea() != null &&
+                    m.getCategoria().getArea().trim().equalsIgnoreCase("Bar");
+            if (esBar && m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
                 menuCanon.add(m.getNombreProducto().trim().toLowerCase());
             }
         });
@@ -79,7 +86,9 @@ public class InventarioController {
         // Construir mapa de nombre mostrado -> stock
         java.util.Map<String,String> canonToDisplay = new java.util.HashMap<>();
         menuService.findAll().forEach(m -> {
-            if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
+            boolean esBar = m.getCategoria() != null && m.getCategoria().getArea() != null &&
+                    m.getCategoria().getArea().trim().equalsIgnoreCase("Bar");
+            if (esBar && m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
                 canonToDisplay.put(m.getNombreProducto().trim().toLowerCase(), m.getNombreProducto().trim());
             }
         });

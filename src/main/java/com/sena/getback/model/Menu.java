@@ -29,6 +29,9 @@ public class Menu {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
+    @Column(nullable = false)
+    private Integer stock = 0;
+
     // 🔹 Constructor vacío (obligatorio para JPA)
     public Menu() {
     }
@@ -100,5 +103,13 @@ public class Menu {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public Integer getStock() {
+        return stock != null ? stock : 0;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock != null ? stock : 0;
     }
 }

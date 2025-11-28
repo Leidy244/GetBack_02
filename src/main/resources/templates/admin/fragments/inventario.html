@@ -55,7 +55,6 @@
                                 <th>Fecha remisión</th>
                                 <th>Producto</th>
                                 <th>Cantidad ingresada</th>
-                                <th>Stock actual</th>
                                 <th>Proveedor</th>
                                 <th>Teléfono</th>
                                 <th>Fecha ingreso</th>
@@ -71,12 +70,7 @@
                                 </td>
                                 <td th:text="${ingreso.producto != null ? ingreso.producto : '—'}"></td>
                                 <td th:text="${ingreso.cantidad}"></td>
-                                <td>
-                                    <span class="badge rounded-pill"
-                                          th:with="keyLower=${#strings.toLowerCase(#strings.trim(ingreso.producto))}, stockActual=${stockCanon != null ? stockCanon[keyLower] : null}"
-                                          th:classappend="${bajoStockCanon != null and bajoStockCanon.containsKey(keyLower)} ? ' bg-warning text-dark' : ' bg-success'"
-                                          th:text="${stockActual != null ? stockActual : 0}"></span>
-                                </td>
+                                
                                 <td th:text="${ingreso.proveedor != null && !ingreso.proveedor.isEmpty() ? ingreso.proveedor : '—'}"></td>
                                 <td th:text="${ingreso.telefonoProveedor != null && !ingreso.telefonoProveedor.isEmpty() ? ingreso.telefonoProveedor : '—'}"></td>
                                 <td>
@@ -99,7 +93,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${ingresosInventario == null or ingresosInventario.isEmpty()}">
-                                <td colspan="10" class="text-center py-4 text-muted">
+                                <td colspan="9" class="text-center py-4 text-muted">
                                     <i class="fas fa-box-open fa-2x mb-3"></i>
                                     <p class="mb-0">Aún no registras movimientos de inventario.</p>
                                     <small>Utiliza el formulario para registrar tu primer ingreso.</small>

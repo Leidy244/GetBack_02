@@ -10,14 +10,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sena.getback.model.Inventario;
 import com.sena.getback.repository.InventarioRepository;
+import com.sena.getback.repository.MenuRepository;
+import com.sena.getback.model.Menu;
 
 @Service
 public class InventarioService {
 
     private final InventarioRepository inventarioRepository;
+    private final MenuRepository menuRepository;
 
-    public InventarioService(InventarioRepository inventarioRepository) {
+    public InventarioService(InventarioRepository inventarioRepository, MenuRepository menuRepository) {
         this.inventarioRepository = inventarioRepository;
+        this.menuRepository = menuRepository;
     }
 
     public List<Inventario> listarIngresosRecientes() {
@@ -81,17 +85,25 @@ public class InventarioService {
 
     @Transactional
     public Inventario registrarIngreso(Inventario inventario) {
-        return inventarioRepository.save(inventario);
+        Inventario saved = inventarioRepository.save(inventario);
+        syncMenuStockByProductName(inventario.getProducto());
+        return saved;
     }
 
     @Transactional
     public Inventario actualizarIngreso(Inventario inventario) {
-        return inventarioRepository.save(inventario);
+        Inventario saved = inventarioRepository.save(inventario);
+        syncMenuStockByProductName(inventario.getProducto());
+        return saved;
     }
 
     @Transactional
     public void eliminarIngreso(Long id) {
-        inventarioRepository.deleteById(id);
+        inventarioRepository.findById(id).ifPresent(inv -> {
+            String nombre = inv.getProducto();
+            inventarioRepository.deleteById(id);
+            syncMenuStockByProductName(nombre);
+        });
     }
 
     /**
@@ -105,6 +117,23 @@ public class InventarioService {
         if (ref == null || ref.isEmpty()) return;
         ref.forEach(i -> i.setMenu(null));
         inventarioRepository.saveAll(ref);
+        // opcional: también sincronizar stock de menú para productos asociados a este menú
+        ref.stream().map(Inventario::getProducto).filter(p -> p != null && !p.isBlank()).distinct()
+                .forEach(this::syncMenuStockByProductName);
+    }
+
+    @Transactional
+    public void purgeByProductName(String nombreProducto) {
+        if (nombreProducto == null || nombreProducto.isBlank()) return;
+        inventarioRepository.deleteByProductoCaseInsensitive(nombreProducto.trim());
+        syncMenuStockByProductName(nombreProducto);
+    }
+
+    @Transactional
+    public void purgeByMenuId(Long menuId) {
+        if (menuId == null) return;
+        inventarioRepository.deleteByMenuId(menuId);
+        // Intentar recuperar nombre desde entradas eliminadas no es posible aquí. El controlador se encarga de llamar también purgeByProductName.
     }
 
     /**
@@ -133,5 +162,22 @@ public class InventarioService {
         movimiento.setObservaciones("Consumo automático por pedido");
         movimiento.setFechaIngreso(java.time.LocalDateTime.now());
         inventarioRepository.save(movimiento);
+        syncMenuStockByProductName(nombreProducto);
+    }
+
+    /**
+     * Sincroniza el campo stock del menú para productos del área BAR
+     * con el stock calculado en inventario por nombre.
+     */
+    @Transactional
+    public void syncMenuStockByProductName(String nombreProducto) {
+        if (nombreProducto == null || nombreProducto.isBlank()) return;
+        int disponible = obtenerStockDisponible(nombreProducto);
+        List<Menu> menus = menuRepository.findByNombreProductoIgnoreCase(nombreProducto.trim());
+        if (menus == null || menus.isEmpty()) return;
+        for (Menu m : menus) {
+            m.setStock(disponible);
+        }
+        menuRepository.saveAll(menus);
     }
 }

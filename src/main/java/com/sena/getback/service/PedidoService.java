@@ -131,6 +131,7 @@ public class PedidoService {
                 String nombre = entry.getKey();
                 int cantidad = entry.getValue();
                 if (cantidad > 0) {
+                    // Descuenta inventario; el stock del menú se sincroniza automáticamente desde InventarioService
                     inventarioService.registrarConsumo(nombre, cantidad);
                 }
             }

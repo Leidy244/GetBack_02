@@ -303,19 +303,25 @@ public class AdminController {
 			}
 
 			// PRODUCTOS
-			if ("products".equals(section)) {
-				model.addAttribute("products", menuRepository.findAll());
-				model.addAttribute("newProduct", new Menu());
-				model.addAttribute("categorias", categoriaRepository.findAll());
-				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
-				model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+            if ("products".equals(section)) {
+                java.util.List<com.sena.getback.model.Menu> productosBar = menuRepository.findAll().stream()
+                        .filter(m -> m.getCategoria() != null && m.getCategoria().getArea() != null
+                                && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"))
+                        .toList();
+                model.addAttribute("products", productosBar);
+                model.addAttribute("newProduct", new Menu());
+                model.addAttribute("categorias", categoriaRepository.findAll());
+                model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
+                model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+                // Umbral para badges de stock en productos (solo BAR)
+                model.addAttribute("stockThreshold", 5);
 
 				// Para la sección products, mostrar SOLO los nombres del menú (no incluir nombres desde inventario)
 				java.util.List<String> menuNombres = new java.util.ArrayList<>();
 				menuRepository.findAll().forEach(m -> {
 					if (m.getNombreProducto() != null && !m.getNombreProducto().isBlank()) {
 						menuNombres.add(m.getNombreProducto().trim());
-					}
+            }
 				});
 				model.addAttribute("inventarioNombres", menuNombres);
 			}

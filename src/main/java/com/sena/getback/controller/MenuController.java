@@ -41,8 +41,12 @@ public class MenuController {
 
 	// Listar productos
 	@GetMapping
-	public String listarProductos(Model model) {
-		model.addAttribute("products", menuService.findAll());
+    public String listarProductos(Model model) {
+        java.util.List<Menu> productosBar = menuService.findAll().stream()
+                .filter(m -> m.getCategoria() != null && m.getCategoria().getArea() != null
+                        && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"))
+                .toList();
+        model.addAttribute("products", productosBar);
 		model.addAttribute("categorias", categoriaService.findAll());
 		model.addAttribute("newProduct", new Menu());
 		model.addAttribute("activeSection", "products"); // activa sección de productos en admin.html

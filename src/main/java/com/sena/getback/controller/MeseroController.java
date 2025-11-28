@@ -91,14 +91,14 @@ public class MeseroController {
 			var mesa = mesaOpt.isPresent() ? mesaOpt.get() : null;
 
 			// Calcular stock para productos del área BAR usando InventarioService
-			Map<Long, Integer> stockBarPorProducto = new HashMap<>();
-			for (var p : productos) {
-				if (p.getCategoria() != null && p.getCategoria().getArea() != null
-						&& "BAR".equalsIgnoreCase(p.getCategoria().getArea())) {
-					int stock = inventarioService.obtenerStockDisponible(p.getNombreProducto());
-					stockBarPorProducto.put(p.getId(), stock);
-				}
-			}
+            Map<Long, Integer> stockBarPorProducto = new HashMap<>();
+            for (var p : productos) {
+                if (p.getCategoria() != null && p.getCategoria().getArea() != null
+                        && "BAR".equalsIgnoreCase(p.getCategoria().getArea())) {
+                    int stock = inventarioService.obtenerStockDisponible(p.getNombreProducto());
+                    stockBarPorProducto.put(p.getId(), stock);
+                }
+            }
 
 			model.addAttribute("categorias", categorias);
 			model.addAttribute("productos", productos);
