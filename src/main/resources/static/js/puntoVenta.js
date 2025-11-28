@@ -27,16 +27,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalGlobal += subtotal;
                 
                 console.log(`   Producto ${index + 1}: ${cantidad} x ${item.nombre} = $${subtotal}`);
-                
+
                 const div = document.createElement('div');
                 div.className = 'item-carrito d-flex justify-content-between align-items-center p-2 border-bottom';
                 div.innerHTML = `
                     <div>
-                        <strong>${cantidad} × ${item.nombre}</strong>
+                        <strong>${item.nombre}</strong>
                     </div>
-                    <div>
-                        <strong>$ ${subtotal.toLocaleString('es-CO')}</strong>
-                        <button class="btn btn-danger btn-sm ms-2" data-index="${index}">×</button>
+
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary btn-restar" data-index="${index}">−</button>
+                        <span class="mx-2">${cantidad}</span>
+                        <button class="btn btn-sm btn-outline-secondary btn-sumar" data-index="${index}">+</button>
+
+                        <strong class="ms-3">$ ${subtotal.toLocaleString('es-CO')}</strong>
+
+                        <button class="btn btn-danger btn-sm ms-2 btn-eliminar" data-index="${index}">×</button>
                     </div>
                 `;
                 contenedor.appendChild(div);
@@ -49,15 +55,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalTexto = '$' + totalGlobal.toLocaleString('es-CO');
         console.log("💰 TOTAL CALCULADO:", totalGlobal);
         
-        if (totalEl) {
-            totalEl.textContent = totalTexto;
-            console.log("✅ Total actualizado en UI:", totalTexto);
-        }
-        
-        if (modalTotalEl) {
-            modalTotalEl.textContent = totalTexto;
-            console.log("✅ Total actualizado en modal:", totalTexto);
-        }
+        if (totalEl) totalEl.textContent = totalTexto;
+        if (modalTotalEl) modalTotalEl.textContent = totalTexto;
 
         localStorage.setItem('carritoPOS', JSON.stringify(carrito));
     }
@@ -92,14 +91,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Delegación de eventos para eliminar items
+    // Delegación de eventos para sumar, restar y eliminar
     document.getElementById('items-carrito')?.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-danger') || e.target.closest('.btn-danger')) {
-            const button = e.target.classList.contains('btn-danger') ? e.target : e.target.closest('.btn-danger');
-            const index = parseInt(button.getAttribute('data-index'));
-            if (!isNaN(index)) {
-                eliminarItem(index);
-            }
+        const btn = e.target;
+
+        // ELIMINAR
+        if (btn.classList.contains('btn-eliminar')) {
+            const index = parseInt(btn.dataset.index);
+            eliminarItem(index);
+            return;
+        }
+
+        // SUMAR
+        if (btn.classList.contains('btn-sumar')) {
+            const index = parseInt(btn.dataset.index);
+            actualizarCantidad(index, +1);
+            return;
+        }
+
+        // RESTAR
+        if (btn.classList.contains('btn-restar')) {
+            const index = parseInt(btn.dataset.index);
+            actualizarCantidad(index, -1);
+            return;
         }
     });
 
@@ -122,10 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemExistente = carrito.find(item => item.id === id);
             if (itemExistente) {
                 itemExistente.cantidad++;
-                console.log("📈 Producto existente, cantidad:", itemExistente.cantidad);
             } else {
                 carrito.push({ id, nombre, precio, cantidad: 1 });
-                console.log("🆕 Nuevo producto agregado");
             }
 
             renderCarrito();
@@ -144,11 +156,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const nombre = card.dataset.nombre.toLowerCase();
             const descripcion = card.querySelector('p')?.textContent.toLowerCase() || '';
 
-            if (nombre.includes(texto) || descripcion.includes(texto)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
+            card.style.display =
+                nombre.includes(texto) || descripcion.includes(texto)
+                ? 'block'
+                : 'none';
         });
     }
 
@@ -165,8 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         renderCarrito();
         
-        console.log("📊 Total para venta:", totalGlobal);
-        
         if (carrito.length === 0) {
             alert('❌ Carrito vacío. Agregue productos antes de finalizar la venta.');
             return;
@@ -174,11 +183,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (totalGlobal <= 0) {
             alert('❌ Error: El total debe ser mayor a 0');
-            console.error("💥 TOTAL INVÁLIDO:", totalGlobal);
             return;
         }
 
-        // Mostrar modal de métodos de pago primero
         if (modalMetodosEl) {
             const modal = new bootstrap.Modal(modalMetodosEl);
             modal.show();
@@ -191,24 +198,18 @@ document.addEventListener('DOMContentLoaded', function() {
     btnEfectivo?.addEventListener('click', function() {
         console.log("💰 Método efectivo seleccionado");
         
-        // Cerrar modal de métodos de pago
         const metodosModal = bootstrap.Modal.getInstance(modalMetodosEl);
         if (metodosModal) metodosModal.hide();
 
-        // Actualizar total en modal de pago
         const modalTotalEl = document.getElementById('modal-total');
-        if (modalTotalEl) {
-            modalTotalEl.textContent = '$' + totalGlobal.toLocaleString('es-CO');
-        }
+        if (modalTotalEl) modalTotalEl.textContent = '$' + totalGlobal.toLocaleString('es-CO');
 
-        // Limpiar campos
         const recibidoInput = document.getElementById('modal-recibido');
         const cambioInput = document.getElementById('modal-cambio');
         
         if (recibidoInput) recibidoInput.value = '';
         if (cambioInput) cambioInput.value = '$0';
 
-        // Mostrar modal de pago
         if (modalPagoEl) {
             const modalPago = new bootstrap.Modal(modalPagoEl);
             modalPago.show();
@@ -221,18 +222,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     recibidoInput?.addEventListener('input', function() {
         const recibido = parseFloat(this.value) || 0;
-        
-        console.log("💰 Cálculo cambio - Total Global:", totalGlobal, "Recibido:", recibido);
-        
-        if (recibido >= totalGlobal && recibido > 0) {
+
+        if (recibido >= totalGlobal) {
             const cambio = recibido - totalGlobal;
-            if (cambioInput) {
-                cambioInput.value = '$' + cambio.toLocaleString('es-CO');
-            }
-            console.log("✅ Cambio calculado:", cambio);
+            if (cambioInput) cambioInput.value = '$' + cambio.toLocaleString('es-CO');
         } else {
             if (cambioInput) cambioInput.value = '$0';
-            console.log("❌ Monto insuficiente o inválido");
         }
     });
 
@@ -240,43 +235,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const formConfirmar = document.getElementById('form-confirmar-pago');
     
     formConfirmar?.addEventListener('submit', function(e) {
-        console.log("🚀 === INICIANDO ENVÍO FORMULARIO ===");
-        
         e.preventDefault();
         
         const montoRecibido = parseFloat(document.getElementById('modal-recibido').value) || 0;
-        
-        console.log("📋 DATOS A ENVIAR:");
-        console.log("   - Total Global:", totalGlobal);
-        console.log("   - Monto recibido:", montoRecibido);
-        console.log("   - Productos en carrito:", carrito.length);
 
-        // VALIDACIONES
         if (carrito.length === 0) {
             alert('❌ Error: Carrito vacío');
-            console.error("💥 CARRO VACÍO");
             return;
         }
 
         if (totalGlobal <= 0) {
-            alert('❌ Error: Total inválido - ' + totalGlobal);
-            console.error("💥 TOTAL INVÁLIDO:", totalGlobal);
+            alert('❌ Error: Total inválido');
             return;
         }
 
         if (montoRecibido <= 0) {
             alert('❌ Error: Ingrese monto recibido');
-            console.error("💥 MONTO RECIBIDO INVÁLIDO:", montoRecibido);
             return;
         }
 
         if (montoRecibido < totalGlobal) {
-            alert('❌ Error: Monto insuficiente. Se necesita al menos $' + totalGlobal.toLocaleString('es-CO'));
-            console.error("💥 MONTO INSUFICIENTE:", montoRecibido, "<", totalGlobal);
+            alert('❌ Error: Monto insuficiente');
             return;
         }
 
-        // LLENAR CAMPOS DEL FORMULARIO
         const inputTotal = document.getElementById('input-total');
         const inputMontoRecibido = document.getElementById('input-monto-recibido');
         const inputCarrito = document.getElementById('input-carrito');
@@ -287,26 +269,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (inputCarrito) inputCarrito.value = JSON.stringify(carrito);
         if (inputMesaId) inputMesaId.value = document.getElementById('modal-mesa')?.value || '';
 
-        // CONFIRMAR ENVÍO
         const confirmMessage = `¿Confirmar venta por $${totalGlobal.toLocaleString('es-CO')}?\nMonto recibido: $${montoRecibido.toLocaleString('es-CO')}\nCambio: $${(montoRecibido - totalGlobal).toLocaleString('es-CO')}`;
         
         if (confirm(confirmMessage)) {
-            console.log("✅ USUARIO CONFIRMÓ - ENVIANDO FORMULARIO...");
-            
-            // Limpiar carrito después del envío
-            setTimeout(() => {
-                carrito = [];
-                totalGlobal = 0;
-                localStorage.removeItem('carritoPOS');
-                renderCarrito();
-                console.log("🧹 Carrito limpiado después del envío");
-            }, 1000);
-            
-            // Enviar formulario
+            carrito = [];
+            totalGlobal = 0;
+            localStorage.removeItem('carritoPOS');
+            renderCarrito();
             this.submit();
-            console.log("🎯 FORMULARIO ENVIADO CON TOTAL:", totalGlobal);
-        } else {
-            console.log("❌ USUARIO CANCELÓ");
         }
     });
 
@@ -357,7 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         if (!ok) return;
 
-        // Crear y enviar formulario POST
         const form = document.createElement('form');
         form.method = 'post';
         form.action = '/admin/clientes/consumo';

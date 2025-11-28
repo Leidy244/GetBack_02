@@ -303,66 +303,61 @@ public class CajaController {
 			Estado estadoPagado = todosEstados.stream().filter(estado -> "PAGADO".equals(estado.getNombreEstado()))
 					.findFirst().orElse(null);
 
+			// Si no existe estado PAGADO → crearlo
 			if (estadoPagado == null) {
-				// Crear estado si no existe
-				estadoPagado = new Estado();
-				estadoPagado.setNombreEstado("PAGADO");
-				estadoPagado = estadoRepository.save(estadoPagado);
-				System.out.println("✅ Estado PAGADO creado con ID: " + estadoPagado.getId());
-
-				if (estadoPagado == null) {
-					// Crear estado simple
-					estadoPagado = new Estado();
-					estadoPagado.setNombreEstado("PAGADO");
-					estadoPagado = estadoRepository.save(estadoPagado);
-					System.out.println("Nuevo estado PAGADO creado con ID: " + estadoPagado.getId());
-				}
-
-				// ASIGNAR ESTADO AL PEDIDO - FUERA DEL IF DE MESA
-				pedido.setEstado(estadoPagado);
-
-				// Mesa opcional - SEPARADO DEL ESTADO
-				if (mesaId != null && mesaId > 0) {
-					Mesa mesa = mesaService.findById(mesaId).orElse(null);
-					pedido.setMesa(mesa); // ← Esto asigna la MESA, no el ESTADO
-				}
-
-				// GUARDAR EL CARRITO como JSON en el campo "orden"
-				if (carrito != null && !carrito.trim().isEmpty()) {
-					pedido.setOrden(carrito);
-				} else {
-					pedido.setOrden("[]");
-				}
-
-				pedido = pedidoRepository.save(pedido);
-
-				// 2. Crear Factura
-				Factura factura = new Factura();
-				factura.setPedido(pedido);
-				factura.setNumeroFactura(
-						"POS-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")));
-				factura.setTotalPagar(BigDecimal.valueOf(total));
-				factura.setSubtotal(BigDecimal.valueOf(total));
-				factura.setMonto(BigDecimal.valueOf(total));
-				factura.setMetodoPago(metodoPago);
-				factura.setEstadoPago("PAGADO");
-				factura.setEstadoFactura("GENERADA");
-				factura.setFechaEmision(LocalDateTime.now());
-				factura.setFechaPago(LocalDateTime.now());
-				factura.setUsuario(cajero);
-
-				if (mesaId != null && mesaId > 0) {
-					factura.setNumeroMesa(mesaId);
-				}
-
-				facturaRepository.save(factura);
-
-				ra.addFlashAttribute("mensajeExito", "Venta rápida registrada → Factura: " + factura.getNumeroFactura()
-						+ " | Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
-
-				System.out.println("Venta registrada exitosamente: " + factura.getNumeroFactura());
-				System.out.println("Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+			    estadoPagado = new Estado();
+			    estadoPagado.setNombreEstado("PAGADO");
+			    estadoPagado = estadoRepository.save(estadoPagado);
+			    System.out.println("✅ Estado PAGADO creado con ID: " + estadoPagado.getId());
 			}
+
+			// 💥 SIEMPRE asignar el estado al pedido (esté dentro o fuera del IF)
+			pedido.setEstado(estadoPagado);
+
+			// Mesa opcional
+			if (mesaId != null && mesaId > 0) {
+			    Mesa mesa = mesaService.findById(mesaId).orElse(null);
+			    pedido.setMesa(mesa);
+			}
+
+			// Guardar carrito JSON
+			if (carrito != null && !carrito.trim().isEmpty()) {
+			    pedido.setOrden(carrito);
+			} else {
+			    pedido.setOrden("[]");
+			}
+
+			pedido = pedidoRepository.save(pedido);
+
+			// ------------------
+			//  CREAR FACTURA
+			// ------------------
+			Factura factura = new Factura();
+			factura.setPedido(pedido);
+			factura.setNumeroFactura("POS-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")));
+			factura.setTotalPagar(BigDecimal.valueOf(total));
+			factura.setSubtotal(BigDecimal.valueOf(total));
+			factura.setMonto(BigDecimal.valueOf(total));
+			factura.setMetodoPago(metodoPago);
+			factura.setEstadoPago("PAGADO");
+			factura.setEstadoFactura("GENERADA");
+			factura.setFechaEmision(LocalDateTime.now());
+			factura.setFechaPago(LocalDateTime.now());
+			factura.setUsuario(cajero);
+
+			if (mesaId != null && mesaId > 0) {
+			    factura.setNumeroMesa(mesaId);
+			}
+
+			facturaRepository.save(factura);
+
+			ra.addFlashAttribute("mensajeExito",
+			        "Venta rápida registrada → Factura: " + factura.getNumeroFactura()
+			                + " | Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+
+			System.out.println("Venta registrada exitosamente: " + factura.getNumeroFactura());
+			System.out.println("Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			ra.addFlashAttribute("mensajeError", "Error al registrar venta rápida: " + e.getMessage());
