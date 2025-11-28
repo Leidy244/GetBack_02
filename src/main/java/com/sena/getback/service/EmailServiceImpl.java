@@ -17,9 +17,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String remitente;
 
-    @Value("${server.port:50412}")
+    @Value("${server.port:57675}")
     private String serverPort;
-
+ 
     @Override
     public void enviarCorreoRecuperacion(String correo, String token) {
 
@@ -39,10 +39,8 @@ public class EmailServiceImpl implements EmailService {
                     "<p>Has solicitado restablecer tu contraseña en GetBack.</p>" +
                     "<p>Puedes restablecer tu contraseña haciendo clic en el siguiente enlace:</p>" +
                     "<p><a href='"+url+"'>Restablecer contraseña</a></p>" +
-                    "<p>O copia y pega esta URL en tu navegador:</p>" +
-                    "<p>"+url+"</p>"+
                     "<p>Si no solicitaste este cambio, puedes ignorar este correo.</p>" +
-                    "<p>Saludos,<br>El equipo de GetBack</p>";
+                    "<p>Saludos.<br>El equipo de GetBack</p>";
 
             helper.setText(htmlContenido, true);
 
