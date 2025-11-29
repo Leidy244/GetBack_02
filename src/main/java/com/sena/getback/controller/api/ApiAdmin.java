@@ -23,12 +23,18 @@ public class ApiAdmin {
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false, defaultValue = "10") Integer limit
     ) {
+        List<ActivityLog> logs;
         if (page != null || size != null) {
             int p = page != null ? page : 0;
             int s = size != null ? size : 10;
-            return ResponseEntity.ok(activityLogService.getPage(p, s));
+            logs = activityLogService.getPage(p, s);
+        } else {
+            logs = activityLogService.getRecent(limit != null ? limit : 10);
         }
-        return ResponseEntity.ok(activityLogService.getRecent(limit != null ? limit : 10));
+        for (ActivityLog a : logs) {
+            a.setUsername(activityLogService.resolveDisplayUsername(a.getUsername()));
+        }
+        return ResponseEntity.ok(logs);
     }
 
     @PostMapping("/activity")

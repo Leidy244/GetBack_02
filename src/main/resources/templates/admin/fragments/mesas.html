@@ -86,12 +86,8 @@
                                     <button th:if="${mesa.estado == 'DISPONIBLE' and (mesasConPendientes == null or !mesasConPendientes.contains(mesa.id))}"
                                             class="btn btn-sm btn-danger"
                                             data-bs-toggle="modal"
-<<<<<<< HEAD
-                                            th:attr="data-bs-target='#deleteMesaModal'+${mesa.id}">
-=======
-                                            th:attr="data-bs-target='#deleteModal'+${mesa.id}"
+                                            th:attr="data-bs-target='#deleteMesaModal'+${mesa.id}"
                                             title="Eliminar">
->>>>>>> 9a2886c71e350f11166e2a63dcb3727a7b807598
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     <button th:if="${mesa.estado == 'OCUPADA' or (mesasConPendientes != null and mesasConPendientes.contains(mesa.id))}"

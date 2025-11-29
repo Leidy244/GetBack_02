@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.HttpSession;
+import com.sena.getback.model.Usuario;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +48,19 @@ public class MesaService {
 
     private String currentUser() {
         try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                HttpSession session = attrs.getRequest().getSession(false);
+                if (session != null) {
+                    Object obj = session.getAttribute("usuarioLogueado");
+                    if (obj instanceof Usuario u) {
+                        String n = u.getNombre() != null ? u.getNombre().trim() : "";
+                        String a = u.getApellido() != null ? (" " + u.getApellido().trim()) : "";
+                        String full = (n + a).trim();
+                        return full.isEmpty() ? (u.getCorreo() != null ? u.getCorreo() : "system") : full;
+                    }
+                }
+            }
             Authentication a = SecurityContextHolder.getContext().getAuthentication();
             return (a != null && a.getName() != null) ? a.getName() : "system";
         } catch (Exception e) { return "system"; }

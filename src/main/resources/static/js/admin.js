@@ -1136,6 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
       list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h4>Sin actividad</h4><p>Aquí verás los últimos movimientos del sistema.</p></div>';
       return;
     }
+    const getRole = (a) => { try { const m = a && a.metadata; if (!m) return ''; const o = JSON.parse(m); return o && o.role ? String(o.role) : ''; } catch(_) { return ''; } };
     const showUser = (u) => {
       if (!u) return '';
       const name = String(u).trim();
@@ -1150,6 +1151,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="activity-meta">
             <span class="activity-time"><i class="far fa-clock"></i> ${fmtDate(a.timestamp)}</span>
             ${showUser(a.username)}
+            ${(() => { const r = getRole(a); return r ? `<span class="badge bg-secondary ms-2">${r}</span>` : '' })()}
           </div>
         </div>
       </div>
@@ -1202,6 +1204,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="activity-meta">
             <span class="activity-time"><i class="far fa-clock"></i> ${fmtDate(a.timestamp)}</span>
             ${a.username ? `<span><i class="fas fa-user"></i> ${a.username}</span>` : ''}
+            ${(() => { try { const m = a && a.metadata; if (!m) return ''; const o = JSON.parse(m); const r = o && o.role ? String(o.role) : ''; return r ? `<span class="badge bg-secondary ms-2">${r}</span>` : ''; } catch(_) { return ''; } })()}
           </div>
         </div>
       </div>
