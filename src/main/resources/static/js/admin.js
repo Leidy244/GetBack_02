@@ -1111,6 +1111,34 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(err => console.error('Error cargando stats del dashboard:', err));
 
+  // Actualización en tiempo real de KPIs y tarjeta "Ventas Hoy"
+  const updateRealtimeKpis = () => {
+    fetch('/api/dashboard/stats')
+      .then(r => r.json())
+      .then(s => {
+        const fmtCOP = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number.isFinite(v) ? v : 0);
+        const toNum = (n) => Number.isFinite(n) ? n : 0;
+        const ingresosHoyEl = document.getElementById('ingresosHoyInfo');
+        const ingresosTotalesEl = document.getElementById('ingresosTotalesInfo');
+        const ventasHoyEl = document.getElementById('ventasHoyInfo');
+        if (ingresosHoyEl) ingresosHoyEl.textContent = fmtCOP(s.ingresosHoy);
+        if (ingresosTotalesEl) ingresosTotalesEl.textContent = fmtCOP(s.ingresosTotales);
+        if (ventasHoyEl) ventasHoyEl.textContent = toNum(s.ventasHoy);
+
+        const ventasHoyCard = document.getElementById('ventasHoyCard');
+        const ingresosHoyCard = document.getElementById('ingresosHoyCard');
+        if (ventasHoyCard) ventasHoyCard.textContent = toNum(s.ventasHoy);
+        if (ingresosHoyCard) ingresosHoyCard.textContent = fmtCOP(s.ingresosHoy);
+
+        const ventasHoyDash = document.getElementById('ventasHoyDashboard');
+        const ingresosHoyDash = document.getElementById('ingresosHoyDashboard');
+        if (ventasHoyDash) ventasHoyDash.textContent = toNum(s.ventasHoy);
+        if (ingresosHoyDash) ingresosHoyDash.textContent = fmtCOP(s.ingresosHoy);
+      })
+      .catch(() => {});
+  };
+  setInterval(updateRealtimeKpis, 5000);
+
   // Recent activity
   const list = document.getElementById('recentActivity');
   const btn = document.getElementById('activityRefreshBtn');

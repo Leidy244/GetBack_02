@@ -2,8 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="historial-pagos">
-    <div class="section-header">
-        <h2><i class="fas fa-receipt"></i> Historial de Pagos</h2>
+    <div class="section-header mb-4">
+        <h2 class="section-title text-dark-emphasis">
+            <i class="fas fa-receipt me-2 title-icon"></i>Historial de Pagos
+            <span class="badge bg-primary ms-1" th:text="${pagosPagados != null ? #lists.size(pagosPagados) : 0}">0</span>
+        </h2>
         <p class="text-muted mb-0">
             <span>Mostrando: </span>
             <span th:switch="${filtro}">
@@ -16,8 +19,12 @@
         </p>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div class="d-flex align-items-center gap-2">
+            <div class="input-group" style="max-width: 320px;">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="historialBusqueda" class="form-control" placeholder="Filtrar historial...">
+            </div>
             <form th:action="@{/caja}" method="get" class="d-flex align-items-center gap-2">
                 <input type="hidden" name="section" value="historial-pagos"/>
                 <label for="historial-filtro" class="form-label mb-0">Ver:</label>
@@ -28,16 +35,16 @@
                     <option th:value="mes" th:selected="${filtro == 'mes'}">Este mes</option>
                     <option th:value="anio" th:selected="${filtro == 'anio'}">Este año</option>
                 </select>
-                <button type="submit" class="btn btn-sm btn-primary">Aplicar</button>
             </form>
+            <div class="d-flex align-items-center gap-2">
+                <label for="historial-orden" class="form-label mb-0">Orden:</label>
+                <select id="historial-orden" class="form-select form-select-sm" style="width: auto;">
+                    <option value="reciente" selected>Más reciente</option>
+                    <option value="viejo">Más viejo</option>
+                </select>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <label for="historial-orden" class="form-label mb-0">Ordenar por:</label>
-            <select id="historial-orden" class="form-select form-select-sm" style="width: auto;">
-                <option value="reciente" selected>Más reciente primero</option>
-                <option value="viejo">Más viejo primero</option>
-            </select>
-        </div>
+        <div id="historialPagination" class="btn-group" role="group" aria-label="Paginación"></div>
     </div>
 
     <div class="table-container table-scroll">
@@ -53,6 +60,7 @@
             </thead>
             <tbody>
                 <tr th:each="pago, iStat : ${pagosPagados}"
+                    data-row="hist"
                     th:attr="data-fecha=${pago.fechaCreacion}">
                     <td th:text="${iStat.index + 1}">1</td>
                     <td>
@@ -90,6 +98,9 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+    <div class="d-flex justify-content-start align-items-center mt-2">
+        <div id="historialInfo" class="text-muted small"></div>
     </div>
 </div>
 </body>

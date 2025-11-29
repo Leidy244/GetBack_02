@@ -1,27 +1,31 @@
 <section th:fragment="inicio-caja" class="content-section">
 	<div class="dashboard-container">
 		<!-- Header de la sección -->
-		<div class="section-header caja-dashboard-header">
-			<div class="caja-dashboard-left">
-				<h2><i class="fas fa-cash-register"></i> Panel principal</h2>
-				<p class="caja-dashboard-subtitle">Resumen general de la caja</p>
-			</div>
-			<div class="caja-dashboard-right">
-				<div class="date-badge caja-date-badge" title="Fecha y hora actuales">
-					<i class="fas fa-calendar-alt"></i>
-					<span id="dashboardDate"></span>
-				</div>
-			</div>
-		</div>
+        <div class="section-header caja-dashboard-header">
+            <div class="caja-dashboard-left">
+                <h2>Panel de Control</h2>
+                <p class="caja-dashboard-subtitle">Resumen general de la caja</p>
+            </div>
+            <div class="caja-dashboard-right">
+                <div class="date-badge caja-date-badge" title="Fecha y hora actuales">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="dashboardDate"></span>
+                </div>
+                <span class="caja-status-badge" th:classappend="${cajaAbierta} ? ' open' : ' closed'">
+                      <i class="fas status-icon" th:classappend="${cajaAbierta} ? ' fa-check-circle' : ' fa-lock'"></i>
+                      <span th:text="${cajaAbierta} ? 'Caja abierta' : 'Caja cerrada'">Caja abierta</span>
+                </span>
+            </div>
+        </div>
 
         <!-- Fila: formulario a la izquierda, tarjetas a la derecha -->
-        <div class="row mt-2 mb-2 g-3 align-items-stretch">
+        <div class="row mt-2 mb-2 g-3 align-items-stretch justify-content-center dashboard-top">
             <!-- Izquierda: Formulario de gastos -->
             <div class="col-12 col-lg-7 ps-lg-0">
                 <div class="card shadow-sm border-0 h-100 gastos-card">
                     <div class="card-header"><i class="fas fa-wallet"></i> Gastos</div>
                     <div class="card-body">
-                        <form id="gastosForm" action="#" method="post" autocomplete="off">
+                        <form id="gastosForm" th:action="@{/caja/gastos/registrar}" method="post" autocomplete="off">
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
                                     <label class="form-label">Concepto</label>
@@ -32,7 +36,7 @@
                                     <div class="form-control" id="fechaTrabajoText" style="pointer-events:none;">
                                         Hoy
                                     </div>
-                                    <input type="hidden" name="fecha" id="gastoFechaHidden">
+                                    <input type="hidden" name="fecha" id="gastoFechaHidden" th:value="${#temporals.format(T(java.time.LocalDate).now(),'yyyy-MM-dd')}">
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label class="form-label">Monto</label>
@@ -55,34 +59,63 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-2 mt-3">
-                                <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="fas fa-plus me-2"></i>Registrar Gasto</button>
-                                <button type="reset" class="btn btn-light rounded-pill px-3">Limpiar</button>
+                                <button type="submit" class="btn btn-primary px-3"><i class="fas fa-plus me-2"></i>Registrar Gasto</button>
+                                <button type="reset" class="btn btn-secondary px-3">Limpiar</button>
+                                <button type="button" class="btn btn-outline-primary px-3" id="btnGastosHistorial"><i class="fas fa-history me-2"></i>Historial de gastos</button>
                             </div>
                         </form>
                         <div class="gastos-summary">
                             <div class="gastos-summary-title">Últimos gastos</div>
-                            <div th:if="${ultimosGastos != null}">
-                                <div class="gasto-item" th:each="g : ${ultimosGastos}">
-                                    <div class="gasto-meta">
-                                        <i class="fas fa-receipt"></i>
-                                        <span th:text="${g.concepto}">Concepto</span>
-                                        <small th:text="${#temporals.format(g.fecha,'dd/MM/yyyy')}">01/01/2025</small>
-                                    </div>
-                                    <div class="gasto-amount" th:text="'$' + ${#numbers.formatDecimal(g.monto,1,'COMMA',2,'POINT')}">$0.00</div>
-                                </div>
-                            </div>
-                            <div th:if="${ultimosGastos == null}">
-                                <div class="gasto-item">
-                                    <div class="gasto-meta"><i class="fas fa-receipt"></i><span>Compra de insumos</span><small>Hoy</small></div>
-                                    <div class="gasto-amount">$0.00</div>
-                                </div>
-                                <div class="gasto-item">
-                                    <div class="gasto-meta"><i class="fas fa-receipt"></i><span>Transporte</span><small>Ayer</small></div>
-                                    <div class="gasto-amount">$0.00</div>
-                                </div>
-                                <div class="gasto-item">
-                                    <div class="gasto-meta"><i class="fas fa-receipt"></i><span>Otros</span><small>Esta semana</small></div>
-                                    <div class="gasto-amount">$0.00</div>
+                            <div class="gastos-table-wrapper">
+                                <div class="table-responsive">
+                                    <table class="table table-hover gastos-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Concepto</th>
+                                                <th>Fecha</th>
+                                                <th>Método</th>
+                                                <th>Nota</th>
+                                                <th class="text-end">Monto</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody th:if="${ultimosGastos != null}">
+                                            <tr th:each="g : ${ultimosGastos}">
+                                                <td>
+                                                    <i class="fas fa-receipt me-2"></i>
+                                                    <span th:text="${g.concepto}">Concepto</span>
+                                                </td>
+                                                <td th:text="${#temporals.format(g.fecha,'dd/MM/yyyy')}">01/01/2025</td>
+                                                <td th:text="${g.metodo}">EFECTIVO</td>
+                                                <td th:text="${g.nota}">—</td>
+                                                <td class="text-end">
+                                                    <span class="monto-badge" th:text="'$' + ${#numbers.formatDecimal(g.monto,1,'COMMA',2,'POINT')}">$0.00</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tbody th:if="${ultimosGastos == null}">
+                                            <tr>
+                                                <td><i class="fas fa-receipt me-2"></i> Compra de insumos</td>
+                                                <td>Hoy</td>
+                                                <td>EFECTIVO</td>
+                                                <td>—</td>
+                                                <td class="text-end"><span class="monto-badge">$0.00</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-receipt me-2"></i> Transporte</td>
+                                                <td>Ayer</td>
+                                                <td>TARJETA</td>
+                                                <td>—</td>
+                                                <td class="text-end"><span class="monto-badge">$0.00</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-receipt me-2"></i> Otros</td>
+                                                <td>Esta semana</td>
+                                                <td>TRANSFERENCIA</td>
+                                                <td>—</td>
+                                                <td class="text-end"><span class="monto-badge">$0.00</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>

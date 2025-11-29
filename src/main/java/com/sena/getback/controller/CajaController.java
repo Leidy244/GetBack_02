@@ -28,6 +28,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sena.getback.repository.ClienteFrecuenteRepository;
 import com.sena.getback.repository.EstadoRepository;
+import com.sena.getback.repository.GastoRepository;
+import com.sena.getback.repository.CajaCierreRepository;
+import com.sena.getback.model.Gasto;
+import com.sena.getback.model.CajaCierre;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,7 +57,9 @@ public class CajaController {
 	private final UsuarioRepository usuarioRepository;
 	private final PedidoService pedidoService;
 	private final ClienteFrecuenteRepository clienteFrecuenteRepository;
-	private final EstadoRepository estadoRepository;
+    private final EstadoRepository estadoRepository;
+    private final GastoRepository gastoRepository;
+    private final CajaCierreRepository cajaCierreRepository;
 
 	// Pedidos marcados como "completados" visualmente en el inicio de caja (pero
 	// aún PENDIENTES de pago)
@@ -62,7 +68,7 @@ public class CajaController {
 	public CajaController(MenuService menuService, CategoriaService categoriaService,
 			FacturaRepository facturaRepository, PedidoRepository pedidoRepository, UsuarioRepository usuarioRepository,
 			PedidoService pedidoService, ClienteFrecuenteRepository clienteFrecuenteRepository, MesaService mesaService,
-			EstadoRepository estadoRepository) {
+            EstadoRepository estadoRepository, GastoRepository gastoRepository, CajaCierreRepository cajaCierreRepository) {
 
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
@@ -72,13 +78,15 @@ public class CajaController {
 		this.pedidoService = pedidoService;
 		this.clienteFrecuenteRepository = clienteFrecuenteRepository;
 		this.mesaService = mesaService;
-		this.estadoRepository = estadoRepository;
+        this.estadoRepository = estadoRepository;
+        this.gastoRepository = gastoRepository;
+        this.cajaCierreRepository = cajaCierreRepository;
 	}
 
 	@GetMapping
 	public String panelCaja(@RequestParam(required = false) String section,
 	        @RequestParam(required = false) String categoria, @RequestParam(required = false) String filtro,
-	        Model model) {
+	        Model model, HttpSession session) {
 
 	    String activeSection = (section != null && !section.isEmpty()) ? section : "inicio-caja";
 	    model.addAttribute("activeSection", activeSection);
@@ -87,7 +95,7 @@ public class CajaController {
 	    // ✅ SIEMPRE CARGAR LAS MESAS PARA EL MODAL
 	    model.addAttribute("mesas", mesaService.findAll());
 
-	    if ("inicio-caja".equals(activeSection) || "pedidos".equals(activeSection)) {
+        if ("inicio-caja".equals(activeSection) || "pedidos".equals(activeSection)) {
 	        List<Factura> facturas = facturaRepository.findAll();
 	        List<Pedido> pedidos = pedidoRepository.findAll();
 	        long totalUsuarios = usuarioRepository.count();
@@ -100,15 +108,26 @@ public class CajaController {
 	        List<Pedido> pedidosPagados = pedidoService.obtenerPedidosPagados();
 	        LocalDate hoy = LocalDate.now();
 
-	        long ventasHoy = pedidosPagados.stream()
-	                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-	                .count();
-	        model.addAttribute("ventasHoy", ventasHoy);
+            long ventasHoy = pedidosPagados.stream()
+                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
+                .count();
+            model.addAttribute("ventasHoy", ventasHoy);
 
-	        double ingresosHoy = pedidosPagados.stream()
-	                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-	                .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0).sum();
-	        model.addAttribute("ingresosHoy", ingresosHoy);
+            double ingresosHoy = pedidosPagados.stream()
+                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
+                .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0).sum();
+            Object estInicio = session.getAttribute("cajaEstado");
+            boolean abiertaInicio = false;
+            if (estInicio instanceof java.util.Map<?, ?> estMapInicio) {
+                Object abiertaValInicio = estMapInicio.get("abierta");
+                abiertaInicio = (abiertaValInicio instanceof Boolean) ? (Boolean) abiertaValInicio : false;
+            }
+            if (!abiertaInicio) {
+                ventasHoy = 0;
+                ingresosHoy = 0.0;
+            }
+            model.addAttribute("ingresosHoy", ingresosHoy);
+            model.addAttribute("ventasHoy", ventasHoy);
 
 	        double ingresosTotales = facturas.stream().filter(f -> "PAGADO".equals(f.getEstadoPago()))
 	                .mapToDouble(f -> f.getTotalPagar().doubleValue()).sum();
@@ -133,7 +152,29 @@ public class CajaController {
 
             long pedidosPendientes = pedidosPendientesBar.size();
             model.addAttribute("pedidosPendientes", pedidosPendientes);
+
+            // Últimos gastos (para panel inicio). Si la caja está cerrada, no mostrar.
+            boolean abiertaUI = false;
+            Object est = session.getAttribute("cajaEstado");
+            if (est instanceof Map<?, ?> estMap) {
+                Object abiertaVal = estMap.get("abierta");
+                abiertaUI = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+            }
+            List<Gasto> ultimosGastos = abiertaUI ? gastoRepository.findAll().stream()
+                    .sorted(Comparator.comparing(Gasto::getFecha).reversed())
+                    .limit(5)
+                    .collect(Collectors.toList()) : java.util.List.of();
+            model.addAttribute("ultimosGastos", ultimosGastos);
 	    }
+
+	    // Estado de caja para badge en header (desde sesión backend)
+	    Object estadoObj = session.getAttribute("cajaEstado");
+	    boolean cajaAbierta = false;
+	    if (estadoObj instanceof Map) {
+	        Object abiertaVal = ((Map<?, ?>) estadoObj).get("abierta");
+	        cajaAbierta = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+	    }
+	    model.addAttribute("cajaAbierta", cajaAbierta);
 
 	    if ("punto-venta".equals(activeSection)) {
 	        model.addAttribute("categorias", categoriaService.findAll());
@@ -191,24 +232,170 @@ public class CajaController {
 	        model.addAttribute("filtro", filtro);
 	    }
 
-	    if ("corte-caja".equals(activeSection)) {
-	        LocalDate hoy = LocalDate.now();
+        if ("corte-caja".equals(activeSection)) {
+            LocalDate hoy = LocalDate.now();
 
-	        List<Pedido> pagosPagadosHoy = pedidoService.obtenerPedidosPagados().stream()
-	                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-	                .collect(Collectors.toList());
+            // Ingresos por EFECTIVO del día (según facturas pagadas)
+            double ingresosEfectivoDia = facturaRepository.findAll().stream()
+                    .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().toLocalDate().equals(hoy))
+                    .filter(f -> "PAGADO".equalsIgnoreCase(f.getEstadoPago()))
+                    .filter(f -> f.getMetodoPago() != null && f.getMetodoPago().equalsIgnoreCase("EFECTIVO"))
+                    .mapToDouble(f -> f.getTotalPagar() != null ? f.getTotalPagar().doubleValue() : 0.0)
+                    .sum();
 
-	        long ventasDia = pagosPagadosHoy.size();
-	        double ingresosDia = pagosPagadosHoy.stream().mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
-	                .sum();
+            // Ventas del día (conteo de facturas pagadas)
+            long ventasDia = facturaRepository.findAll().stream()
+                    .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().toLocalDate().equals(hoy))
+                    .filter(f -> "PAGADO".equalsIgnoreCase(f.getEstadoPago()))
+                    .count();
 
-	        model.addAttribute("fechaCorte", hoy);
-	        model.addAttribute("ventasDia", ventasDia);
-	        model.addAttribute("ingresosDia", ingresosDia);
-	    }
+            // Gastos del día en EFECTIVO
+            double gastosEfectivoDia = gastoRepository.findAll().stream()
+                    .filter(g -> g.getFecha() != null && g.getFecha().equals(hoy))
+                    .filter(g -> g.getMetodo() != null && g.getMetodo().equalsIgnoreCase("EFECTIVO"))
+                    .mapToDouble(g -> g.getMonto() != null ? g.getMonto() : 0.0)
+                    .sum();
+
+            boolean abiertaUI = false;
+            Object est = session.getAttribute("cajaEstado");
+            if (est instanceof Map<?, ?> estMap) {
+                Object abiertaVal = estMap.get("abierta");
+                abiertaUI = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+            }
+            if (!abiertaUI) {
+                ventasDia = 0;
+                ingresosEfectivoDia = 0.0;
+                gastosEfectivoDia = 0.0;
+            }
+
+            model.addAttribute("fechaCorte", hoy);
+            model.addAttribute("ventasDia", ventasDia);
+            model.addAttribute("ingresosEfectivoDia", ingresosEfectivoDia);
+            model.addAttribute("gastosEfectivoDia", gastosEfectivoDia);
+        }
 
 	    return "caja/panel_caja";
 	}
+
+	// ==========================
+	// API de estado de caja (sesión)
+	// ==========================
+
+	@GetMapping("/estado")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> obtenerEstadoCaja(HttpSession session) {
+	    Map<String, Object> estado = (Map<String, Object>) session.getAttribute("cajaEstado");
+	    if (estado == null) {
+	        estado = Map.of(
+	                "abierta", false,
+	                "mensaje", "Caja cerrada"
+	        );
+	    }
+	    return ResponseEntity.ok(estado);
+	}
+
+	@PostMapping("/abrir")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> abrirCaja(@RequestParam(name = "base", required = false) Double base,
+	                                                    HttpSession session) {
+	    double baseVal = base != null && base >= 0 ? base : 0.0;
+	    Map<String, Object> estado = new java.util.HashMap<>();
+	    estado.put("abierta", true);
+	    estado.put("fechaApertura", java.time.LocalDateTime.now().toString());
+	    estado.put("base", baseVal);
+	    session.setAttribute("cajaEstado", estado);
+	    return ResponseEntity.ok(Map.of("success", true, "estado", estado));
+	}
+
+    @PostMapping("/cerrar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cerrarCaja(@RequestParam(name = "retiro", required = false) Double retiro,
+                                                    @RequestParam(name = "baseSiguiente", required = false) Double baseSiguiente,
+                                                    HttpSession session) {
+        double retiroVal = retiro != null && retiro >= 0 ? retiro : 0.0;
+        double baseSig = baseSiguiente != null && baseSiguiente >= 0 ? baseSiguiente : 0.0;
+        Map<String, Object> estado = (Map<String, Object>) session.getAttribute("cajaEstado");
+        if (estado == null) estado = new java.util.HashMap<>();
+        estado.put("abierta", false);
+        estado.put("fechaCierre", java.time.LocalDateTime.now().toString());
+        estado.put("retiro", retiroVal);
+        estado.put("baseSiguiente", baseSig);
+        session.setAttribute("cajaEstado", estado);
+
+        // Guardar cierre del día
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        double ingresosEfectivoDia = facturaRepository.findAll().stream()
+                .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().toLocalDate().equals(hoy))
+                .filter(f -> "PAGADO".equalsIgnoreCase(f.getEstadoPago()))
+                .filter(f -> f.getMetodoPago() != null && f.getMetodoPago().equalsIgnoreCase("EFECTIVO"))
+                .mapToDouble(f -> f.getTotalPagar() != null ? f.getTotalPagar().doubleValue() : 0.0)
+                .sum();
+        long ventasDia = facturaRepository.findAll().stream()
+                .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().toLocalDate().equals(hoy))
+                .filter(f -> "PAGADO".equalsIgnoreCase(f.getEstadoPago()))
+                .count();
+        double gastosEfectivoDia = gastoRepository.findAll().stream()
+                .filter(g -> g.getFecha() != null && g.getFecha().equals(hoy))
+                .filter(g -> g.getMetodo() != null && g.getMetodo().equalsIgnoreCase("EFECTIVO"))
+                .mapToDouble(g -> g.getMonto() != null ? g.getMonto() : 0.0)
+                .sum();
+        Double baseApertura = null;
+        Object baseObj = estado.get("base");
+        if (baseObj instanceof Number) baseApertura = ((Number) baseObj).doubleValue();
+
+        CajaCierre cierre = new CajaCierre();
+        cierre.setFecha(hoy);
+        cierre.setIngresosEfectivo(ingresosEfectivoDia);
+        cierre.setGastosEfectivo(gastosEfectivoDia);
+        cierre.setVentasDia(ventasDia);
+        cierre.setBaseApertura(baseApertura);
+        cierre.setBaseSiguiente(baseSig);
+        cierre.setRetiro(retiroVal);
+        cajaCierreRepository.save(cierre);
+
+        return ResponseEntity.ok(Map.of("success", true, "estado", estado));
+    }
+
+    @GetMapping("/gastos/historial")
+    @ResponseBody
+    public ResponseEntity<List<Gasto>> historialGastos(@RequestParam(name = "mes", required = false) String mes) {
+        List<Gasto> lista;
+        if (mes != null && mes.matches("\\d{4}-\\d{2}")) {
+            String[] parts = mes.split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            java.time.LocalDate start = java.time.LocalDate.of(year, month, 1);
+            java.time.LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+            lista = gastoRepository.findAll().stream()
+                    .filter(g -> g.getFecha() != null && !g.getFecha().isBefore(start) && !g.getFecha().isAfter(end))
+                    .sorted(Comparator.comparing(Gasto::getFecha).reversed())
+                    .collect(Collectors.toList());
+        } else {
+            lista = gastoRepository.findAll().stream()
+                    .sorted(Comparator.comparing(Gasto::getFecha).reversed())
+                    .collect(Collectors.toList());
+        }
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/historial")
+    @ResponseBody
+    public ResponseEntity<java.util.List<CajaCierre>> historial(@RequestParam(name = "mes", required = false) String mes) {
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        java.util.List<CajaCierre> lista;
+        if (mes != null && mes.matches("\\d{4}-\\d{2}")) {
+            String[] parts = mes.split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            java.time.LocalDate start = java.time.LocalDate.of(year, month, 1);
+            java.time.LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+            lista = cajaCierreRepository.findByFechaBetween(start, end);
+        } else {
+            lista = cajaCierreRepository.findAll();
+        }
+        lista.sort(java.util.Comparator.comparing(CajaCierre::getFecha).reversed());
+        return ResponseEntity.ok(lista);
+    }
 
     @PostMapping("/pagar")
     public String pagarPedido(@RequestParam("pedidoId") Integer pedidoId,
@@ -226,6 +413,39 @@ public class CajaController {
             ra.addFlashAttribute("error", "Error al registrar el pago: " + ex.getMessage());
         }
         return "redirect:/caja?section=pagos";
+    }
+
+    @PostMapping("/gastos/registrar")
+    public String registrarGasto(@RequestParam String concepto,
+                                 @RequestParam String fecha,
+                                 @RequestParam Double monto,
+                                 @RequestParam String metodo,
+                                 @RequestParam(required = false) String nota,
+                                 RedirectAttributes ra,
+                                 HttpSession session) {
+        boolean abierta = false;
+        Object estado = session != null ? session.getAttribute("cajaEstado") : null;
+        if (estado instanceof java.util.Map<?, ?> map) {
+            Object abiertaVal = map.get("abierta");
+            abierta = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+        }
+        if (!abierta) {
+            ra.addFlashAttribute("error", "No se pueden registrar gastos con la caja cerrada");
+            return "redirect:/caja?section=inicio-caja";
+        }
+        try {
+            Gasto g = new Gasto();
+            g.setConcepto(concepto);
+            g.setFecha(LocalDate.parse(fecha));
+            g.setMonto(monto);
+            g.setMetodo(metodo);
+            g.setNota(nota);
+            gastoRepository.save(g);
+            ra.addFlashAttribute("success", "Gasto registrado correctamente");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error al registrar gasto: " + e.getMessage());
+        }
+        return "redirect:/caja?section=inicio-caja";
     }
 
 	@PostMapping("/marcar-completado")

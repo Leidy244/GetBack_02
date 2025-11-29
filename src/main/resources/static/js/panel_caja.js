@@ -63,6 +63,10 @@ class PanelCaja {
         this.setupPedidosCards();
         // Corte de caja (inicio/cierre de caja)
         this.setupCorteCaja();
+
+        this.setupGestionPedidos();
+
+        // Navegación condicional eliminada junto con el botón del header
     }
 
     // Auto fecha para gastos del día de trabajo
@@ -79,19 +83,143 @@ class PanelCaja {
         if (fechaText) {
             fechaText.textContent = hoy.toLocaleDateString();
         }
+
+        const form = document.getElementById('gastosForm');
+        const bloquearFormSiCerrada = async () => {
+            try {
+                const res = await fetch('/caja/estado', { credentials: 'same-origin' });
+                const data = await res.json();
+                const abierta = !!(data && data.abierta);
+                if (form && !abierta) {
+                    form.querySelectorAll('input, select, button').forEach(el => {
+                        if (el.id !== 'btnGastosHistorial') {
+                            el.disabled = true;
+                        }
+                    });
+                }
+            } catch (e) {}
+        };
+        bloquearFormSiCerrada();
+
+        const btnHistorial = document.getElementById('btnGastosHistorial');
+        const monthInput = document.getElementById('gastosHistorialMes');
+        const applyBtn = document.getElementById('gastosHistorialAplicar');
+        const tbody = document.getElementById('gastosHistorialTablaBody');
+        const totalEl = document.getElementById('gastosHistorialTotal');
+        const exportBtn = document.getElementById('gastosHistorialExport');
+
+        const fmt = (v) => '$' + Number(v || 0).toFixed(2);
+        const render = async () => {
+            const mes = monthInput && monthInput.value ? monthInput.value : '';
+            const url = '/caja/gastos/historial' + (mes ? ('?mes=' + encodeURIComponent(mes)) : '');
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                const lista = await res.json();
+                if (Array.isArray(lista) && tbody) {
+                    tbody.innerHTML = lista.map(x => `<tr>
+                        <td>${x.fecha || ''}</td>
+                        <td>${x.concepto || ''}</td>
+                        <td>${x.metodo || ''}</td>
+                        <td>${x.nota || ''}</td>
+                        <td class="text-end">${fmt(x.monto)}</td>
+                    </tr>`).join('');
+                    const total = lista.reduce((a,b)=>a+Number(b.monto||0),0);
+                    if (totalEl) totalEl.textContent = fmt(total);
+                    window.__gastosHistorialLista__ = lista;
+                }
+            } catch (e) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No se pudo cargar el historial</td></tr>';
+                if (totalEl) totalEl.textContent = fmt(0);
+                window.__gastosHistorialLista__ = [];
+            }
+        };
+
+        if (btnHistorial) {
+            btnHistorial.addEventListener('click', () => {
+                if (monthInput && !monthInput.value) {
+                    const hoy = new Date();
+                    hoy.setMonth(hoy.getMonth() - 1);
+                    const y = hoy.getFullYear();
+                    const m = String(hoy.getMonth() + 1).padStart(2, '0');
+                    monthInput.value = `${y}-${m}`;
+                }
+                render();
+                const modal = new bootstrap.Modal(document.getElementById('modalGastosHistorial'));
+                modal.show();
+            });
+        }
+        if (applyBtn) applyBtn.addEventListener('click', render);
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                const lista = window.__gastosHistorialLista__ || [];
+                const header = ['Fecha','Concepto','Metodo','Nota','Monto'];
+                const rows = lista.map(x => [x.fecha||'',x.concepto||'',x.metodo||'',x.nota||'',Number(x.monto||0).toFixed(2)]);
+                const csv = [header].concat(rows).map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const mes = monthInput && monthInput.value ? monthInput.value : '';
+                a.href = url;
+                a.download = 'historial_gastos' + (mes ? ('_'+mes) : '') + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
     }
 
     // Ordenar historial de pagos (más reciente / más viejo)
     setupHistorialOrden() {
         const selectOrden = document.getElementById('historial-orden');
         const tabla = document.getElementById('tabla-historial-pagos');
+        const inputBusqueda = document.getElementById('historialBusqueda');
+        const pagerTop = document.getElementById('historialPagination');
+        const info = document.getElementById('historialInfo');
         if (!selectOrden || !tabla) return;
 
         const cuerpo = tabla.querySelector('tbody');
         if (!cuerpo) return;
 
+        const pageSize = 7;
+        let rows = Array.from(cuerpo.querySelectorAll('tr[data-row]'));
+        if (rows.length === 0) rows = Array.from(cuerpo.querySelectorAll('tr')).filter(r => !r.querySelector('td[colspan]'));
+        let filtered = rows.slice();
+        let page = 1;
+
+        const renderPager = (pages) => {
+            if (!pagerTop) return;
+            pagerTop.innerHTML = '';
+            const prevBtn = document.createElement('button');
+            prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary rounded-pill'; prevBtn.textContent = '«';
+            prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page = Math.max(1, page-1); render(); };
+            pagerTop.appendChild(prevBtn);
+            for (let i=1;i<=pages;i++){
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary') + ' rounded-pill';
+                b.textContent = i; b.onclick = () => { page = i; render(); };
+                pagerTop.appendChild(b);
+            }
+            const nextBtn = document.createElement('button');
+            nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary rounded-pill'; nextBtn.textContent = '»';
+            nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page = Math.min(pages, page+1); render(); };
+            pagerTop.appendChild(nextBtn);
+        };
+
+        const render = () => {
+            rows.forEach(r => { r.style.display = 'none'; });
+            const total = filtered.length;
+            const pages = Math.max(1, Math.ceil(total / pageSize));
+            if (page > pages) page = pages;
+            const start = (page - 1) * pageSize;
+            const visible = filtered.slice(start, start + pageSize);
+            visible.forEach(r => { r.style.display = ''; });
+            if (info) info.textContent = `Resultados: ${total} • Página ${page} de ${pages}`;
+            renderPager(pages);
+        };
+
         const ordenar = () => {
-            const filas = Array.from(cuerpo.querySelectorAll('tr'));
+            const filas = Array.from(cuerpo.querySelectorAll('tr[data-row]'));
             const modo = selectOrden.value; // 'reciente' o 'viejo'
 
             filas.sort((a, b) => {
@@ -106,12 +234,28 @@ class PanelCaja {
                 if (celdaIndice) celdaIndice.textContent = (idx + 1).toString();
                 cuerpo.appendChild(tr);
             });
+
+            rows = Array.from(cuerpo.querySelectorAll('tr[data-row]'));
+            filtered = rows.slice();
+            page = 1;
+            render();
         };
 
         // Orden inicial
         ordenar();
+        // Paginación inicial si no hay orden
+        if (!selectOrden) render();
         // Orden al cambiar el select
         selectOrden.addEventListener('change', ordenar);
+
+        if (inputBusqueda) {
+            inputBusqueda.addEventListener('input', () => {
+                const termino = inputBusqueda.value.trim().toLowerCase();
+                filtered = rows.filter(r => r.textContent.toLowerCase().includes(termino));
+                page = 1;
+                render();
+            });
+        }
     }
 
     // ===== PAGOS DE PEDIDOS (SECCIÓN PAGOS) =====
@@ -481,33 +625,62 @@ class PanelCaja {
             }
         });
 
-        // Filtro de búsqueda en la tabla de pagos pendientes
-        if (inputBusquedaPagos && tablaPagosPendientes) {
+        if (tablaPagosPendientes) {
             const cuerpo = tablaPagosPendientes.querySelector('tbody');
-            if (cuerpo) {
+            const pagerTop = document.getElementById('pagosPagination');
+            const pagerBottom = document.getElementById('pagosPaginationBottom');
+            const info = document.getElementById('pagosInfo');
+            const pageSize = 7;
+            let rows = Array.from(cuerpo ? cuerpo.querySelectorAll('tr[data-row]') : []);
+            if (rows.length === 0 && cuerpo) {
+                rows = Array.from(cuerpo.querySelectorAll('tr')).filter(r => !r.querySelector('td[colspan]'));
+            }
+            let filtered = rows.slice();
+            let page = 1;
+
+            const renderPager = (pages) => {
+                const build = (target) => {
+                    if (!target) return;
+                    target.innerHTML = '';
+                    const prevBtn = document.createElement('button');
+                    prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary rounded-pill'; prevBtn.textContent = '«';
+                    prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page = Math.max(1, page-1); render(); };
+                    target.appendChild(prevBtn);
+                    for (let i=1;i<=pages;i++){
+                        const b = document.createElement('button');
+                        b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary') + ' rounded-pill';
+                        b.textContent = i; b.onclick = () => { page = i; render(); };
+                        target.appendChild(b);
+                    }
+                    const nextBtn = document.createElement('button');
+                    nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary rounded-pill'; nextBtn.textContent = '»';
+                    nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page = Math.min(pages, page+1); render(); };
+                    target.appendChild(nextBtn);
+                };
+                build(pagerTop);
+                build(pagerBottom);
+            };
+
+            const render = () => {
+                rows.forEach(r => { r.style.display = 'none'; });
+                const total = filtered.length;
+                const pages = Math.max(1, Math.ceil(total / pageSize));
+                if (page > pages) page = pages;
+                const start = (page - 1) * pageSize;
+                const visible = filtered.slice(start, start + pageSize);
+                visible.forEach(r => { r.style.display = ''; });
+                if (info) info.textContent = `Resultados: ${total} • Página ${page} de ${pages}`;
+                renderPager(pages);
+            };
+
+            render();
+
+            if (inputBusquedaPagos) {
                 inputBusquedaPagos.addEventListener('input', () => {
                     const termino = inputBusquedaPagos.value.trim().toLowerCase();
-
-                    const filas = Array.from(cuerpo.querySelectorAll('tr'));
-                    filas.forEach(fila => {
-                        // No filtrar la fila de "no hay pedidos"; la gestionamos aparte
-                        const esFilaVacia = fila.querySelector('td[colspan]');
-                        if (esFilaVacia) {
-                            return;
-                        }
-
-                        const textoFila = fila.textContent.toLowerCase();
-                        const coincide = !termino || textoFila.includes(termino);
-                        fila.style.display = coincide ? '' : 'none';
-                    });
-
-                    // Mostrar u ocultar el mensaje de "no hay pedidos" según resultado del filtro
-                    const filaVacia = cuerpo.querySelector('tr td[colspan]')?.parentElement;
-                    if (filaVacia) {
-                        const hayAlgunaVisible = Array.from(cuerpo.querySelectorAll('tr'))
-                            .some(tr => !tr.querySelector('td[colspan]') && tr.style.display !== 'none');
-                        filaVacia.style.display = hayAlgunaVisible ? 'none' : '';
-                    }
+                    filtered = rows.filter(r => r.textContent.toLowerCase().includes(termino));
+                    page = 1;
+                    render();
                 });
             }
         }
@@ -527,23 +700,93 @@ class PanelCaja {
         });
     }
 
+    setupGestionPedidos() {
+        const setupList = (selector, inputId, pagerId, infoId) => {
+            const cont = document.querySelector(selector);
+            if (!cont) return;
+            const items = Array.from(cont.querySelectorAll('.pedido-card[data-row]'));
+            const input = document.getElementById(inputId);
+            const pager = document.getElementById(pagerId);
+            const info = document.getElementById(infoId);
+            const pageSize = pager ? 7 : Infinity;
+            let rows = items.slice();
+            let filtered = rows.slice();
+            let page = 1;
+
+            const renderPager = (pages) => {
+                if (!pager) return;
+                pager.innerHTML = '';
+                const prevBtn = document.createElement('button');
+                prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary rounded-pill'; prevBtn.textContent = '«';
+                prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page = Math.max(1, page-1); render(); };
+                pager.appendChild(prevBtn);
+                for (let i=1;i<=pages;i++){
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary') + ' rounded-pill';
+                    b.textContent = i; b.onclick = () => { page = i; render(); };
+                    pager.appendChild(b);
+                }
+                const nextBtn = document.createElement('button');
+                nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary rounded-pill'; nextBtn.textContent = '»';
+                nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page = Math.min(pages, page+1); render(); };
+                pager.appendChild(nextBtn);
+            };
+
+            const render = () => {
+                const total = filtered.length;
+                const pages = Math.max(1, Math.ceil(total / pageSize));
+                if (page > pages) page = pages;
+                const start = (page - 1) * pageSize;
+                const visible = filtered.slice(start, start + pageSize);
+
+                if (pager) {
+                    rows.forEach(r => { r.style.display = 'none'; });
+                    visible.forEach(r => { r.style.display = ''; });
+                } else {
+                    rows.forEach(r => { r.style.display = filtered.includes(r) ? '' : 'none'; });
+                }
+
+                if (info) info.textContent = pager ? `Resultados: ${total} • Página ${page} de ${pages}` : `Resultados: ${total}`;
+                renderPager(pages);
+            };
+
+            render();
+            if (input) {
+                input.addEventListener('input', () => {
+                    const t = input.value.trim().toLowerCase();
+                    filtered = rows.filter(r => r.textContent.toLowerCase().includes(t));
+                    page = 1;
+                    render();
+                });
+            }
+        };
+
+        setupList('#pedidosPendientesGrid', 'pedidosPendientesBusqueda', 'pedidosPendientesPagination', 'pedidosPendientesInfo');
+        setupList('#pedidosCompletadosGrid', 'pedidosPagadosBusqueda', null, 'pedidosPagadosInfo');
+        }
+
     // Inicio / Cierre de caja: cálculo de base y retiro estimado
     setupCorteCaja() {
         const corteContainer = document.querySelector('.form-container.mt-4[data-ingresos-dia]');
         if (!corteContainer) return;
 
         const ingresosAttr = corteContainer.getAttribute('data-ingresos-dia');
-        const ingresosDia = parseFloat(ingresosAttr) || 0;
+        const efectivoGeneradoDia = parseFloat(ingresosAttr) || 0; // ingresos EFECTIVO - gastos EFECTIVO
+        let baseApertura = 0;
 
         const inputBase = document.getElementById('baseSiguienteDia');
         const inputRetiro = document.getElementById('retiroEstimado');
         const btnCalcular = document.getElementById('btnCalcularCorte');
+        const btnAbrir = document.getElementById('btnAbrirCaja');
+        const btnCerrar = document.getElementById('btnCerrarCaja');
+        const estadoTexto = document.getElementById('estadoCajaTexto');
 
         if (!inputBase || !inputRetiro || !btnCalcular) return;
 
         const calcular = () => {
-            const base = parseFloat(inputBase.value) || 0;
-            let retiro = ingresosDia - base;
+            const baseSiguiente = parseFloat(inputBase.value) || 0;
+            const efectivoEnCaja = baseApertura + efectivoGeneradoDia;
+            let retiro = efectivoEnCaja - baseSiguiente;
             if (retiro < 0) retiro = 0;
             inputRetiro.value = retiro.toFixed(2);
         };
@@ -551,8 +794,232 @@ class PanelCaja {
         btnCalcular.addEventListener('click', calcular);
         inputBase.addEventListener('input', calcular);
 
-        // Inicializar el retiro automáticamente con lo generado en el día
+        // ===== Estado de caja (front-end) =====
+        const getEstadoCajaLocal = () => {
+            try {
+                const raw = localStorage.getItem('caja-estado');
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return null;
+            }
+        };
+
+        const fetchEstadoCaja = async () => {
+            try {
+                const res = await fetch('/caja/estado', { credentials: 'same-origin' });
+                if (!res.ok) throw new Error('Estado no disponible');
+                const data = await res.json();
+                if (data) localStorage.setItem('caja-estado', JSON.stringify(data));
+                if (data && typeof data.base === 'number') {
+                    baseApertura = data.base;
+                } else {
+                    const local = getEstadoCajaLocal();
+                    baseApertura = local && typeof local.base === 'number' ? local.base : 0;
+                }
+                return data;
+            } catch (e) {
+                const local = getEstadoCajaLocal();
+                baseApertura = local && typeof local.base === 'number' ? local.base : 0;
+                return local;
+            }
+        };
+
+        const setEstadoCaja = (data) => {
+            localStorage.setItem('caja-estado', JSON.stringify(data));
+            actualizarBadgeEstado();
+            actualizarUIEstado();
+        };
+
+        const actualizarBadgeEstado = () => {
+            const badge = document.querySelector('.caja-status-badge');
+            const icon = badge?.querySelector('.status-icon');
+            const estado = getEstadoCajaLocal();
+            const abierta = !!(estado && estado.abierta);
+            if (badge) {
+                badge.classList.toggle('open', abierta);
+                badge.classList.toggle('closed', !abierta);
+                const span = badge.querySelector('span');
+                if (span) span.textContent = abierta ? 'Caja abierta' : 'Caja cerrada';
+                if (icon) {
+                    icon.classList.toggle('fa-check-circle', abierta);
+                    icon.classList.toggle('fa-lock', !abierta);
+                }
+            }
+        };
+
+        const actualizarUIEstado = () => {
+            const estado = getEstadoCajaLocal();
+            const abierta = !!(estado && estado.abierta);
+            if (estadoTexto) {
+                estadoTexto.textContent = abierta
+                    ? `Estado: abierta desde ${new Date(estado.fechaApertura).toLocaleString()} (base $${Number(estado.base || 0).toFixed(2)})`
+                    : 'Estado: cerrada';
+            }
+            if (btnAbrir && btnCerrar) {
+                btnAbrir.disabled = abierta;
+                btnCerrar.disabled = !abierta;
+            }
+            // Sin botón en header: solo badge
+            const diaLabel = document.getElementById('diaCorteLabel');
+            if (diaLabel) {
+                if (abierta && estado.fechaApertura) {
+                    diaLabel.textContent = new Date(estado.fechaApertura).toLocaleDateString('es-ES');
+                } else if (!abierta && estado && estado.fechaCierre) {
+                    diaLabel.textContent = new Date(estado.fechaCierre).toLocaleDateString('es-ES');
+                }
+            }
+        };
+
+        const abrirCaja = async () => {
+            const base = parseFloat(inputBase.value) || 0;
+            try {
+                const res = await fetch('/caja/abrir?base=' + encodeURIComponent(base), { method: 'POST', credentials: 'same-origin' });
+                const data = await res.json();
+                if (data && data.estado) {
+                    setEstadoCaja(data.estado);
+                    return;
+                }
+            } catch (e) {}
+            // Fallback local
+            const estado = { abierta: true, fechaApertura: new Date().toISOString(), base };
+            setEstadoCaja(estado);
+        };
+
+        const cerrarCaja = async () => {
+            const retiro = parseFloat(inputRetiro.value) || 0;
+            const baseSig = parseFloat(inputBase.value) || 0;
+            // Limpiar tabla de "Últimos gastos" en UI al cerrar
+            const tableBody = document.querySelector('.gastos-table tbody');
+            if (tableBody) tableBody.innerHTML = '';
+            try {
+                const res = await fetch('/caja/cerrar?retiro=' + encodeURIComponent(retiro) + '&baseSiguiente=' + encodeURIComponent(baseSig), { method: 'POST', credentials: 'same-origin' });
+                const data = await res.json();
+                if (data && data.estado) {
+                    setEstadoCaja(data.estado);
+                    resetTarjetasDia();
+                    return;
+                }
+            } catch (e) {}
+            // Fallback local
+            const estado = { abierta: false, fechaCierre: new Date().toISOString(), retiro, baseSiguiente: baseSig };
+            setEstadoCaja(estado);
+            resetTarjetasDia();
+        };
+
+        btnAbrir && btnAbrir.addEventListener('click', abrirCaja);
+        btnCerrar && btnCerrar.addEventListener('click', cerrarCaja);
+
+        // Inicializar UI
         calcular();
+        fetchEstadoCaja().then(() => {
+            actualizarBadgeEstado();
+            actualizarUIEstado();
+            const estado = (function(){ try { const raw = localStorage.getItem('caja-estado'); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } })();
+            if (!estado || !estado.abierta) {
+                resetTarjetasDia();
+            }
+        });
+
+        const resetTarjetasDia = () => {
+            const ingresosEl = document.getElementById('ingresosEfectivoLabel');
+            const gastosEl = document.getElementById('gastosEfectivoLabel');
+            const ventasEl = document.getElementById('ventasDiaLabel');
+            ingresosEl && (ingresosEl.textContent = '$0.00');
+            gastosEl && (gastosEl.textContent = '$0.00');
+            ventasEl && (ventasEl.textContent = '0 ventas pagadas');
+            const container = document.querySelector('.form-container.mt-4');
+            if (container) container.setAttribute('data-ingresos-dia', '0');
+            calcular();
+        };
+
+        // Historial modal
+        const modal = document.getElementById('cajaHistorialModal');
+        const applyBtn = document.getElementById('historialAplicar');
+        const monthInput = document.getElementById('historialMes');
+        const tbody = document.getElementById('historialTablaBody');
+        const loadHistorial = async () => {
+            const mes = monthInput && monthInput.value ? monthInput.value : '';
+            const url = '/caja/historial' + (mes ? ('?mes=' + encodeURIComponent(mes)) : '');
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                const lista = await res.json();
+                if (Array.isArray(lista) && tbody) {
+                    tbody.innerHTML = lista.map(item => {
+                        const fecha = item.fecha;
+                        const ingresos = (item.ingresosEfectivo || 0).toFixed(2);
+                        const gastos = (item.gastosEfectivo || 0).toFixed(2);
+                        const ventas = item.ventasDia || 0;
+                        const baseApertura = (item.baseApertura || 0).toFixed(2);
+                        const baseSiguiente = (item.baseSiguiente || 0).toFixed(2);
+                        const retiro = (item.retiro || 0).toFixed(2);
+                        return `<tr>
+                            <td>${fecha}</td>
+                            <td>$${ingresos}</td>
+                            <td>$${gastos}</td>
+                            <td>${ventas}</td>
+                            <td>$${baseApertura}</td>
+                            <td>$${baseSiguiente}</td>
+                            <td>$${retiro}</td>
+                        </tr>`;
+                    }).join('');
+
+                    // Totales
+                    const totals = lista.reduce((acc, it) => {
+                        acc.ingresos += (it.ingresosEfectivo || 0);
+                        acc.gastos += (it.gastosEfectivo || 0);
+                        acc.ventas += (it.ventasDia || 0);
+                        acc.baseApertura += (it.baseApertura || 0);
+                        acc.baseSiguiente += (it.baseSiguiente || 0);
+                        acc.retiro += (it.retiro || 0);
+                        return acc;
+                    }, { ingresos:0, gastos:0, ventas:0, baseApertura:0, baseSiguiente:0, retiro:0 });
+                    const fmt = v => '$' + (v || 0).toFixed(2);
+                    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+                    setText('histTotalIngresos', fmt(totals.ingresos));
+                    setText('histTotalGastos', fmt(totals.gastos));
+                    setText('histTotalVentas', String(totals.ventas));
+                    setText('histTotalBaseApertura', fmt(totals.baseApertura));
+                    setText('histTotalBaseSiguiente', fmt(totals.baseSiguiente));
+                    setText('histTotalRetiro', fmt(totals.retiro));
+                    // Guardar última lista para exportación
+                    window.__historialLista__ = lista;
+                }
+            } catch (e) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No se pudo cargar el historial</td></tr>';
+            }
+        };
+        if (modal) {
+            modal.addEventListener('shown.bs.modal', loadHistorial);
+        }
+        applyBtn && applyBtn.addEventListener('click', loadHistorial);
+
+        // Exportar CSV
+        const exportBtn = document.getElementById('historialExport');
+        const exportCSV = () => {
+            const lista = window.__historialLista__ || [];
+            const header = ['Fecha','IngresosEF','GastosEF','Ventas','BaseApertura','BaseSiguiente','Retiro'];
+            const rows = lista.map(it => [
+                it.fecha,
+                (it.ingresosEfectivo || 0).toFixed(2),
+                (it.gastosEfectivo || 0).toFixed(2),
+                String(it.ventasDia || 0),
+                (it.baseApertura || 0).toFixed(2),
+                (it.baseSiguiente || 0).toFixed(2),
+                (it.retiro || 0).toFixed(2),
+            ]);
+            const csv = [header].concat(rows).map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const mes = monthInput && monthInput.value ? monthInput.value : '';
+            a.href = url;
+            a.download = 'historial_cierres' + (mes ? ('_' + mes) : '') + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+        exportBtn && exportBtn.addEventListener('click', exportCSV);
     }
 
     /* ===== FUNCIONALIDADES MODO OSCURO ===== */
@@ -568,7 +1035,6 @@ class PanelCaja {
                 icon.title = "Activar modo oscuro";
             }
             localStorage.setItem("caja-theme", "light");
-            this.showNotification("Modo claro activado", "success");
             this.actualizarSelectTema('claro');
         } else {
             root.setAttribute("data-theme", "dark");
@@ -577,7 +1043,6 @@ class PanelCaja {
                 icon.title = "Activar modo claro";
             }
             localStorage.setItem("caja-theme", "dark");
-            this.showNotification("Modo oscuro activado", "success");
             this.actualizarSelectTema('oscuro');
         }
         
@@ -596,7 +1061,6 @@ class PanelCaja {
                 icon.title = "Activar modo claro";
             }
             localStorage.setItem("caja-theme", "dark");
-            this.showNotification("Modo oscuro activado", "success");
         } else {
             root.removeAttribute("data-theme");
             if (icon) {
@@ -604,7 +1068,6 @@ class PanelCaja {
                 icon.title = "Activar modo oscuro";
             }
             localStorage.setItem("caja-theme", "light");
-            this.showNotification("Modo claro activado", "success");
         }
         
         this.forceStyleUpdate();

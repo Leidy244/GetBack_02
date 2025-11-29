@@ -22,11 +22,16 @@
                 <i class="fas fa-home"></i> Panel Principal
             </a>
             
+            <a th:href="@{/caja(section='corte-caja')}" 
+               th:classappend="${activeSection == 'corte-caja'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-balance-scale"></i> Inicio / Cierre de caja
+            </a>
+
             <a th:href="@{/caja(section='punto-venta')}" 
                th:classappend="${activeSection == 'punto-venta'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-cash-register"></i> Punto de Venta
             </a>
-            
+
             <a th:href="@{/caja(section='pedidos')}" 
                th:classappend="${activeSection == 'pedidos'} ? 'nav-link active' : 'nav-link'">
                 <i class="fas fa-list-alt"></i> Pedidos
@@ -42,15 +47,10 @@
                 <i class="fas fa-receipt"></i> Historial de Pagos
             </a>
             
-            <a th:href="@{/caja(section='corte-caja')}" 
-               th:classappend="${activeSection == 'corte-caja'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-balance-scale"></i> Inicio / Cierre de caja
+            <a th:href="@{/caja(section='configuracion')}" 
+               th:classappend="${activeSection == 'configuracion'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-user-cog"></i> Configuración
             </a>
-
-			<a th:href="@{/caja(section='configuracion')}" 
-			   th:classappend="${activeSection == 'configuracion'} ? 'nav-link active' : 'nav-link'">
-				<i class="fas fa-user-cog"></i> Configuración
-			</a>
         </nav>
         
         <div class="sidebar-footer">

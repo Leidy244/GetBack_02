@@ -25,8 +25,8 @@
                                     </div>
                                     <hr>
                                     <h5 class="text-primary"><strong>Total a pagar: <span id="modal-total">$0</span></strong></h5>
-                                </div>
-                            </div>
+    </div>
+</div>
                         </div>
                         <div class="col-md-6">
                             <div class="card">
@@ -70,4 +70,51 @@
             </div>
         </div>
     </div>
-</div>
+    <div class="modal fade" id="modalGastosHistorial" tabindex="-1" aria-labelledby="modalGastosHistorialLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="modalGastosHistorialLabel"><i class="fas fa-wallet"></i> Historial de gastos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label">Mes</label>
+                        <input type="month" class="form-control" id="gastosHistorialMes">
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <button class="btn btn-primary" id="gastosHistorialAplicar"><i class="fas fa-filter me-2"></i>Aplicar</button>
+                    </div>
+                    <div class="col-12">
+                        <div class="table-responsive mt-2">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Concepto</th>
+                                        <th>Método</th>
+                                        <th>Nota</th>
+                                        <th class="text-end">Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gastosHistorialTablaBody"></tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Totales</th>
+                                        <th colspan="3"></th>
+                                        <th id="gastosHistorialTotal" class="text-end">$0.00</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary" id="gastosHistorialExport"><i class="fas fa-file-export me-2"></i>Exportar CSV</button>
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>

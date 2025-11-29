@@ -207,6 +207,85 @@
     filter: invert(1) grayscale(100%);
 }
 
+/* Modales estilo admin (modo claro) */
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: #fff;
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+}
+
+.modal-body {
+    padding: 2rem;
+    background: var(--bg-primary);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+    background: var(--bg-secondary);
+}
+
+.modal-footer .btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+}
+
+.modal-footer .btn-primary:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.modal .btn {
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+}
+
+.modal .btn-primary {
+    background: var(--primary-color);
+    color: #fff;
+    border: 1px solid var(--primary-color);
+}
+
+.modal .btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.modal .btn-outline-primary {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.modal .btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.modal .btn-secondary {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal .btn-secondary:hover {
+    background: var(--bg-tertiary);
+}
+
+@media (max-width: 576px) {
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 [data-theme="dark"] #modal-detalle {
     background: var(--bg-secondary) !important;
     color: var(--text-primary);
@@ -755,6 +834,33 @@ body.caja-theme {
     box-shadow: none;
 }
 
+.caja-dashboard-right { display:flex; align-items:center; gap: .5rem; }
+
+.caja-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: .2px;
+    border: 1px solid var(--border-color);
+}
+
+.caja-status-badge.open {
+    background: var(--success-color);
+    color: #fff;
+    border-color: transparent;
+}
+
+.caja-status-badge.closed {
+    background: var(--danger-color);
+    color: #fff;
+    border-color: transparent;
+}
+
+.caja-status-badge .status-icon { margin-right: 6px; }
+
 .dashboard-container .date-badge i {
     font-size: 0.95rem;
     opacity: 0.9;
@@ -768,6 +874,8 @@ body.caja-theme {
 
 .content-section {
     animation: fadeInUp 0.5s ease;
+    padding-top: 1rem;
+    margin-top: 0;
 }
 
 @keyframes fadeInUp {
@@ -788,11 +896,12 @@ body.caja-theme {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid var(--border-color);
     padding-top: 0.1rem;
     margin-top: 0.1rem;
+    position: relative;
 }
 
 .section-header h2 {
@@ -801,12 +910,63 @@ body.caja-theme {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
+    letter-spacing: -0.3px;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-.section-header h2 i {
+.caja-dashboard-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+.section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 140px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+}
+
+/* Botón de header: Historial de cierres */
+.historial-btn {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+}
+.historial-btn i {
     color: var(--primary-color);
+}
+.historial-btn:hover {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+.historial-btn:hover i {
+    color: #fff;
+}
+
+[data-theme="dark"] .historial-btn {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .historial-btn:hover {
+    background: var(--primary-gradient);
+    color: #fff;
 }
 
 .acciones-cabecera {
@@ -1240,6 +1400,24 @@ body.caja-theme {
     box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
+/* Formulario compacto y proporcionado para cierre de caja */
+.cierre-caja-form { padding: 1.25rem; }
+.cierre-caja-form h3 { margin: 0 0 0.5rem 0; }
+.cierre-caja-form .text-muted { margin-bottom: 1rem; }
+.cierre-caja-row { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr) minmax(380px, 1fr); gap: 0.6rem; align-items: start; }
+.cierre-item { min-width: 0; }
+.cierre-caja-form .form-label { font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; }
+.cierre-caja-form .input-group-text { background: var(--bg-tertiary); border: 1px solid var(--border-color); width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.cierre-caja-form .form-control { height: 44px; border-radius: 12px; }
+.cierre-caja-form .input-group .form-control { border-left: 0; }
+.cierre-caja-form .cierre-caja-actions { flex-wrap: nowrap; gap: 0.35rem; }
+.cierre-caja-form .cierre-caja-actions .btn { border-radius: 999px; height: 34px; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.7rem; font-size: 0.85rem; flex: 0 0 auto; }
+.cierre-caja-form #btnCalcularCorte { background: var(--primary-gradient); border: none; }
+.cierre-caja-form #btnCalcularCorte:hover { box-shadow: var(--shadow-lg); }
+.cierre-caja-form #btnAbrirCaja { background: var(--success-color); border: none; color: #fff; }
+.cierre-caja-form #btnCerrarCaja { background: var(--danger-color); border: none; color: #fff; }
+.cierre-caja-form small.text-muted { display: block; margin-top: 0.35rem; }
+
 .form-control::placeholder {
     color: var(--text-light);
 }
@@ -1328,12 +1506,53 @@ body.caja-theme {
 }
 
 .gastos-card .btn-primary {
-    background: var(--primary-gradient);
-    border: none;
+    background: var(--primary-color);
+    color: #fff;
+    border: 1px solid var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .gastos-card .btn-primary:hover {
-    box-shadow: var(--shadow-lg);
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Botones del formulario de gastos con apariencia uniforme */
+.gastos-card .btn {
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+}
+
+.gastos-card .btn-primary i { color: #fff; }
+.gastos-card .btn-outline-primary i { color: var(--primary-color); }
+
+.gastos-card .btn-outline-primary {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.gastos-card .btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.gastos-card .btn-light {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.gastos-card .btn-light:hover {
+    background: var(--bg-tertiary);
+}
+
+.gastos-card .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .gastos-card .card-header {
@@ -1388,25 +1607,46 @@ body.caja-theme {
     margin-bottom: 0.5rem;
 }
 
-.gasto-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--bg-secondary);
+.gastos-table-wrapper {
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 0.6rem 0.8rem;
-    margin-bottom: 0.5rem;
+    box-shadow: var(--shadow-md);
+    background: var(--bg-primary);
 }
 
-.gasto-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    color: var(--text-secondary);
+.gastos-table {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
 }
 
-.gasto-amount {
+.gastos-table thead {
+    background: var(--bg-tertiary);
+}
+
+.gastos-table thead th {
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.gastos-table tbody tr {
+    background: var(--bg-primary);
+}
+
+.gastos-table tbody tr:nth-child(even) {
+    background: var(--bg-secondary);
+}
+
+.gastos-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.gastos-table td, .gastos-table th {
+    vertical-align: middle;
+}
+
+.monto-badge {
     background: var(--primary-gradient);
     color: #fff;
     border-radius: 999px;
@@ -1539,6 +1779,29 @@ body.caja-theme {
     font-size: 2rem;
     margin-bottom: 0.5rem;
     color: var(--border-color);
+}
+
+/* ==========================
+   CORTE DE CAJA - GRID
+=========================== */
+.corte-caja-grid {
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap: 1.25rem;
+    max-width: none;
+    margin-left: 0;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .corte-caja-grid {
+        grid-template-columns: repeat(2, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .corte-caja-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Estado colapsado de la card */
@@ -1681,12 +1944,12 @@ body.caja-theme {
 
 .cabecera-carrito h3 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     color: var(--text-primary);
 }
 
 .items-carrito {
-    max-height: 300px;
+    max-height: 420px;
     overflow-y: auto;
     margin-bottom: 1.5rem;
 }
@@ -1717,8 +1980,8 @@ body.caja-theme {
 }
 
 .boton-cantidad {
-    width: 25px;
-    height: 25px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: var(--bg-tertiary);
@@ -1726,7 +1989,7 @@ body.caja-theme {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     transition: var(--transition);
 }
 
@@ -1807,6 +2070,11 @@ body.caja-theme {
 .acciones-carrito .btn {
     flex: 1;
     justify-content: center;
+}
+
+.panel-carrito .btn {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
 }
 
 #btn-imprimir {
@@ -2205,6 +2473,7 @@ html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
         padding: 1rem;
     }
     .stats-grid { grid-template-columns: repeat(2, 1fr); margin-left: 0; max-width: none; }
+    .cierre-caja-row { grid-template-columns: 1fr; }
     
     .section-header {
         flex-direction: column;
@@ -2323,8 +2592,8 @@ html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
 /* === CONTENEDOR GENERAL === */
 .contenedor-pos {
   display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 2.2fr 1.2fr;
+  gap: 1.75rem;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -2347,6 +2616,47 @@ html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
   padding: 1rem;
   margin: 0;
   background-color: var(--bg-primary);
+}
+
+.pos-filtros .btn {
+  border-radius: 999px;
+  min-width: 52px;
+  height: 32px;
+  padding: 0.4rem 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+.pos-filtros .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón de agregar producto más profesional */
+.btn-agregar {
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn-agregar:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn-agregar i {
+  margin: 0;
+}
+
+/* Botones del carrito coherentes y profesionales */
+.panel-carrito .btn {
+  border-radius: 999px;
 }
 
 /* Estos estiloss son los de las cards de punto de venta xd */
@@ -2624,3 +2934,68 @@ body[data-admin-theme="gris"] {
 	transform: translateX(5px);
 	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
 }
+/* Paginación estilo pill para Pagos */
+#pagosPagination .btn,
+#pagosPaginationBottom .btn,
+#historialPagination .btn,
+#pedidosPendientesPagination .btn,
+#pedidosPagadosPagination .btn {
+    border-radius: 999px;
+    height: 44px;
+    min-width: 56px;
+    padding: 0.6rem 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#pagosPagination .btn-outline-secondary,
+#pagosPaginationBottom .btn-outline-secondary,
+#historialPagination .btn-outline-secondary,
+#pedidosPendientesPagination .btn-outline-secondary,
+#pedidosPagadosPagination .btn-outline-secondary {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+#pagosPagination .btn-outline-secondary:hover,
+#pagosPaginationBottom .btn-outline-secondary:hover,
+#historialPagination .btn-outline-secondary:hover,
+#pedidosPendientesPagination .btn-outline-secondary:hover,
+#pedidosPagadosPagination .btn-outline-secondary:hover {
+    background: var(--bg-tertiary);
+}
+
+#pagosPagination .btn-primary,
+#pagosPaginationBottom .btn-primary,
+#historialPagination .btn-primary,
+#pedidosPendientesPagination .btn-primary,
+#pedidosPagadosPagination .btn-primary {
+    background: #0d6efd;
+    border: none;
+    color: #fff;
+    box-shadow: var(--shadow-md);
+}
+/* Gestión de pedidos: alineación y divisor central */
+.gestion-pedidos-row { position: relative; }
+@media (min-width: 992px) {
+  .gestion-pedidos-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--border-color);
+    transform: translateX(-0.5px);
+    pointer-events: none;
+  }
+  .gestion-pedidos-row > .col-lg-6:first-child { padding-right: 14px; }
+  .gestion-pedidos-row > .col-lg-6:last-child { padding-left: 14px; }
+}
+
+.gestion-pedidos-row .pedidos-section-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.gestion-pedidos-row .input-group { max-width: 360px; }
+.gestion-pedidos-row .border-bottom { border-bottom: 1px solid var(--border-color) !important; }

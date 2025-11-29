@@ -222,8 +222,8 @@ public class AdminController {
 
 	/** ==================== PANEL PRINCIPAL ==================== **/
 
-	@GetMapping
-	public String panel(@RequestParam(value = "activeSection", required = false) String activeSection, Model model) {
+    @GetMapping
+    public String panel(@RequestParam(value = "activeSection", required = false) String activeSection, Model model, jakarta.servlet.http.HttpSession session) {
 
 		String section = (activeSection != null && !activeSection.isEmpty()) ? activeSection : "dashboard";
 		model.addAttribute("activeSection", section);
@@ -246,18 +246,28 @@ public class AdminController {
 				model.addAttribute("totalVentas", (long) facturas.size());
 
 				// Ventas de hoy
-				long ventasHoy = facturas.stream()
-					.filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
-					.count();
-				model.addAttribute("ventasHoy", ventasHoy);
+                long ventasHoy = facturas.stream()
+                    .filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
+                    .count();
+                double ingresosHoy = facturas.stream()
+                    .filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
+                    .filter(f -> "PAGADO".equals(f.getEstadoPago()))
+                    .mapToDouble(f -> f.getTotalPagar().doubleValue())
+                    .sum();
+                Object estadoCaja = session != null ? session.getAttribute("cajaEstado") : null;
+                boolean abiertaCaja = false;
+                if (estadoCaja instanceof java.util.Map<?, ?> map) {
+                    Object abiertaVal = map.get("abierta");
+                    abiertaCaja = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+                }
+                if (!abiertaCaja) {
+                    ventasHoy = 0;
+                    ingresosHoy = 0.0;
+                }
+                model.addAttribute("ventasHoy", ventasHoy);
 
 				// Ingresos de hoy
-				double ingresosHoy = facturas.stream()
-					.filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
-					.filter(f -> "PAGADO".equals(f.getEstadoPago()))
-					.mapToDouble(f -> f.getTotalPagar().doubleValue())
-					.sum();
-				model.addAttribute("ingresosHoy", ingresosHoy);
+                model.addAttribute("ingresosHoy", ingresosHoy);
 
 				// Ingresos totales
 				double ingresosTotales = facturas.stream()
@@ -375,10 +385,19 @@ public class AdminController {
 				model.addAttribute("totalVentas", (long) facturas.size());
 
 				// Calcular estadísticas básicas sin queries
-				long ventasHoy = facturas.stream()
-					.filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
-					.count();
-				model.addAttribute("ventasHoy", ventasHoy);
+                long ventasHoy = facturas.stream()
+                    .filter(f -> f.getFechaEmision().toLocalDate().equals(java.time.LocalDate.now()))
+                    .count();
+                Object estadoCajaVentas = session != null ? session.getAttribute("cajaEstado") : null;
+                boolean abiertaCajaVentas = false;
+                if (estadoCajaVentas instanceof java.util.Map<?, ?> map2) {
+                    Object abiertaVal2 = map2.get("abierta");
+                    abiertaCajaVentas = (abiertaVal2 instanceof Boolean) ? (Boolean) abiertaVal2 : false;
+                }
+                if (!abiertaCajaVentas) {
+                    ventasHoy = 0;
+                }
+                model.addAttribute("ventasHoy", ventasHoy);
 
 				long ventasCanceladas = facturas.stream()
 					.filter(f -> "CANCELADO".equals(f.getEstadoPago()))

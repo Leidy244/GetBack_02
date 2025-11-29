@@ -316,10 +316,11 @@ public class PedidoService {
     public List<Pedido> obtenerPedidosCompletados() {
         return pedidoRepository.findAll().stream()
                 .filter(p -> {
-                    String nombreEstado = (p.getEstado() != null && p.getEstado().getNombreEstado() != null)
+                    Integer id = (p.getEstado() != null) ? p.getEstado().getId() : null;
+                    String nombre = (p.getEstado() != null && p.getEstado().getNombreEstado() != null)
                             ? p.getEstado().getNombreEstado().trim()
                             : null;
-                    return nombreEstado != null && nombreEstado.equalsIgnoreCase("COMPLETADO");
+                    return (id != null && id == 3) || (nombre != null && nombre.equalsIgnoreCase("COMPLETADO"));
                 })
                 .collect(java.util.stream.Collectors.toList());
     }

@@ -28,7 +28,7 @@ public class DashboardController {
     
 
     @GetMapping("/dashboard")
-    public String mostrarDashboard(Model model) {
+    public String mostrarDashboard(Model model, jakarta.servlet.http.HttpSession session) {
         System.out.println("=== INICIANDO DASHBOARD SPRING ===");
         
         try {
@@ -49,8 +49,20 @@ public class DashboardController {
             // =======================
             // 3️⃣ MÉTRICAS PRINCIPALES
             // =======================
-            model.addAttribute("ventasHoy", facturaService.obtenerVentasHoy());
-            model.addAttribute("ingresosHoy", facturaService.obtenerIngresosHoy());
+            long ventasHoyVal = facturaService.obtenerVentasHoy();
+            double ingresosHoyVal = facturaService.obtenerIngresosHoy();
+            Object estadoCaja = session != null ? session.getAttribute("cajaEstado") : null;
+            boolean abiertaCaja = false;
+            if (estadoCaja instanceof java.util.Map<?, ?> map) {
+                Object abiertaVal = map.get("abierta");
+                abiertaCaja = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+            }
+            if (!abiertaCaja) {
+                ventasHoyVal = 0;
+                ingresosHoyVal = 0.0;
+            }
+            model.addAttribute("ventasHoy", ventasHoyVal);
+            model.addAttribute("ingresosHoy", ingresosHoyVal);
             model.addAttribute("ingresosTotales", facturaService.obtenerIngresosTotales());
             model.addAttribute("totalVentas", facturaService.contarFacturas());
             model.addAttribute("pedidosPendientes", pedidoService.contarPedidosPendientes());
@@ -223,12 +235,24 @@ public class DashboardController {
 
     @GetMapping("/api/dashboard/stats")
     @ResponseBody
-    public Map<String, Object> obtenerEstadisticas() {
+    public Map<String, Object> obtenerEstadisticas(jakarta.servlet.http.HttpSession session) {
         Map<String, Object> result = new HashMap<>();
 
         // Métricas principales
-        result.put("ventasHoy", facturaService.obtenerVentasHoy());
-        result.put("ingresosHoy", facturaService.obtenerIngresosHoy());
+        long ventasHoyVal = facturaService.obtenerVentasHoy();
+        double ingresosHoyVal = facturaService.obtenerIngresosHoy();
+        Object estadoCaja = session != null ? session.getAttribute("cajaEstado") : null;
+        boolean abiertaCaja = false;
+        if (estadoCaja instanceof java.util.Map<?, ?> map) {
+            Object abiertaVal = map.get("abierta");
+            abiertaCaja = (abiertaVal instanceof Boolean) ? (Boolean) abiertaVal : false;
+        }
+        if (!abiertaCaja) {
+            ventasHoyVal = 0;
+            ingresosHoyVal = 0.0;
+        }
+        result.put("ventasHoy", ventasHoyVal);
+        result.put("ingresosHoy", ingresosHoyVal);
         result.put("ingresosTotales", facturaService.obtenerIngresosTotales());
         result.put("totalVentas", facturaService.contarFacturas());
         result.put("pedidosPendientes", pedidoService.contarPedidosPendientes());

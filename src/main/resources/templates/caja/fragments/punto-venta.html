@@ -2,68 +2,66 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
-	<div th:fragment="punto-venta">
-		<div class="section-header">
-			<h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
-			<div class="acciones-cabecera">
-			</div>
-		</div>
+    <div th:fragment="punto-venta">
+        <div class="dashboard-container">
+            <div class="section-header">
+                <div class="caja-dashboard-left">
+                    <h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
+                </div>
+                <div class="caja-dashboard-right">
+                    <p class="caja-dashboard-subtitle">Venta rápida: busca, filtra productos y confirma tu pedido</p>
+                </div>
+            </div>
 
-		<div class="contenedor-pos">
-			<div class="panel-productos">
-				<div class="busqueda-productos">
-					<input type="text" class="form-control" placeholder="Buscar productos..." id="buscar-productos">
-					<button class="btn btn-primary btn-sm" id="btn-buscar">
-						<i class="fas fa-search"></i>
-					</button>
-				</div>
-				<div class="filtros-categoria">
-					<a th:href="@{/caja(section='punto-venta', categoria='todos')}"
-						class="btn btn-primary btn-sm">Todos</a>
-					<a th:each="cat : ${categorias}" th:text="${cat.nombre}"
-						th:href="@{/caja(section='punto-venta', categoria=${cat.nombre})}"
-						class="btn btn-primary btn-sm"></a>
-				</div>
-				<div class="grid-productos">
-					<div th:each="menu : ${menus}" class="producto-card" th:data-id="${menu.id}"
-						th:data-nombre="${menu.nombreProducto}" th:data-precio="${menu.precio}">
-						<img th:src="@{${menu.imagen}}" alt="Producto">
-						<h4 th:text="${menu.nombreProducto}"></h4>
-						<p th:text="${menu.descripcion}"></p>
-						<p
-							th:text="${#strings.concat('$', #numbers.formatDecimal(menu.precio, 0, 'POINT', 0, 'POINT'))}">
-						</p>
-						<button class="btn btn-success btn-sm btn-agregar">
-							<i class="fas fa-cart-plus"></i> Agregar
-						</button>
-					</div>
-				</div>
-			</div>
-			<div class="panel-carrito">
-				<div class="cabecera-carrito">
-					<h3><i class="fas fa-shopping-cart"></i> Carrito</h3>
-					<button class="btn btn-outline-danger btn-sm" id="btn-vaciar-carrito">
-						<i class="fas fa-trash-alt"></i>
-					</button>
-				</div>
+            <div class="contenedor-pos">
+                <div class="panel-productos">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar productos..." id="buscar-productos">
+                            <button class="btn btn-primary" id="btn-buscar"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
 
-				<div class="items-carrito" id="items-carrito"></div>
+                    <div class="pos-filtros btn-group mb-3" role="group" aria-label="Filtros">
+                        <a th:href="@{/caja(section='punto-venta', categoria='todos')}" class="btn btn-outline-primary rounded-pill">Todos</a>
+                        <a th:each="cat : ${categorias}" th:text="${cat.nombre}"
+                           th:href="@{/caja(section='punto-venta', categoria=${cat.nombre})}"
+                           class="btn btn-outline-primary rounded-pill"></a>
+                    </div>
 
-				<div class="total-carrito">
-					<span>Total:</span>
-					<span id="total-carrito">$0.00</span>
-				</div>
+                    <div class="grid-productos">
+                        <div th:each="menu : ${menus}" class="producto-card" th:data-id="${menu.id}"
+                            th:data-nombre="${menu.nombreProducto}" th:data-precio="${menu.precio}">
+                            <img th:src="@{${menu.imagen}}" alt="Producto">
+                            <h4 th:text="${menu.nombreProducto}"></h4>
+                            <p th:text="${menu.descripcion}"></p>
+                            <p th:text="${#strings.concat('$', #numbers.formatDecimal(menu.precio, 0, 'POINT', 0, 'POINT'))}"></p>
+                            <button class="btn btn-success btn-agregar"><i class="fas fa-cart-plus"></i> Agregar</button>
+                        </div>
+                    </div>
+                </div>
 
-				<div class="acciones-carrito">
-					<button class="btn btn-secondary" id="btn-imprimir">
-						<i class="fas fa-print"></i> Imprimir
-					</button>
-					<button class="btn btn-success" id="btn-finalizar-venta">
-						<i class="fas fa-check"></i> Finalizar Venta
-					</button>
-				</div>
-			</div>
-		</div>
+                <div class="panel-carrito">
+                    <div class="cabecera-carrito">
+                        <h3><i class="fas fa-shopping-cart"></i> Carrito</h3>
+                        <button class="btn btn-outline-danger" id="btn-vaciar-carrito"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+
+                    <div class="items-carrito" id="items-carrito"></div>
+
+                    <div class="total-carrito d-flex justify-content-between align-items-center mb-3">
+                        <span>Total:</span>
+                        <span id="total-carrito">$0.00</span>
+                    </div>
+
+                    <div class="acciones-carrito d-flex gap-2">
+                        <button class="btn btn-secondary" id="btn-imprimir"><i class="fas fa-print"></i> Imprimir</button>
+                        <button class="btn btn-success" id="btn-finalizar-venta"><i class="fas fa-check"></i> Finalizar Venta</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 		<!-- Formulario oculto para pedidos pendientes -->
 		<form id="form-pedido-pendiente" method="POST" action="/caja/crear-pedido-pendiente-form" style="display: none;">
@@ -71,13 +69,13 @@
 		</form>
 
 		<!-- Modal Confirmar Venta CORREGIDO -->
-		<div class="modal fade" id="modalConfirmarVenta" tabindex="-1">
-		    <div class="modal-dialog modal-lg">
-		        <div class="modal-content">
-		            <div class="modal-header bg-primary text-white">
-		                <h5 class="modal-title"> Confirmar Pedido</h5>
-		                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-		            </div>
+        <div class="modal fade" id="modalConfirmarVenta" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"> Confirmar Pedido</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
 		            <div class="modal-body">
 		                <!-- Selector de Mesa CORREGIDO -->
 		                <div class="mb-4">

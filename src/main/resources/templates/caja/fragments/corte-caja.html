@@ -5,59 +5,135 @@
 				<h2><i class="fas fa-cash-register"></i> Inicio y cierre de caja</h2>
 				<p class="caja-dashboard-subtitle">Corte diario e inicio de base para el siguiente día</p>
 			</div>
-		</div>
-
-		<div class="stats-grid corte-caja-grid">
-			<div class="stat-card">
-				<div class="stat-icon bg-primary"><i class="fas fa-calendar-day"></i></div>
-				<div class="stat-info">
-					<h3 th:text="${fechaCorte}">--/--/----</h3>
-					<p>Día del corte</p>
-					<small>Fecha actual de la caja</small>
-				</div>
-			</div>
-
-			<div class="stat-card">
-				<div class="stat-icon bg-success"><i class="fas fa-money-bill-wave"></i></div>
-				<div class="stat-info">
-					<h3 th:text="'$' + ${#numbers.formatDecimal(ingresosDia, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
-					<p>Ingresos del día</p>
-					<small th:text="${ventasDia} + ' ventas pagadas'">0 ventas pagadas</small>
-				</div>
+			<div class="caja-dashboard-right">
+				<button type="button" class="btn historial-btn" data-bs-toggle="modal" data-bs-target="#cajaHistorialModal">
+					<i class="fas fa-history me-2"></i> Historial de cierres
+				</button>
 			</div>
 		</div>
 
-		<div class="form-container mt-4" th:attr="data-ingresos-dia=${ingresosDia}">
-			<h3><i class="fas fa-coins"></i> Cierre del día y base para mañana</h3>
-			<p class="text-muted">El retiro es lo generado hoy en la caja menos la base que dejarás para iniciar el siguiente día.</p>
+        <div class="stats-grid corte-caja-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary"><i class="fas fa-calendar-day"></i></div>
+                <div class="stat-info">
+                    <h3 id="diaCorteLabel" th:text="${#temporals.format(fechaCorte,'dd/MM/yyyy')}">--/--/----</h3>
+                    <p>Día del corte</p>
+                    <small>Fecha actual de la caja</small>
+                </div>
+            </div>
 
-			<div class="row g-3 align-items-start">
-				<div class="col-md-4 text-center text-md-start">
-					<label for="baseSiguienteDia" class="form-label">Base para el día siguiente</label>
-					<div class="input-group">
-						<span class="input-group-text">$</span>
-						<input type="number" step="0.01" min="0" class="form-control" id="baseSiguienteDia" placeholder="Efectivo que se deja en caja para mañana">
-					</div>
-				</div>
-				
-				<div class="col-md-4 text-center text-md-start">
-					<label class="form-label">Retiro del día</label>
-					<div class="input-group">
-						<span class="input-group-text">$</span>
-						<input type="text" class="form-control" id="retiroEstimado" readonly value="0.00">
-					</div>
-					<small class="text-muted">Ingresos del día menos la base para el día siguiente.</small>
-				</div>
-				
-				<div class="col-md-4 text-center text-md-start">
-					<label class="form-label d-block">Acciones</label>
-					<div class="d-flex justify-content-md-end justify-content-start gap-2">
-						<button type="button" class="btn btn-primary" id="btnCalcularCorte">
-							<i class="fas fa-calculator"></i> Calcular corte
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="stat-info">
+                    <h3 id="ingresosEfectivoLabel" th:text="'$' + ${#numbers.formatDecimal(ingresosEfectivoDia, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <p>Ingresos del día (efectivo)</p>
+                    <small id="ventasDiaLabel" th:text="${ventasDia} + ' ventas pagadas'">0 ventas pagadas</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bg-danger"><i class="fas fa-wallet"></i></div>
+                <div class="stat-info">
+                    <h3 id="gastosEfectivoLabel" th:text="'$' + ${#numbers.formatDecimal(gastosEfectivoDia, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <p>Gastos del día (efectivo)</p>
+                    <small>Registrados en caja</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container mt-4 cierre-caja-form" th:attr="data-ingresos-dia=${ingresosEfectivoDia - gastosEfectivoDia}">
+            <h3><i class="fas fa-coins"></i> Cierre del día y base para mañana</h3>
+            <p class="text-muted">El retiro es lo generado hoy menos la base que dejarás para iniciar el siguiente día.</p>
+
+            <div class="cierre-caja-row">
+                <div class="cierre-item text-center text-md-start">
+                    <label for="baseSiguienteDia" class="form-label">Base para el día siguiente</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" step="0.01" min="0" class="form-control" id="baseSiguienteDia" placeholder="Efectivo que se deja en caja para mañana">
+                    </div>
+                </div>
+                
+                <div class="cierre-item text-center text-md-start">
+                    <label class="form-label">Retiro del día</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="text" class="form-control" id="retiroEstimado" readonly value="0.00">
+                    </div>
+                    <small class="text-muted">Ingresos del día menos la base para el día siguiente.</small>
+                </div>
+                
+                <div class="cierre-item text-center text-md-start">
+                    <label class="form-label d-block">Acciones</label>
+                    <div class="d-flex justify-content-md-end justify-content-start gap-2 cierre-caja-actions">
+                        <button type="button" class="btn btn-primary" id="btnCalcularCorte">
+                            <i class="fas fa-calculator"></i> Calcular corte
+                        </button>
+                        <button type="button" class="btn btn-success" id="btnAbrirCaja">
+                            <i class="fas fa-door-open"></i> Abrir caja
+                        </button>
+                        <button type="button" class="btn btn-danger" id="btnCerrarCaja">
+                            <i class="fas fa-door-closed"></i> Cerrar caja
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mt-2" id="estadoCajaTexto">Estado: —</small>
+                </div>
+            </div>
+        </div>
+        <!-- Modal Historial de cierres -->
+        <div class="modal fade" id="cajaHistorialModal" tabindex="-1" aria-labelledby="cajaHistorialModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cajaHistorialModalLabel"><i class="fas fa-history"></i> Historial de cierres de caja</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-sm-6 col-md-3">
+                                <label class="form-label">Mes</label>
+                                <input type="month" class="form-control" id="historialMes">
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <button class="btn btn-primary" id="historialAplicar"><i class="fas fa-filter me-2"></i>Aplicar</button>
+                            </div>
+                            <div class="col-12">
+                                <div class="table-responsive mt-2">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Ingresos EF</th>
+                                                <th>Gastos EF</th>
+                                                <th>Ventas</th>
+                                                <th>Base apertura</th>
+                                                <th>Base siguiente</th>
+                                                <th>Retiro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historialTablaBody"></tbody>
+                                        <tfoot>
+                                            <tr id="historialTablaFoot">
+                                                <th>Totales</th>
+                                                <th id="histTotalIngresos">$0.00</th>
+                                                <th id="histTotalGastos">$0.00</th>
+                                                <th id="histTotalVentas">0</th>
+                                                <th id="histTotalBaseApertura">$0.00</th>
+                                                <th id="histTotalBaseSiguiente">$0.00</th>
+                                                <th id="histTotalRetiro">$0.00</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-primary" id="historialExport"><i class="fas fa-file-export me-2"></i>Exportar CSV</button>
+                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 </section>
