@@ -33,7 +33,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="table-container mb-4">
+    <div class="table-container table-scroll mb-4">
         <table class="table table-striped" id="tabla-pagos-pendientes">
             <thead>
                 <tr>
@@ -124,12 +124,36 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
+                                        <label for="metodo-pago" class="form-label">Método de pago</label>
+                                        <select id="metodo-pago" class="form-select">
+                                            <option value="EFECTIVO">Efectivo</option>
+                                            <option value="TRANSFERENCIA">Transferencia</option>
+                                            <option value="TARJETA">Tarjeta</option>
+                                            <option value="MIXTO">Mixto</option>
+                                            <option value="CLIENTE_FRECUENTE">Cliente frecuente</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3" id="grupo-recibido">
                                         <label for="modal-recibido" class="form-label">Monto recibido del cliente:</label>
                                         <input type="number" step="0.01" min="0"
                                             class="form-control form-control-lg" id="modal-recibido"
-                                            placeholder="0" required>
+                                            placeholder="0">
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-3" id="grupo-referencia" style="display:none;">
+                                        <label for="referencia-pago" class="form-label">Referencia</label>
+                                        <input type="text" class="form-control" id="referencia-pago" placeholder="Referencia">
+                                    </div>
+									<div class="mb-3" id="grupo-cliente" style="display:none;">
+									                                       <label for="cliente-frecuente" class="form-label">Cliente frecuente</label>
+									                                       <select id="cliente-frecuente" class="form-select">
+									                                           <option value="">Selecciona cliente</option>
+									                                           <option th:each="c : ${clientes}"
+									                                                   th:value="${c.id}"
+									                                                   th:text="${c.nombre}"
+									                                                   th:attr="data-saldo=${c.saldo}">Cliente</option>
+									                                       </select>
+									                                   </div>
+                                    <div class="mb-3" id="grupo-cambio">
                                         <label for="modal-cambio" class="form-label">Cambio a devolver:</label>
                                         <input type="text" class="form-control form-control-lg" id="modal-cambio"
                                             value="$0" readonly>
@@ -156,6 +180,9 @@
                           
                         <input type="hidden" name="pedidoId" id="input-pedido-id" value="" />
                         <input type="hidden" name="montoRecibido" id="input-monto-recibido" value="0" />
+                        <input type="hidden" name="metodoPago" id="input-metodo-pago" value="EFECTIVO" />
+                        <input type="hidden" name="referenciaPago" id="input-referencia-pago" value="" />
+                        <input type="hidden" name="clienteId" id="input-cliente-id" value="" />
 
                         <button type="submit" class="btn btn-success btn-lg" id="btn-confirmar-pago">
                             <i class="fas fa-check"></i> Confirmar Pago

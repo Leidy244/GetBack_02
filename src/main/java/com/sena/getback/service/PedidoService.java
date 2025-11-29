@@ -36,12 +36,16 @@ public class PedidoService {
     private final FacturaRepository facturaRepository;
     private final ActivityLogService activityLogService;
     private final InventarioService inventarioService;
+    private final com.sena.getback.repository.ClienteFrecuenteRepository clienteFrecuenteRepository;
+    private final com.sena.getback.repository.MovimientoCreditoRepository movimientoCreditoRepository;
 
     public PedidoService(PedidoRepository pedidoRepository, MesaRepository mesaRepository,
             UsuarioRepository usuarioRepository, MenuRepository menuRepository,
             EstadoRepository estadoRepository, FacturaRepository facturaRepository,
             InventarioService inventarioService,
-            ActivityLogService activityLogService) {
+            ActivityLogService activityLogService,
+            com.sena.getback.repository.ClienteFrecuenteRepository clienteFrecuenteRepository,
+            com.sena.getback.repository.MovimientoCreditoRepository movimientoCreditoRepository) {
         this.pedidoRepository = pedidoRepository;
         this.mesaRepository = mesaRepository;
         this.usuarioRepository = usuarioRepository;
@@ -50,6 +54,8 @@ public class PedidoService {
         this.facturaRepository = facturaRepository;
         this.inventarioService = inventarioService;
         this.activityLogService = activityLogService;
+        this.clienteFrecuenteRepository = clienteFrecuenteRepository;
+        this.movimientoCreditoRepository = movimientoCreditoRepository;
     }
 
     // Listar todos los pedidos
@@ -402,6 +408,100 @@ public class PedidoService {
             String mesaNombre = (pedido.getMesa() != null && pedido.getMesa().getNumero() != null)
                     ? pedido.getMesa().getNumero() : (pedido.getMesa() != null ? ("#" + pedido.getMesa().getId()) : "sin mesa");
             String msg = "Se registró pago del pedido \"" + pedido.getId() + "\" por " + String.format("%.2f", montoRecibido != null ? montoRecibido : 0.0)
+                    + ", total " + String.format("%.2f", total) + ", cambio " + String.format("%.2f", pedido.getCambio())
+                    + " (mesa " + mesaNombre + ")";
+            activityLogService.log("PAYMENT", msg, currentUser(), null);
+        } catch (Exception ignored) {}
+    }
+
+    public void marcarPedidoComoPagadoConMetodo(Integer pedidoId, String metodoPago, Double montoRecibido, String referenciaPago, Long clienteId) {
+        Pedido pedido = findById(pedidoId);
+        if (pedido == null) {
+            return;
+        }
+
+        Double total = pedido.getTotal() != null ? pedido.getTotal() : 0.0;
+        String metodo = (metodoPago != null && !metodoPago.isBlank()) ? metodoPago : "EFECTIVO";
+
+        if (!"EFECTIVO".equalsIgnoreCase(metodo)) {
+            montoRecibido = total;
+        } else if (montoRecibido == null) {
+            montoRecibido = total;
+        }
+
+        pedido.setMontoRecibido(montoRecibido);
+        pedido.setCambio(montoRecibido - total);
+
+        estadoRepository.findById(2).ifPresent(pedido::setEstado);
+
+        if (pedido.getMesa() != null) {
+            pedido.getMesa().setEstado("DISPONIBLE");
+            mesaRepository.save(pedido.getMesa());
+        }
+
+        if ("CLIENTE_FRECUENTE".equalsIgnoreCase(metodo)) {
+            if (clienteId == null) {
+                throw new IllegalStateException("Debe seleccionar un cliente frecuente");
+            }
+            var clienteOpt = clienteFrecuenteRepository.findById(clienteId);
+            if (clienteOpt.isEmpty()) {
+                throw new IllegalStateException("Cliente frecuente no encontrado");
+            }
+            var cliente = clienteOpt.get();
+            Double saldoActual = cliente.getSaldo() != null ? cliente.getSaldo() : 0.0;
+            if (saldoActual < total) {
+                throw new IllegalStateException("Saldo insuficiente del cliente (saldo: " + String.format("%.2f", saldoActual) + ")");
+            }
+            cliente.setSaldo(saldoActual - total);
+            clienteFrecuenteRepository.save(cliente);
+
+            com.sena.getback.model.MovimientoCredito mov = new com.sena.getback.model.MovimientoCredito();
+            mov.setCliente(cliente);
+            mov.setTipo("CONSUMO");
+            mov.setMonto(total);
+            mov.setDescripcion("Consumo por pedido " + pedido.getId());
+            movimientoCreditoRepository.save(mov);
+        }
+
+        if (pedido.getFactura() == null) {
+            Factura factura = new Factura();
+            factura.setPedido(pedido);
+            factura.setUsuario(pedido.getUsuario());
+            estadoRepository.findById(2).ifPresent(factura::setEstado);
+            factura.setNumeroFactura("F-" + System.currentTimeMillis());
+            factura.setMonto(java.math.BigDecimal.valueOf(total));
+            factura.setSubtotal(java.math.BigDecimal.valueOf(total));
+            factura.setTotalPagar(java.math.BigDecimal.valueOf(total));
+            factura.setValorDescuento(java.math.BigDecimal.ZERO);
+            factura.setMetodoPago(metodo.toUpperCase());
+            factura.setEstadoPago("PAGADO");
+            factura.setReferenciaPago(referenciaPago != null ? referenciaPago : "");
+            if (clienteId != null) {
+                var c = clienteFrecuenteRepository.findById(clienteId).orElse(null);
+                if (c != null) factura.setClienteNombre(c.getNombre());
+            }
+            if (pedido.getMesa() != null) {
+                factura.setNumeroMesa(pedido.getMesa().getId());
+            }
+            facturaRepository.save(factura);
+            pedido.setFactura(factura);
+        } else {
+            Factura factura = pedido.getFactura();
+            factura.setMetodoPago(metodo.toUpperCase());
+            factura.setEstadoPago("PAGADO");
+            factura.setReferenciaPago(referenciaPago != null ? referenciaPago : "");
+            if (clienteId != null) {
+                var c = clienteFrecuenteRepository.findById(clienteId).orElse(null);
+                if (c != null) factura.setClienteNombre(c.getNombre());
+            }
+            facturaRepository.save(factura);
+        }
+
+        pedidoRepository.save(pedido);
+        try {
+            String mesaNombre = (pedido.getMesa() != null && pedido.getMesa().getNumero() != null)
+                    ? pedido.getMesa().getNumero() : (pedido.getMesa() != null ? ("#" + pedido.getMesa().getId()) : "sin mesa");
+            String msg = "Se registró pago (" + metodo + ") del pedido \"" + pedido.getId() + "\" por " + String.format("%.2f", montoRecibido != null ? montoRecibido : 0.0)
                     + ", total " + String.format("%.2f", total) + ", cambio " + String.format("%.2f", pedido.getCambio())
                     + " (mesa " + mesaNombre + ")";
             activityLogService.log("PAYMENT", msg, currentUser(), null);

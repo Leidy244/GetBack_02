@@ -150,6 +150,7 @@ public class CajaController {
 
         if ("pagos".equals(activeSection)) {
             model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosCompletados());
+            model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
         }
 
 	    if ("historial-pagos".equals(activeSection)) {
@@ -209,12 +210,23 @@ public class CajaController {
 	    return "caja/panel_caja";
 	}
 
-	@PostMapping("/pagar")
-	public String pagarPedido(@RequestParam("pedidoId") Integer pedidoId,
-			@RequestParam(value = "montoRecibido", required = false) Double montoRecibido) {
-		pedidoService.marcarPedidoComoPagado(pedidoId, montoRecibido);
-		return "redirect:/caja?section=pagos";
-	}
+    @PostMapping("/pagar")
+    public String pagarPedido(@RequestParam("pedidoId") Integer pedidoId,
+                              @RequestParam(value = "montoRecibido", required = false) Double montoRecibido,
+                              @RequestParam(value = "metodoPago", required = false) String metodoPago,
+                              @RequestParam(value = "referenciaPago", required = false) String referenciaPago,
+                              @RequestParam(value = "clienteId", required = false) Long clienteId,
+                              RedirectAttributes ra) {
+        try {
+            pedidoService.marcarPedidoComoPagadoConMetodo(pedidoId, metodoPago, montoRecibido, referenciaPago, clienteId);
+            ra.addFlashAttribute("success", "Pago registrado correctamente");
+        } catch (IllegalStateException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", "Error al registrar el pago: " + ex.getMessage());
+        }
+        return "redirect:/caja?section=pagos";
+    }
 
 	@PostMapping("/marcar-completado")
 	public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId,
