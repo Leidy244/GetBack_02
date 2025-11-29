@@ -35,6 +35,34 @@ public class FacturaService {
                 .count();
     }
 
+    // 🧾 Listado de facturas de hoy
+    public List<Factura> obtenerFacturasHoy() {
+        LocalDate hoy = LocalDate.now();
+        return facturaRepository.findAll().stream()
+                .filter(f -> f.getFechaEmision() != null && f.getFechaEmision().toLocalDate().isEqual(hoy))
+                .sorted(Comparator.comparing(Factura::getFechaEmision))
+                .toList();
+    }
+
+    // 📆 Resumen de ventas por mes (conteo e ingresos)
+    public Map<String, Object> obtenerResumenVentasMes(int year, int month) {
+        List<Factura> facturasMes = facturaRepository.findAll().stream()
+                .filter(f -> f.getFechaEmision() != null
+                        && f.getFechaEmision().getYear() == year
+                        && f.getFechaEmision().getMonthValue() == month)
+                .toList();
+
+        long ventasMes = facturasMes.size();
+        double ingresosMes = facturasMes.stream()
+                .mapToDouble(f -> f.getTotalPagar() != null ? f.getTotalPagar().doubleValue() : 0.0)
+                .sum();
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("ventasMes", ventasMes);
+        res.put("ingresosMes", ingresosMes);
+        return res;
+    }
+
     // 💰 Total de ingresos
     public double obtenerIngresosTotales() {
         return facturaRepository.findAll().stream()

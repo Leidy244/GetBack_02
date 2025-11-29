@@ -125,15 +125,23 @@ public class InventarioService {
     @Transactional
     public void purgeByProductName(String nombreProducto) {
         if (nombreProducto == null || nombreProducto.isBlank()) return;
-        inventarioRepository.deleteByProductoCaseInsensitive(nombreProducto.trim());
+        inventarioRepository.deleteByProductoIgnoreCase(nombreProducto.trim());
         syncMenuStockByProductName(nombreProducto);
     }
 
     @Transactional
     public void purgeByMenuId(Long menuId) {
         if (menuId == null) return;
-        inventarioRepository.deleteByMenuId(menuId);
-        // Intentar recuperar nombre desde entradas eliminadas no es posible aquí. El controlador se encarga de llamar también purgeByProductName.
+        List<Inventario> ref = inventarioRepository.findByMenu_Id(menuId);
+        if (ref == null || ref.isEmpty()) return;
+        // Capturar nombres antes de borrar para sincronizar stock
+        List<String> nombres = ref.stream()
+                .map(Inventario::getProducto)
+                .filter(p -> p != null && !p.isBlank())
+                .distinct()
+                .toList();
+        inventarioRepository.deleteAll(ref);
+        nombres.forEach(this::syncMenuStockByProductName);
     }
 
     /**

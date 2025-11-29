@@ -305,12 +305,21 @@ public class AdminController {
 			// PRODUCTOS
             if ("products".equals(section)) {
                 java.util.List<com.sena.getback.model.Menu> productosBar = menuRepository.findAll().stream()
-                        .filter(m -> m.getCategoria() != null && m.getCategoria().getArea() != null
-                                && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"))
+                        .filter(m -> {
+                            var cat = m.getCategoria();
+                            String area = cat != null ? cat.getArea() : null;
+                            String nombreCat = cat != null ? cat.getNombre() : null;
+                            boolean areaBar = area != null && area.trim().equalsIgnoreCase("Bar");
+                            boolean nombreBarHeur = nombreCat != null && nombreCat.toLowerCase().matches(".*(bebida|bar|licor).*");
+                            return areaBar || (area == null && nombreBarHeur);
+                        })
                         .toList();
                 model.addAttribute("products", productosBar);
                 model.addAttribute("newProduct", new Menu());
-                model.addAttribute("categorias", categoriaRepository.findAll());
+                java.util.List<com.sena.getback.model.Categoria> categoriasBar = categoriaRepository.findAll().stream()
+                        .filter(c -> c.getArea() != null && c.getArea().trim().equalsIgnoreCase("Bar"))
+                        .toList();
+                model.addAttribute("categorias", categoriasBar.isEmpty() ? categoriaRepository.findAll() : categoriasBar);
                 model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
                 model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
                 // Umbral para badges de stock en productos (solo BAR)

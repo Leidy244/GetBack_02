@@ -2,12 +2,35 @@
     <div class="dashboard-container">
         <div class="dashboard-header">
             <div class="header-left">
-                <h1><i class="fas fa-chart-pie title-icon"></i> Estadísticas</h1>
-                <p class="subtitle">Gráficas del sistema y stock actual</p>
+                <h1><i class="fas fa-chart-pie title-icon"></i> Informacion General</h1>
+                <p class="subtitle">Informacion de Ventas por mes, Graficas y stock actual el establecimiento.</p>
             </div>
         </div>
 
-        
+        <!-- KPIs arriba, ancho completo -->
+        <div class="kpi-strip">
+            <div class="kpi-grid">
+                <div class="kpi-tile">
+                    <div class="kpi-head">
+                        <span class="kpi-label"><i class="fas fa-bolt"></i> Ventas del día</span>
+                    </div>
+                    <div class="kpi-value" id="ventasHoyCard">0</div>
+                    <div class="kpi-delta" id="ingresosHoyCard">$0</div>
+                </div>
+
+                <div class="kpi-tile">
+                    <div class="kpi-head">
+                        <span class="kpi-label"><i class="fas fa-calendar-alt"></i> Ventas del mes</span>
+                        <input type="month" id="ventasMesSelector" class="form-control form-control-sm" style="width: 280px;">
+                        <span id="ventasMesText" class="kpi-label" style="margin-left:8px; opacity:.8;"></span>
+                    </div>
+                    <div class="kpi-value" id="ventasMesInfo">0</div>
+                    <div class="kpi-delta" id="ingresosMesInfo">$0</div>
+                    <div class="kpi-delta" id="ventasMesDelta"></div>
+                    <div class="kpi-delta" id="ingresosMesDelta"></div>
+                </div>
+            </div>
+        </div>
 
         <div class="analytics-row mt-3">
             <div class="charts-section">
@@ -31,6 +54,11 @@
                         <div class="chart-card full-width">
                             <div class="chart-title"><i class="fas fa-coins"></i> Ingresos</div>
                             <canvas id="chartIngresosAdmin" class="chart-canvas"></canvas>
+                            <div class="chart-details mt-2">
+                                <span class="badge bg-primary me-2">Ingresos hoy: <span id="ingresosHoyInfo">—</span></span>
+                                <span class="badge bg-secondary me-2">Ingresos totales: <span id="ingresosTotalesInfo">—</span></span>
+                                <span class="badge bg-info text-dark">Ventas hoy: <span id="ventasHoyInfo">—</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -40,6 +68,11 @@
                         <div class="chart-card full-width">
                             <div class="chart-title"><i class="fas fa-chart-bar"></i> Productos por Categoría</div>
                             <canvas id="chartCategorias2" class="chart-canvas"></canvas>
+                            <div class="chart-details mt-2">
+                                <span class="badge bg-primary me-2">Total productos: <span id="prodTotalInfo">—</span></span>
+                                <span class="badge bg-secondary me-2">Categoría top: <span id="prodTopCatName">—</span></span>
+                                <span class="badge bg-success">Cantidad: <span id="prodTopCatCount">—</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,15 +82,26 @@
                         <div class="chart-card full-width">
                             <div class="chart-title"><i class="fas fa-chart-pie"></i> Distribución de Productos por Categoría</div>
                             <canvas id="chartCategorias3" class="chart-canvas"></canvas>
+                            <div class="chart-details mt-2">
+                                <span class="badge bg-primary me-2">Total categorías: <span id="totalCategoriasInfo">—</span></span>
+                                <span class="badge bg-secondary">Productos totales: <span id="prodTotalInfo2">—</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                
 
                 <div class="charts-container" id="charts-events">
                     <div class="charts-grid">
                         <div class="chart-card full-width">
                             <div class="chart-title"><i class="fas fa-chart-line"></i> Eventos por Mes</div>
                             <canvas id="chartEventos2" class="chart-canvas"></canvas>
+                            <div class="chart-details mt-2">
+                                <span class="badge bg-primary me-2">Total eventos: <span id="eventosTotalInfo">—</span></span>
+                                <span class="badge bg-secondary me-2">Mes pico: <span id="eventoMesPicoName">—</span></span>
+                                <span class="badge bg-success">Cantidad: <span id="eventoMesPicoCount">—</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -67,6 +111,12 @@
                         <div class="chart-card full-width">
                             <div class="chart-title"><i class="fas fa-user-friends"></i> Usuarios por Rol</div>
                             <canvas id="chartUsuarios2" class="chart-canvas"></canvas>
+                            <div class="chart-details mt-2">
+                                <span class="badge bg-primary me-2">Admins: <span id="usuariosAdminInfo">—</span></span>
+                                <span class="badge bg-secondary me-2">Meseros: <span id="usuariosMeseroInfo">—</span></span>
+                                <span class="badge bg-info text-dark me-2">Cajeros: <span id="usuariosCajeroInfo">—</span></span>
+                                <span class="badge bg-success">Total usuarios: <span id="usuariosTotalInfo">—</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -76,6 +126,10 @@
                         <div class="chart-card full-width">
                             <div class="chart-title"><i class="fas fa-chair"></i> Estado de Mesas</div>
                             <canvas id="chartMesas2" class="chart-canvas"></canvas>
+                            <div class="chart-details mt-2">
+                                <span class="badge bg-success me-2">Disponibles: <span id="mesasDisponiblesInfo">—</span> (<span id="mesasDispPct">—</span>%)</span>
+                                <span class="badge bg-danger">Ocupadas: <span id="mesasOcupadasInfo">—</span> (<span id="mesasOcupPct">—</span>%)</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -83,7 +137,7 @@
 
             <section class="activity-section" aria-label="Stock por producto">
                 <div class="stock-container" style="display:flex;flex-direction:column;">
-                    <h5 class="stock-title mb-2"><i class="fas fa-chart-bar me-2"></i> Stock actual</h5>
+                  
                     <div class="table-responsive" style="flex:1 1 auto; overflow-y: auto; overflow-x: hidden;">
                         <table class="table table-sm table-borderless align-middle mb-0">
                             <thead>

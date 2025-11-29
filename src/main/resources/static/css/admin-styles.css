@@ -3336,11 +3336,13 @@ body.dark-mode .btn-primary {
     border: none !important;
     flex: 0 0 clamp(520px, 48vw, 860px);
     max-width: clamp(520px, 48vw, 860px);
-    height: 420px;
-    overflow: hidden;
+    height: auto;
+    min-height: 500px;
+    overflow: visible;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
 }
 
 .dashboard-container .chart-title {
@@ -3351,6 +3353,17 @@ body.dark-mode .btn-primary {
     width: 95% !important;
     height: 380px !important;
     max-height: 380px !important;
+}
+
+.dashboard-container .chart-card .chart-details {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 1rem !important;
+    text-align: center;
 }
 
 .dashboard-container .carousel-controls {
@@ -3376,11 +3389,17 @@ body.dark-mode .btn-primary {
     .dashboard-container .chart-card {
         flex-basis: 400px;
         max-width: 400px;
-        height: 300px;
+        height: auto;
+        min-height: 420px;
+        overflow: visible;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
     }
 
     .dashboard-container .chart-canvas {
-        height: 260px !important;
+        height: 300px !important;
+        max-height: 300px !important;
     }
 }
 
@@ -4075,6 +4094,21 @@ body.dark-mode .btn-primary {
 .compact-stat-cards { align-items: center; }
 .compact-stat-cards .stat-card-compact { margin-left: auto; margin-right: auto; }
 .dashboard-container .charts-grid, .dashboard-container .charts-section, .dashboard-container .activity-section { margin-left: auto; margin-right: auto; }
+.dashboard-container .kpi-strip { width: 100% !important; max-width: 100% !important; padding: 8px 0; margin-bottom: 12px; }
+.dashboard-container .kpi-strip .kpi-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
+.dashboard-container .kpi-strip .kpi-tile { border-left: 4px solid rgba(0,0,0,.06); }
+@media (max-width: 992px) {
+  .dashboard-container .kpi-strip .kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* Fix: dropdown dentro de tablas en Mesas no debe cortarse */
+.mesas-table-responsive {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+.mesas-table-responsive .dropdown-menu {
+  z-index: 1055;
+}
 .dashboard-container .dashboard-top { max-width: 1000px; margin-left: auto; margin-right: auto; }
 .dashboard-container .charts-section, .dashboard-container .activity-section { max-width: 1000px; }
 .dashboard-container .table th, .dashboard-container .table td { text-align: center; }

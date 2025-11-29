@@ -963,6 +963,151 @@ document.addEventListener('DOMContentLoaded', function() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Ingresos' }, tooltip: { callbacks: { label: (ctx) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(ctx.parsed.y) } } }, scales: { y: { beginAtZero: true } }, layout: { padding: 0 }, animation: { duration: 0 } }
       };
       if (document.getElementById('chartIngresosAdmin')) new Chart(document.getElementById('chartIngresosAdmin'), ingresosCfg);
+
+      // ===== Información detallada de los gráficos =====
+      // Formateador de moneda (COP)
+      const fmtCOP = (v) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(safeNumber(v));
+
+      // Ingresos
+      const ingresosHoyEl = document.getElementById('ingresosHoyInfo');
+      const ingresosTotalesEl = document.getElementById('ingresosTotalesInfo');
+      const ventasHoyEl = document.getElementById('ventasHoyInfo');
+      if (ingresosHoyEl) ingresosHoyEl.textContent = fmtCOP(data.ingresosHoy);
+      if (ingresosTotalesEl) ingresosTotalesEl.textContent = fmtCOP(data.ingresosTotales);
+      if (ventasHoyEl) ventasHoyEl.textContent = safeNumber(data.ventasHoy);
+
+      // KPIs: Ventas del día (card)
+      const ventasHoyCard = document.getElementById('ventasHoyCard');
+      const ingresosHoyCard = document.getElementById('ingresosHoyCard');
+      if (ventasHoyCard) ventasHoyCard.textContent = safeNumber(data.ventasHoy);
+      if (ingresosHoyCard) ingresosHoyCard.textContent = fmtCOP(data.ingresosHoy);
+
+      // KPIs: Ventas del mes (selector)
+      const ventasMesSelector = document.getElementById('ventasMesSelector');
+      const ventasMesInfo = document.getElementById('ventasMesInfo');
+      const ingresosMesInfo = document.getElementById('ingresosMesInfo');
+      const ventasMesText = document.getElementById('ventasMesText');
+      const ventasMesDelta = document.getElementById('ventasMesDelta');
+      const ingresosMesDelta = document.getElementById('ingresosMesDelta');
+      const defaultPeriod = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      };
+      const prevOf = (period) => {
+        const [y,m] = period.split('-').map(x=>parseInt(x,10));
+        const pm = m===1?12:m-1; const py = m===1?y-1:y;
+        return `${py}-${String(pm).padStart(2,'0')}`;
+      };
+      const monthName = (period) => {
+        const [y,m] = period.split('-');
+        const names = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const idx = Math.max(1, Math.min(12, parseInt(m,10))) - 1;
+        return `${names[idx]} ${y}`;
+      };
+      const loadVentasMes = (period) => {
+        if (!period) return;
+        fetch(`/api/dashboard/ventas-mes?period=${period}`)
+          .then(r => r.json())
+          .then(m => {
+            if (ventasMesInfo) ventasMesInfo.textContent = safeNumber(m.ventasMes);
+            if (ingresosMesInfo) ingresosMesInfo.textContent = fmtCOP(m.ingresosMes);
+            const prev = prevOf(period);
+            return fetch(`/api/dashboard/ventas-mes?period=${prev}`).then(r=>r.json()).then(pm => {
+              const dv = safeNumber(m.ventasMes) - safeNumber(pm.ventasMes);
+              const di = safeNumber(m.ingresosMes) - safeNumber(pm.ingresosMes);
+              const pv = safeNumber(pm.ventasMes);
+              const pi = safeNumber(pm.ingresosMes);
+              const sv = pv ? ((dv/pv)*100).toFixed(1) : '0.0';
+              const si = pi ? ((di/pi)*100).toFixed(1) : '0.0';
+              const signV = dv>0?'+':(dv<0?'-':'');
+              const signI = di>0?'+':(di<0?'-':'');
+              if (ventasMesDelta) ventasMesDelta.textContent = `Variación ventas: ${signV}${Math.abs(dv)} (${sv}%)`;
+              if (ingresosMesDelta) ingresosMesDelta.textContent = `Variación ingresos: ${signI}${fmtCOP(Math.abs(di))} (${si}%)`;
+              if (ventasMesDelta){ ventasMesDelta.classList.remove('up','down'); ventasMesDelta.classList.add(dv>0?'up':(dv<0?'down':'')); }
+              if (ingresosMesDelta){ ingresosMesDelta.classList.remove('up','down'); ingresosMesDelta.classList.add(di>0?'up':(di<0?'down':'')); }
+              if (ventasMesText) ventasMesText.textContent = monthName(period);
+            });
+          })
+          .catch(() => {});
+      };
+      if (ventasMesSelector) {
+        ventasMesSelector.value = defaultPeriod();
+        loadVentasMes(ventasMesSelector.value);
+        ventasMesSelector.addEventListener('change', () => loadVentasMes(ventasMesSelector.value));
+      }
+
+      // Productos por categoría
+      const prodTotalInfo = document.getElementById('prodTotalInfo');
+      const prodTotalInfo2 = document.getElementById('prodTotalInfo2');
+      const prodTopCatName = document.getElementById('prodTopCatName');
+      const prodTopCatCount = document.getElementById('prodTopCatCount');
+      if (prodTotalInfo) prodTotalInfo.textContent = safeNumber(data.totalProductos);
+      if (prodTotalInfo2) prodTotalInfo2.textContent = safeNumber(data.totalProductos);
+      if (prodTopCatName || prodTopCatCount) {
+        const labels = pc.labels || [];
+        const values = pc.data || [];
+        let idx = -1, max = -1;
+        values.forEach((v, i) => { if (v > max) { max = v; idx = i; } });
+        if (idx >= 0) {
+          if (prodTopCatName) prodTopCatName.textContent = labels[idx] || '—';
+          if (prodTopCatCount) prodTopCatCount.textContent = safeNumber(values[idx]);
+        }
+      }
+
+      // Categorías
+      const totalCategoriasInfo = document.getElementById('totalCategoriasInfo');
+      if (totalCategoriasInfo) totalCategoriasInfo.textContent = safeNumber(data.totalCategorias);
+
+      // Eventos por mes
+      const eventosTotalInfo = document.getElementById('eventosTotalInfo');
+      const eventoMesPicoName = document.getElementById('eventoMesPicoName');
+      const eventoMesPicoCount = document.getElementById('eventoMesPicoCount');
+      if (eventosTotalInfo) eventosTotalInfo.textContent = (eventos || []).reduce((a,b)=>a+safeNumber(b),0);
+      if (eventoMesPicoName || eventoMesPicoCount) {
+        const m = meses;
+        const vals = eventos || [];
+        let idm = -1, mx = -1;
+        vals.forEach((v,i)=>{ if (v > mx) { mx = v; idm = i; } });
+        if (idm >= 0) {
+          if (eventoMesPicoName) eventoMesPicoName.textContent = m[idm] || '—';
+          if (eventoMesPicoCount) eventoMesPicoCount.textContent = safeNumber(vals[idm]);
+        }
+      }
+
+      // Usuarios por rol
+      const usuariosAdminInfo = document.getElementById('usuariosAdminInfo');
+      const usuariosMeseroInfo = document.getElementById('usuariosMeseroInfo');
+      const usuariosCajeroInfo = document.getElementById('usuariosCajeroInfo');
+      const usuariosTotalInfo = document.getElementById('usuariosTotalInfo');
+      if (usuariosAdminInfo || usuariosMeseroInfo || usuariosCajeroInfo) {
+        const labels = ur.labels || [];
+        const vals = ur.data || [];
+        const findVal = (name) => {
+          const i = labels.findIndex(l => String(l).toLowerCase() === name);
+          return i >= 0 ? safeNumber(vals[i]) : 0;
+        };
+        if (usuariosAdminInfo) usuariosAdminInfo.textContent = findVal('administradores');
+        if (usuariosMeseroInfo) usuariosMeseroInfo.textContent = findVal('meseros');
+        if (usuariosCajeroInfo) usuariosCajeroInfo.textContent = findVal('cajeros');
+      }
+      if (usuariosTotalInfo) usuariosTotalInfo.textContent = safeNumber(data.totalUsuarios);
+
+      // Estado de mesas
+      const mesasDispInfo = document.getElementById('mesasDisponiblesInfo');
+      const mesasOcupInfo = document.getElementById('mesasOcupadasInfo');
+      const mesasDispPct = document.getElementById('mesasDispPct');
+      const mesasOcupPct = document.getElementById('mesasOcupPct');
+      const emLabels = em.labels || [];
+      const emVals = em.data || [];
+      const totalMesas = emVals.reduce((a,b)=>a+safeNumber(b),0);
+      const idxDisp = emLabels.findIndex(l => String(l).toLowerCase().includes('disponible'));
+      const idxOcup = emLabels.findIndex(l => String(l).toLowerCase().includes('ocupada'));
+      const valDisp = idxDisp >= 0 ? safeNumber(emVals[idxDisp]) : 0;
+      const valOcup = idxOcup >= 0 ? safeNumber(emVals[idxOcup]) : 0;
+      if (mesasDispInfo) mesasDispInfo.textContent = valDisp;
+      if (mesasOcupInfo) mesasOcupInfo.textContent = valOcup;
+      if (mesasDispPct) mesasDispPct.textContent = totalMesas ? ((valDisp/totalMesas)*100).toFixed(1) : '0.0';
+      if (mesasOcupPct) mesasOcupPct.textContent = totalMesas ? ((valOcup/totalMesas)*100).toFixed(1) : '0.0';
     })
     .catch(err => console.error('Error cargando stats del dashboard:', err));
 
@@ -1023,6 +1168,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const modalOpen = document.getElementById('activityModalOpen');
   const modalList = document.getElementById('activityModalList');
   const modalInfo = document.getElementById('activityModalInfo');
+  const modalPager = document.getElementById('activityModalPager');
   const modalForm = document.getElementById('activityModalForm');
   const modalReset = document.getElementById('activityModalReset');
   const typeSelect = document.getElementById('activityTypeSelect');
@@ -1030,14 +1176,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const dateEnd = document.getElementById('activityDateEnd');
   const queryInput = document.getElementById('activityQuery');
   let activityAll = [];
+  let modalFiltered = [];
+  let modalPage = 0;
+  const modalSize = 6;
   function renderModal(items){
     if (!modalList) return;
-    if (!items || items.length === 0){
+    modalFiltered = Array.isArray(items) ? items : [];
+    const total = modalFiltered.length;
+    const totalPages = Math.max(1, Math.ceil(total / modalSize));
+    if (modalPage >= totalPages) modalPage = totalPages - 1;
+    if (modalPage < 0) modalPage = 0;
+    const start = modalPage * modalSize;
+    const pageItems = modalFiltered.slice(start, start + modalSize);
+    if (!pageItems || pageItems.length === 0){
       modalList.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h4>Sin actividad</h4><p>Aquí verás los últimos movimientos del sistema.</p></div>';
       if (modalInfo) modalInfo.textContent = 'Resultados: 0';
+      if (modalPager) modalPager.innerHTML = '';
       return;
     }
-    const rows = items.map(a => `
+    const rows = pageItems.map(a => `
       <div class="activity-item ${a.type ? 'activity-'+String(a.type).toLowerCase() : ''}">
         <div class="activity-icon"><i class="fas ${typeIcon(a.type)}"></i></div>
         <div class="activity-content">
@@ -1050,10 +1207,26 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `).join('');
     modalList.innerHTML = rows;
-    if (modalInfo) modalInfo.textContent = `Resultados: ${items.length}`;
+    if (modalInfo) modalInfo.textContent = `Resultados: ${total} • Página ${modalPage+1} de ${totalPages}`;
+    if (modalPager){
+      let html = `<a class="btn btn-outline-secondary${modalPage<=0?' disabled':''}" data-action="prev">«</a>`;
+      for (let p = 0; p < totalPages; p++) {
+        html += `<a class="btn ${p===modalPage?'btn-primary':'btn-outline-secondary'}" data-page="${p}">${p+1}</a>`;
+      }
+      html += `<a class="btn btn-outline-secondary${modalPage>=totalPages-1?' disabled':''}" data-action="next">»</a>`;
+      modalPager.innerHTML = html;
+      modalPager.querySelectorAll('a[data-page]').forEach(a => {
+        a.addEventListener('click', (e) => { e.preventDefault(); const p = Number(a.getAttribute('data-page')); if (!Number.isNaN(p)) { modalPage = p; renderModal(modalFiltered); } });
+      });
+      const prevBtn = modalPager.querySelector('a[data-action="prev"]');
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.preventDefault(); if (modalPage > 0) { modalPage--; renderModal(modalFiltered); } });
+      const nextBtn = modalPager.querySelector('a[data-action="next"]');
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.preventDefault(); const tp = Math.max(1, Math.ceil(modalFiltered.length / modalSize)); if (modalPage < tp - 1) { modalPage++; renderModal(modalFiltered); } });
+    }
   }
   function loadAllActivity(){
     if (modalInfo) modalInfo.textContent = 'Cargando...';
+    modalPage = 0;
     return fetch('/api/admin/activity?page=0&size=120').then(r=>r.json()).then(data=>{ activityAll = Array.isArray(data)? data : []; renderModal(activityAll); }).catch(()=>{ if (modalInfo) modalInfo.textContent = 'Error al cargar'; });
   }
   function applyModalFilter(){
@@ -1069,6 +1242,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (de){ try { const ts = new Date(a.timestamp); const end = new Date(de); end.setHours(23,59,59,999); ok = ok && (ts <= end); } catch(_){} }
       return ok;
     });
+    modalPage = 0;
     renderModal(filtered);
   }
   if (modalOpen) modalOpen.addEventListener('click', () => { loadAllActivity(); });

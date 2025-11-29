@@ -28,7 +28,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="section-subtitle mb-0">
             Ingresos de inventario
-            <span class="badge bg-primary" th:text="${ingresosInventario != null ? ingresosInventario.size() : 0}"></span>
+            <span class="badge bg-primary" th:text="${totalItems}"></span>
         </h4>
         <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#nuevoIngresoInventarioModal">
             <i class="fas fa-plus me-2"></i>Nuevo ingreso
@@ -45,7 +45,22 @@
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
                             <input type="text" id="inventarioFilterInput" class="form-control" placeholder="Filtrar por remisión, producto o proveedor...">
                         </div>
-                        <div id="inventarioPagination" class="btn-group" role="group" aria-label="Paginación"></div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="btn-group" role="group" aria-label="Paginación">
+                                <a class="btn btn-outline-secondary"
+                                   th:classappend="${page <= 1} ? ' disabled' : ''"
+                                   th:href="@{/inventario(page=${page > 1 ? page - 1 : 1}, size=${size}, desde=${desde}, hasta=${hasta})}">«</a>
+                                <a class="btn"
+                                   th:each="p : ${#numbers.sequence(1, totalPages)}"
+                                   th:classappend="${p == page} ? 'btn-primary' : 'btn-outline-secondary'"
+                                   th:text="${p}"
+                                   th:href="@{/inventario(page=${p}, size=${size}, desde=${desde}, hasta=${hasta})}"></a>
+                                <a class="btn btn-outline-secondary"
+                                   th:classappend="${page >= totalPages} ? ' disabled' : ''"
+                                   th:href="@{/inventario(page=${page < totalPages ? page + 1 : totalPages}, size=${size}, desde=${desde}, hasta=${hasta})}">»</a>
+                            </div>
+                            <a class="btn btn-outline-dark" th:href="@{/inventario/movimientos}">Movimientos</a>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -79,11 +94,6 @@
                                 <td th:text="${ingreso.observaciones != null && !ingreso.observaciones.isEmpty() ? ingreso.observaciones : '—'}"></td>
                                 <td class="text-center">
                                     <div class="d-inline-flex gap-2">
-                                        <button type="button" class="btn btn-warning btn-sm rounded-pill"
-                                            data-bs-toggle="modal"
-                                            th:data-bs-target="'#__editarInventarioModal' + ${ingreso.id}">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
                                         <button type="button" class="btn btn-danger btn-sm rounded-pill"
                                             data-bs-toggle="modal"
                                             th:data-bs-target="'#__eliminarInventarioModal' + ${ingreso.id}">
@@ -107,70 +117,9 @@
         </div>
     </div>
 
-    <!-- Modales Editar Inventario -->
-    <div th:each="ingreso : ${ingresosInventario}">
-        <div class="modal fade" th:id="'__editarInventarioModal' + ${ingreso.id}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <form th:action="@{/inventario/actualizar}" method="post" class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Editar ingreso de inventario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="id" th:value="${ingreso.id}">
-                        <div class="mb-3">
-                            <label class="form-label">Remisión</label>
-                            <input type="text" maxlength="100" class="form-control" name="remision"
-                                   th:value="${ingreso.remision}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Fecha de remisión</label>
-                            <input type="date" class="form-control" name="fechaRemision"
-                                   th:value="${ingreso.fechaRemision != null ? #temporals.format(ingreso.fechaRemision, 'yyyy-MM-dd') : ''}">
-                        </div>
-                        <div class="mb-3" th:with="isMenu=${#lists.contains(products.![nombreProducto], ingreso.producto)}">
-                            <label class="form-label">Producto</label>
-                            <select class="form-select" th:id="${'productoSelect' + ingreso.id}">
-                                <option value="" disabled th:if="${ingreso.producto == null or ingreso.producto == ''}">Selecciona un producto</option>
-                                <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.nombreProducto}"
-                                        th:selected="${p.nombreProducto == ingreso.producto}"></option>
-                                <option value="__other" th:selected="${ingreso.producto != null and ingreso.producto != '' and !#lists.contains(products.![nombreProducto], ingreso.producto)}">Otro...</option>
-                            </select>
-                            <input type="text" maxlength="150" class="form-control mt-2" th:id="${'productoOther' + ingreso.id}"
-                                   th:value="${(!#lists.contains(products.![nombreProducto], ingreso.producto) and ingreso.producto != null) ? ingreso.producto : ''}"
-                                   placeholder="Escribe nombre de producto" style="display:none;" />
-                            <input type="hidden" name="producto" th:id="${'productoHidden' + ingreso.id}" th:value="${ingreso.producto}" />
-                            <input type="hidden" name="productoId" th:id="${'productoId' + ingreso.id}" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Cantidad ingresada</label>
-                            <input type="number" min="1" class="form-control" name="cantidad"
-                                   th:value="${ingreso.cantidad}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Proveedor (opcional)</label>
-                            <input type="text" maxlength="120" class="form-control" name="proveedor"
-                                   th:value="${ingreso.proveedor}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Teléfono del proveedor (opcional)</label>
-                            <input type="text" maxlength="20" class="form-control" name="telefonoProveedor"
-                                   th:value="${ingreso.telefonoProveedor}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Observaciones</label>
-                            <textarea class="form-control" name="observaciones" rows="3"
-                                      th:text="${ingreso.observaciones}"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success rounded-pill">Guardar cambios</button>
-                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    
+    
+
 
     <!-- Modales Eliminar Inventario -->
     <div th:each="ingreso : ${ingresosInventario}">
@@ -266,8 +215,8 @@
           const run = () => {
             const tbody = document.getElementById('inventarioTableBody');
             const filterInput = document.getElementById('inventarioFilterInput');
-            const pager = document.getElementById('inventarioPagination');
-            const pageSize = 5;
+            const pager = null;
+            const pageSize = Number.MAX_SAFE_INTEGER;
             let rows = Array.from(tbody ? tbody.querySelectorAll('tr[data-row]') : []);
             let filtered = rows.slice();
             let page = 1;
@@ -282,39 +231,14 @@
 
             function render(){
                 rows.forEach(r => r.style.display = 'none');
-                const total = filtered.length;
-                const pages = Math.max(1, Math.ceil(total / pageSize));
-                page = Math.min(page, pages);
-                const start = (page - 1) * pageSize;
-                const end = start + pageSize;
-                filtered.slice(start, end).forEach(r => r.style.display = '');
-                renderPager(pages);
+                filtered.forEach(r => r.style.display = '');
             }
 
-            function renderPager(pages){
-                if (!pager) return;
-                pager.innerHTML = '';
-                const prev = document.createElement('button');
-                prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
-                prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
-                pager.appendChild(prev);
-
-                for (let i = 1; i <= pages; i++){
-                    const b = document.createElement('button');
-                    b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary');
-                    b.textContent = i;
-                    b.onclick = () => { page = i; render(); };
-                    pager.appendChild(b);
-                }
-
-                const next = document.createElement('button');
-                next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
-                next.disabled = page >= pages; next.onclick = () => { page++; render(); };
-                pager.appendChild(next);
-            }
+            function renderPager(){ /* sin paginación */ }
 
             function applyFilter(){
-                const q = (filterInput?.value || '').toLowerCase().trim();
+                const qraw = (filterInput && filterInput.value) ? filterInput.value : '';
+                const q = qraw.toLowerCase().trim();
                 filtered = q ? rows.filter(r => getText(r).includes(q)) : rows.slice();
                 page = 1; render();
             }
@@ -355,42 +279,7 @@
                     otherNew.addEventListener('input', () => { hiddenNew.value = otherNew.value; if(document.getElementById('productoIdHiddenNew')) document.getElementById('productoIdHiddenNew').value = ''; });
                 }
 
-                // Edit modals: todos los selects cuyo id comienza con productoSelect
-                document.querySelectorAll('select[id^="productoSelect"]').forEach(sel => {
-                    const idSuffix = sel.id.replace('productoSelect','');
-                    const other = document.getElementById('productoOther' + idSuffix);
-                    const hidden = document.getElementById('productoHidden' + idSuffix);
-                    // Inicializar visibilidad y valores hidden
-                    if(sel.value === '__other' || (sel.selectedIndex >=0 && sel.options[sel.selectedIndex].value === '__other')){
-                        if(other) other.style.display = '';
-                        if(hidden) hidden.value = other ? other.value : '';
-                        const pid = document.getElementById('productoId' + idSuffix);
-                        if(pid) pid.value = '';
-                    } else {
-                        if(other) other.style.display = 'none';
-                        const optInit = sel.options[sel.selectedIndex];
-                        if(hidden) hidden.value = optInit ? optInit.text : '';
-                        const pid = document.getElementById('productoId' + idSuffix);
-                        if(pid) pid.value = sel.value || '';
-                    }
-
-                    sel.addEventListener('change', () => {
-                        const pid = document.getElementById('productoId' + idSuffix);
-                        if(sel.value === '__other'){
-                            if(other) other.style.display = '';
-                            if(hidden) hidden.value = other ? other.value : '';
-                            if(pid) pid.value = '';
-                        } else {
-                            if(other) other.style.display = 'none';
-                            const opt = sel.options[sel.selectedIndex];
-                            if(hidden) hidden.value = opt ? opt.text : '';
-                            if(pid) pid.value = sel.value || '';
-                        }
-                    });
-                    if(other){
-                        other.addEventListener('input', () => { if(hidden) hidden.value = other.value; });
-                    }
-                });
+                
             }
 
             setupInventarioSelects();

@@ -75,6 +75,10 @@ public class MesaService {
         mesaRepository.findById(mesaId).ifPresent(mesa -> {
             mesa.setEstado("OCUPADA");
             mesaRepository.save(mesa);
+            try {
+                String nombre = mesa.getNumero() != null ? mesa.getNumero() : ("#" + mesa.getId());
+                activityLogService.log("TABLE", "Mesa " + nombre + " marcada como OCUPADA", currentUser(), null);
+            } catch (Exception ignored) {}
         });
     }
 
@@ -82,6 +86,10 @@ public class MesaService {
         mesaRepository.findById(mesaId).ifPresent(mesa -> {
             mesa.setEstado("DISPONIBLE");
             mesaRepository.save(mesa);
+            try {
+                String nombre = mesa.getNumero() != null ? mesa.getNumero() : ("#" + mesa.getId());
+                activityLogService.log("TABLE", "Mesa " + nombre + " marcada como DISPONIBLE", currentUser(), null);
+            } catch (Exception ignored) {}
         });
     }
  // 🔹 Contar todas las mesas registradas

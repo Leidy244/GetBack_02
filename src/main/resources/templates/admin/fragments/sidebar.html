@@ -7,6 +7,7 @@
 			<div class="sidebar-logo">
 				<img th:src="@{/images/Logo_principal.png}" alt="GETBACK Logo" class="logo-image">
 				<h3 class="sidebar-title">GETBACK</h3>
+				<p class="text-muted" style="margin:0; font-size:.85rem;">Barra de navegación</p>
 			</div>
 		</div>
 
@@ -21,7 +22,7 @@
 			</a>
             <a th:href="@{/admin(activeSection='estadisticas')}"
                th:classappend="${activeSection == 'estadisticas'} ? 'nav-link active' : 'nav-link'">
-                <i class="fas fa-chart-pie"></i> Estadísticas
+                <i class="fas fa-chart-pie"></i> Informacion General
             </a>
             <a th:href="@{/admin(activeSection='products')}"
                th:classappend="${activeSection == 'products'} ? 'nav-link active' : 'nav-link'">
@@ -48,10 +49,15 @@
 				<i class="fas fa-chair"></i>Asignar Mesas
 			</a>
 
-			<a th:href="@{/inventario}"
-				th:classappend="${activeSection == 'inventario'} ? 'nav-link active' : 'nav-link'">
-				<i class="fas fa-warehouse"></i>Inventario
-			</a>
+            <a th:href="@{/inventario}"
+                th:classappend="${activeSection == 'inventario'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-warehouse"></i>Inventario
+            </a>
+
+            <a th:href="@{/inventario/movimientos}"
+               th:classappend="${activeSection == 'movimientosInventario'} ? 'nav-link active' : 'nav-link'">
+                <i class="fas fa-clipboard-list"></i>Movimientos de inventario
+            </a>
 
 			<a th:href="@{/admin(activeSection='clientes')}"
 			   th:classappend="${activeSection == 'clientes'} ? 'nav-link active' : 'nav-link'">
@@ -66,7 +72,7 @@
 		<!-- Footer compacto -->
 		<div class="sidebar-footer">
 			<p class="text-secondary small mb-0">
-				2025 Ignitia — Desarrollado por Ignitia. Todos los derechos reservados
+				2025— Desarrollado por Ignitia. Todos los derechos reservados
 			</p>
 		</div>
 	</section>

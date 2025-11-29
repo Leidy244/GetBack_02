@@ -17,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,12 +39,14 @@ public class PedidoService {
     private final MenuRepository menuRepository;
     private final EstadoRepository estadoRepository;
     private final FacturaRepository facturaRepository;
+    private final ActivityLogService activityLogService;
     private final InventarioService inventarioService;
 
     public PedidoService(PedidoRepository pedidoRepository, MesaRepository mesaRepository,
             UsuarioRepository usuarioRepository, MenuRepository menuRepository,
             EstadoRepository estadoRepository, FacturaRepository facturaRepository,
-            InventarioService inventarioService) {
+            InventarioService inventarioService,
+            ActivityLogService activityLogService) {
         this.pedidoRepository = pedidoRepository;
         this.mesaRepository = mesaRepository;
         this.usuarioRepository = usuarioRepository;
@@ -50,6 +54,7 @@ public class PedidoService {
         this.estadoRepository = estadoRepository;
         this.facturaRepository = facturaRepository;
         this.inventarioService = inventarioService;
+        this.activityLogService = activityLogService;
     }
 
     // Listar todos los pedidos
@@ -139,7 +144,14 @@ public class PedidoService {
             System.err.println("Error al registrar consumo de inventario para el pedido: " + e.getMessage());
         }
 
-        return pedidoRepository.save(pedido);
+        Pedido saved = pedidoRepository.save(pedido);
+        try {
+            String mesaNombre = (saved.getMesa() != null && saved.getMesa().getNumero() != null)
+                    ? saved.getMesa().getNumero() : (saved.getMesa() != null ? ("#" + saved.getMesa().getId()) : "sin mesa");
+            String msg = "Se creó el pedido \"" + saved.getId() + "\" para la mesa " + mesaNombre;
+            activityLogService.log("ORDER", msg, currentUser(), null);
+        } catch (Exception ignored) {}
+        return saved;
     }
 
     /**
@@ -364,6 +376,14 @@ public class PedidoService {
         }
 
         pedidoRepository.save(pedido);
+        try {
+            String mesaNombre = (pedido.getMesa() != null && pedido.getMesa().getNumero() != null)
+                    ? pedido.getMesa().getNumero() : (pedido.getMesa() != null ? ("#" + pedido.getMesa().getId()) : "sin mesa");
+            String msg = "Se registró pago del pedido \"" + pedido.getId() + "\" por " + String.format("%.2f", montoRecibido != null ? montoRecibido : 0.0)
+                    + ", total " + String.format("%.2f", total) + ", cambio " + String.format("%.2f", pedido.getCambio())
+                    + " (mesa " + mesaNombre + ")";
+            activityLogService.log("PAYMENT", msg, currentUser(), null);
+        } catch (Exception ignored) {}
     }
 
     // Historial paginado y filtrado para la vista de mesero / admin
@@ -393,5 +413,12 @@ public class PedidoService {
         }
 
         return pedidoRepository.buscarHistorial(mesa, estado, desdeDateTime, hastaDateTime, usuarioId, pageable);
+    }
+
+    private String currentUser() {
+        try {
+            Authentication a = SecurityContextHolder.getContext().getAuthentication();
+            return (a != null && a.getName() != null) ? a.getName() : "system";
+        } catch (Exception e) { return "system"; }
     }
 }

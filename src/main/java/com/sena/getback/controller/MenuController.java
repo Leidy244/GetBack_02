@@ -43,11 +43,20 @@ public class MenuController {
 	@GetMapping
     public String listarProductos(Model model) {
         java.util.List<Menu> productosBar = menuService.findAll().stream()
-                .filter(m -> m.getCategoria() != null && m.getCategoria().getArea() != null
-                        && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"))
+                .filter(m -> {
+                    var cat = m.getCategoria();
+                    String area = cat != null ? cat.getArea() : null;
+                    String nombreCat = cat != null ? cat.getNombre() : null;
+                    boolean areaBar = area != null && area.trim().equalsIgnoreCase("Bar");
+                    boolean nombreBarHeur = nombreCat != null && nombreCat.toLowerCase().matches(".*(bebida|bar|licor).*");
+                    return areaBar || (area == null && nombreBarHeur);
+                })
                 .toList();
         model.addAttribute("products", productosBar);
-		model.addAttribute("categorias", categoriaService.findAll());
+        java.util.List<com.sena.getback.model.Categoria> categoriasBar = categoriaService.findAll().stream()
+                .filter(c -> c.getArea() != null && c.getArea().trim().equalsIgnoreCase("Bar"))
+                .toList();
+        model.addAttribute("categorias", categoriasBar.isEmpty() ? categoriaService.findAll() : categoriasBar);
 		model.addAttribute("newProduct", new Menu());
 		model.addAttribute("activeSection", "products"); // activa sección de productos en admin.html
 

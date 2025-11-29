@@ -27,19 +27,62 @@ public class InventarioController {
     }
 
     @GetMapping
-    public String listarInventario(Model model) {
-        var ingresos = inventarioService.listarIngresosRecientes()
+    public String listarInventario(Model model,
+                                   @RequestParam(name = "desde", required = false) LocalDate desde,
+                                   @RequestParam(name = "hasta", required = false) LocalDate hasta,
+                                   @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+                                   @RequestParam(name = "size", required = false, defaultValue = "10") Integer size) {
+        var ingresosAll = inventarioService.listarIngresosRecientes()
                 .stream()
                 .filter(i -> i.getRemision() == null
                         || !"CONSUMO PEDIDO".equalsIgnoreCase(i.getRemision()))
                 .toList();
 
-        model.addAttribute("ingresosInventario", ingresos);
+        var ingresosFiltrados = ingresosAll.stream()
+                .filter(i -> {
+                    if (desde != null && i.getFechaRemision() != null && i.getFechaRemision().isBefore(desde)) return false;
+                    if (hasta != null && i.getFechaRemision() != null && i.getFechaRemision().isAfter(hasta)) return false;
+                    return true;
+                })
+                .sorted((a,b) -> {
+                    var fa = a.getFechaIngreso();
+                    var fb = b.getFechaIngreso();
+                    if (fa == null && fb == null) return 0;
+                    if (fa == null) return 1;
+                    if (fb == null) return -1;
+                    return fb.compareTo(fa);
+                })
+                .toList();
+
+        int totalItems = ingresosFiltrados.size();
+        int safeSize = (size != null && size > 0) ? size : 10;
+        int totalPages = Math.max(1, (int) Math.ceil(totalItems / (double) safeSize));
+        int safePage = (page != null && page > 0) ? page : 1;
+        if (safePage > totalPages) safePage = totalPages;
+        int startIdx = Math.min((safePage - 1) * safeSize, Math.max(0, totalItems));
+        int endIdx = Math.min(startIdx + safeSize, totalItems);
+        var pageContent = totalItems > 0 ? ingresosFiltrados.subList(startIdx, endIdx) : java.util.List.<Inventario>of();
+
+        model.addAttribute("ingresosInventario", pageContent);
+        model.addAttribute("historialInventario", ingresosFiltrados);
+        model.addAttribute("ingresosTodos", ingresosAll);
+        model.addAttribute("desde", desde);
+        model.addAttribute("hasta", hasta);
+        model.addAttribute("page", safePage);
+        model.addAttribute("size", safeSize);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
         model.addAttribute("nuevoIngreso", new Inventario());
         // Proveer lista de productos del menú SOLO área BAR para autocompletar
         var productosBar = menuService.findAll().stream()
-                .filter(m -> m.getCategoria() != null && m.getCategoria().getArea() != null
-                        && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"))
+                .filter(m -> {
+                    var cat = m.getCategoria();
+                    String area = cat != null ? cat.getArea() : null;
+                    String nombreCat = cat != null ? cat.getNombre() : null;
+                    boolean areaBar = area != null && area.trim().equalsIgnoreCase("Bar");
+                    boolean nombreBarHeur = nombreCat != null && nombreCat.toLowerCase().matches(".*(bebida|bar|licor).*");
+                    return areaBar || (area == null && nombreBarHeur);
+                })
                 .toList();
         model.addAttribute("products", productosBar);
         // Evitar sugerencias desde inventario para mantener nombres consistentes, usar solo menú BAR
@@ -107,6 +150,51 @@ public class InventarioController {
         model.addAttribute("stockThreshold", stockThreshold);
         model.addAttribute("activeSection", "inventario");
         model.addAttribute("title", "Gestión de Inventario");
+        return "admin";
+    }
+
+    @GetMapping("/movimientos")
+    public String listarMovimientos(Model model,
+                                    @RequestParam(name = "desde", required = false) LocalDate desde,
+                                    @RequestParam(name = "hasta", required = false) LocalDate hasta,
+                                    @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+                                    @RequestParam(name = "size", required = false, defaultValue = "10") Integer size) {
+        var ingresosAll = inventarioService.listarIngresosRecientes();
+
+        var ingresosFiltrados = ingresosAll.stream()
+                .filter(i -> {
+                    if (desde != null && i.getFechaRemision() != null && i.getFechaRemision().isBefore(desde)) return false;
+                    if (hasta != null && i.getFechaRemision() != null && i.getFechaRemision().isAfter(hasta)) return false;
+                    return true;
+                })
+                .sorted((a,b) -> {
+                    var fa = a.getFechaIngreso();
+                    var fb = b.getFechaIngreso();
+                    if (fa == null && fb == null) return 0;
+                    if (fa == null) return 1;
+                    if (fb == null) return -1;
+                    return fb.compareTo(fa);
+                })
+                .toList();
+
+        int totalItems = ingresosFiltrados.size();
+        int safeSize = (size != null && size > 0) ? size : 10;
+        int totalPages = Math.max(1, (int) Math.ceil(totalItems / (double) safeSize));
+        int safePage = (page != null && page > 0) ? page : 1;
+        if (safePage > totalPages) safePage = totalPages;
+        int startIdx = Math.min((safePage - 1) * safeSize, Math.max(0, totalItems));
+        int endIdx = Math.min(startIdx + safeSize, totalItems);
+        var pageContent = totalItems > 0 ? ingresosFiltrados.subList(startIdx, endIdx) : java.util.List.<Inventario>of();
+
+        model.addAttribute("ingresosInventario", pageContent);
+        model.addAttribute("desde", desde);
+        model.addAttribute("hasta", hasta);
+        model.addAttribute("page", safePage);
+        model.addAttribute("size", safeSize);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("activeSection", "movimientosInventario");
+        model.addAttribute("title", "Movimientos de Inventario");
         return "admin";
     }
 

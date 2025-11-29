@@ -103,9 +103,13 @@
 				<div th:replace="~{admin/fragments/clientes :: clientes}"></div>
 			</div>
 
-			<div th:if="${activeSection == 'inventario'}" class="content-section">
-				<div th:replace="~{admin/fragments/inventario :: inventario}"></div>
-			</div>
+            <div th:if="${activeSection == 'inventario'}" class="content-section">
+                <div th:replace="~{admin/fragments/inventario :: inventario}"></div>
+            </div>
+
+            <div th:if="${activeSection == 'movimientosInventario'}" class="content-section">
+                <div th:replace="~{admin/fragments/inventario_movimientos :: inventario_movimientos}"></div>
+            </div>
 
 			<!-- Sección Locations -->
 			<div th:if="${activeSection == 'locations'}" class="content-section">

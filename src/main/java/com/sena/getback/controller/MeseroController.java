@@ -95,7 +95,7 @@ public class MeseroController {
             for (var p : productos) {
                 if (p.getCategoria() != null && p.getCategoria().getArea() != null
                         && "BAR".equalsIgnoreCase(p.getCategoria().getArea())) {
-                    int stock = inventarioService.obtenerStockDisponible(p.getNombreProducto());
+                    int stock = p.getStock() != null ? p.getStock() : 0;
                     stockBarPorProducto.put(p.getId(), stock);
                 }
             }

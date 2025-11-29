@@ -269,6 +269,38 @@ public class DashboardController {
                 "data", Arrays.asList(disponibles, ocupadas)
         ));
 
+        // Ventas del día (detalle)
+        List<com.sena.getback.model.Factura> hoy = facturaService.obtenerFacturasHoy();
+        List<Map<String, Object>> ventasDelDia = hoy.stream()
+                .map(f -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("numero", f.getNumeroFactura());
+                    m.put("hora", f.getFechaEmision() != null ? f.getFechaEmision().toString() : null);
+                    m.put("cliente", f.getClienteNombre());
+                    m.put("mesa", f.getNumeroMesa());
+                    m.put("total", f.getTotalPagar());
+                    m.put("metodo", f.getMetodoPago());
+                    return m;
+                })
+                .toList();
+        result.put("ventasDelDia", ventasDelDia);
+
         return result;
+    }
+
+    @GetMapping("/api/dashboard/ventas-mes")
+    @ResponseBody
+    public Map<String, Object> obtenerVentasMes(@org.springframework.web.bind.annotation.RequestParam("period") String period) {
+        try {
+            String[] parts = period.split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            return facturaService.obtenerResumenVentasMes(year, month);
+        } catch (Exception e) {
+            Map<String, Object> res = new HashMap<>();
+            res.put("ventasMes", 0);
+            res.put("ingresosMes", 0.0);
+            return res;
+        }
     }
 }
