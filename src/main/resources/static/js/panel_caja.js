@@ -123,6 +123,16 @@ class PanelCaja {
         const btnConfirmarPago = document.getElementById('btn-confirmar-pago');
         const modalInfo = document.getElementById('modal-info');
         const modalError = document.getElementById('modal-error');
+        const metodoPagoSelect = document.getElementById('metodo-pago');
+        const grupoReferencia = document.getElementById('grupo-referencia');
+        const referenciaInput = document.getElementById('referencia-pago');
+        const grupoCliente = document.getElementById('grupo-cliente');
+        const grupoRecibido = document.getElementById('grupo-recibido');
+        const grupoCambio = document.getElementById('grupo-cambio');
+        const clienteSelect = document.getElementById('cliente-frecuente');
+        const inputMetodoPagoHidden = document.getElementById('input-metodo-pago');
+        const inputReferenciaHidden = document.getElementById('input-referencia-pago');
+        const inputClienteHidden = document.getElementById('input-cliente-id');
         const inputBusquedaPagos = document.getElementById('busqueda-pagos');
         const tablaPagosPendientes = document.getElementById('tabla-pagos-pendientes');
 
@@ -252,15 +262,19 @@ class PanelCaja {
                 const detalle = btn.getAttribute('data-detalle');
 
                 // Llenar datos del modal
-                document.getElementById('modal-mesa').textContent = mesa;
+                const mesaInfoEl = document.getElementById('modal-mesa-info');
+                if (mesaInfoEl) mesaInfoEl.textContent = mesa;
                 const detalleFormateado = formatearDetalle(detalle);
-                // Usar <br> para que cada producto se muestre en una línea separada
-                document.getElementById('modal-detalle').innerHTML = detalleFormateado.replace(/\n/g, '<br>');
+                const detalleEl = document.getElementById('detalle-carrito-modal');
+                if (detalleEl) detalleEl.innerHTML = detalleFormateado.replace(/\n/g, '<br>');
 
                 // Total sin .00 si es entero
                 document.getElementById('modal-total').textContent = `$${formatearMonto(total)}`;
 
-                document.getElementById('modal-pedido-id').value = pedidoId;
+                const spanId = document.getElementById('modal-pedido-id');
+                if (spanId) spanId.textContent = String(pedidoId);
+                const hiddenId = document.getElementById('input-pedido-id');
+                if (hiddenId) hiddenId.value = String(pedidoId);
 
                 // Limpiar campos
                 modalRecibido.value = '';
@@ -272,12 +286,17 @@ class PanelCaja {
                 modalError.style.display = 'none';
 
                 // Asegurar que el botón de confirmar sea visible en modo cobro
-                btnConfirmarPago.style.display = 'inline-block';
+            btnConfirmarPago.style.display = 'inline-block';
 
-                // Abrir modal
-                const modal = new bootstrap.Modal(document.getElementById('modalPago'));
-                modal.show();
-            });
+            // Abrir modal
+            const modal = new bootstrap.Modal(document.getElementById('modalPago'));
+            modal.show();
+
+            if (metodoPagoSelect) {
+                metodoPagoSelect.value = 'EFECTIVO';
+                actualizarUIMetodoPago();
+            }
+        });
         });
 
         // Abrir modal de detalle en modo solo lectura desde el historial de pagos
@@ -357,8 +376,8 @@ class PanelCaja {
                         modalError.style.display = 'none';
                         btnConfirmarPago.disabled = false;
                         
-                        // Actualizar campo oculto
-                        document.getElementById('modal-monto-recibido-hidden').value = recibido.toFixed(2);
+                        const hiddenRecibido = document.getElementById('input-monto-recibido');
+                        if (hiddenRecibido) hiddenRecibido.value = recibido.toFixed(2);
                     } else {
                         modalCambio.value = '$0.00';
                         modalError.style.display = 'block';
@@ -372,6 +391,95 @@ class PanelCaja {
                 }
             });
         }
+
+        function actualizarUIMetodoPago() {
+            const metodo = metodoPagoSelect ? metodoPagoSelect.value : 'EFECTIVO';
+            inputMetodoPagoHidden.value = metodo;
+            referenciaInput.value = '';
+            clienteSelect && (clienteSelect.value = '');
+            inputReferenciaHidden.value = '';
+            inputClienteHidden.value = '';
+            btnConfirmarPago.disabled = false;
+            modalInfo.style.display = 'none';
+            modalError.style.display = 'none';
+
+            if (metodo === 'EFECTIVO') {
+                grupoReferencia.style.display = 'none';
+                grupoCliente.style.display = 'none';
+                grupoRecibido && (grupoRecibido.style.display = 'block');
+                grupoCambio && (grupoCambio.style.display = 'block');
+                modalRecibido.type = 'number';
+                modalRecibido.readOnly = false;
+                modalRecibido.required = true;
+                modalRecibido.placeholder = '0';
+                btnConfirmarPago.disabled = true;
+                modalInfo.style.display = 'block';
+            } else if (metodo === 'TRANSFERENCIA' || metodo === 'TARJETA') {
+                grupoReferencia.style.display = 'block';
+                grupoCliente.style.display = 'none';
+                grupoRecibido && (grupoRecibido.style.display = 'none');
+                grupoCambio && (grupoCambio.style.display = 'none');
+                modalRecibido.type = 'number';
+                modalRecibido.readOnly = true;
+                modalRecibido.required = false;
+                modalRecibido.placeholder = '0';
+                modalRecibido.value = '';
+                modalCambio.value = '$0';
+                const totalElement = document.getElementById('modal-total');
+                const total = parseFloat(totalElement.textContent.replace('$', '').replace(/\./g, '')) || 0;
+                const hiddenRecibido = document.getElementById('input-monto-recibido');
+                if (hiddenRecibido) hiddenRecibido.value = total.toFixed(2);
+            } else if (metodo === 'MIXTO') {
+                grupoReferencia.style.display = 'block';
+                grupoCliente.style.display = 'none';
+                grupoRecibido && (grupoRecibido.style.display = 'block');
+                grupoCambio && (grupoCambio.style.display = 'block');
+                modalRecibido.type = 'number';
+                modalRecibido.readOnly = false;
+                modalRecibido.required = true;
+                modalRecibido.placeholder = '0';
+                btnConfirmarPago.disabled = true;
+                modalInfo.style.display = 'block';
+            } else if (metodo === 'CLIENTE_FRECUENTE') {
+                grupoReferencia.style.display = 'none';
+                grupoCliente.style.display = 'block';
+                grupoRecibido && (grupoRecibido.style.display = 'block');
+                grupoCambio && (grupoCambio.style.display = 'none');
+                modalRecibido.type = 'password';
+                modalRecibido.readOnly = true;
+                modalRecibido.required = false;
+                modalRecibido.value = '******';
+                modalRecibido.placeholder = '******';
+                modalCambio.value = '$0';
+                const hiddenRecibido = document.getElementById('input-monto-recibido');
+                if (hiddenRecibido) hiddenRecibido.value = '0';
+                btnConfirmarPago.disabled = true;
+                modalInfo.style.display = 'none';
+                modalError.style.display = 'none';
+            }
+        }
+
+        if (metodoPagoSelect) {
+            metodoPagoSelect.addEventListener('change', actualizarUIMetodoPago);
+        }
+
+        referenciaInput && referenciaInput.addEventListener('input', () => {
+            inputReferenciaHidden.value = referenciaInput.value.trim();
+        });
+        clienteSelect && clienteSelect.addEventListener('change', () => {
+            inputClienteHidden.value = clienteSelect.value;
+            if (metodoPagoSelect && metodoPagoSelect.value === 'CLIENTE_FRECUENTE') {
+                const opt = clienteSelect.options[clienteSelect.selectedIndex];
+                const saldoAttr = opt ? opt.getAttribute('data-saldo') : null;
+                const saldo = saldoAttr ? parseFloat(saldoAttr) : 0;
+                modalRecibido.type = 'password';
+                modalRecibido.value = '******';
+                modalRecibido.placeholder = '******';
+                const hiddenRecibido = document.getElementById('input-monto-recibido');
+                if (hiddenRecibido) hiddenRecibido.value = Number.isFinite(saldo) ? saldo.toFixed(2) : '0';
+                btnConfirmarPago.disabled = !clienteSelect.value;
+            }
+        });
 
         // Filtro de búsqueda en la tabla de pagos pendientes
         if (inputBusquedaPagos && tablaPagosPendientes) {

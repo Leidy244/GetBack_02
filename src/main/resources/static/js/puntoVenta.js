@@ -122,7 +122,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ========== PUNTO DE VENTA: FINALIZAR VENTA → ABRIR MODAL ==========
-    btnFinalizarVenta?.addEventListener('click', function () {
+    btnFinalizarVenta?.addEventListener('click', function (e) {
+        // Evitar conflicto con otros listeners que también están enlazados al mismo botón
+        // (por ejemplo, panel_caja.js). Asegura que solo este flujo de Punto de Venta se ejecute.
+        try { e.preventDefault(); e.stopImmediatePropagation(); } catch (ignored) {}
+
         if (carrito.length === 0) {
             alert('El carrito está vacío');
             return;
@@ -146,8 +150,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO');
-        modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
-        modalPuntoVentaInstance.show();
+        // Verificar que Bootstrap esté disponible y el modal exista
+        if (typeof bootstrap !== 'undefined' && modalConfirmarVenta) {
+            modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
+            modalPuntoVentaInstance.show();
+        } else {
+            alert('No se pudo abrir el modal de confirmación. Verifica la carga de Bootstrap.');
+        }
     });
 
     // ========== ENVIAR VENTA A PENDIENTES ==========
@@ -235,10 +244,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	    document.getElementById('modal-mesa-info').textContent = mesa;
 	    modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
 	    
-	    // Llenar campos del formulario
-	    document.getElementById('input-pedido-id').value = pedidoId;
-	    document.getElementById('input-total').value = total;
-	    document.getElementById('input-carrito').value = detalle;
+    // Llenar campos del formulario (solo los existentes)
+    const hiddenId = document.getElementById('input-pedido-id');
+    if (hiddenId) hiddenId.value = String(pedidoId);
 	    
 	    // Parsear y mostrar detalles del pedido
 	    mostrarDetallesPedido(detalle);
@@ -263,19 +271,24 @@ document.addEventListener('DOMContentLoaded', function () {
 	        return;
 	    }
 	    
-	    const recibido = parseFloat(modalRecibido.value) || 0;
-	    const total = pedidoActual.total;
+    const recibido = parseFloat(modalRecibido.value) || 0;
+    const total = pedidoActual.total;
+    const metodo = (document.getElementById('input-metodo-pago')?.value || 'EFECTIVO').toUpperCase();
 	    
 	    // Validaciones
-	    if (recibido <= 0) {
-	        alert('Ingrese el monto recibido');
-	        return;
-	    }
-	    
-	    if (recibido < total) {
-	        alert('El monto recibido es insuficiente');
-	        return;
-	    }
+    if (metodo === 'EFECTIVO' || metodo === 'MIXTO') {
+    if (metodo === 'EFECTIVO' || metodo === 'MIXTO') {
+        if (recibido <= 0) {
+            alert('Ingrese el monto recibido');
+            return;
+        }
+        
+        if (recibido < total) {
+            alert('El monto recibido es insuficiente');
+            return;
+        }
+    }
+    }
 	    
 	    // Mostrar loading
 	    const submitBtn = document.getElementById('btn-confirmar-pago');
@@ -320,8 +333,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========== PAGOS: CALCULAR CAMBIO EN TIEMPO REAL ==========
     modalRecibido?.addEventListener('input', function() {
         const total = pedidoActual ? pedidoActual.total : 0;
-        const recibido = parseFloat(this.value) || 0;
-        const cambio = recibido - total;
+    const recibido = parseFloat(this.value) || 0;
+    const metodo = (document.getElementById('input-metodo-pago')?.value || 'EFECTIVO').toUpperCase();
+    if (metodo !== 'EFECTIVO' && metodo !== 'MIXTO') {
+        return;
+    }
+    const cambio = recibido - total;
         
         if (cambio >= 0) {
             modalCambio.value = '$' + cambio.toLocaleString('es-CO');
@@ -451,4 +468,76 @@ document.addEventListener('DOMContentLoaded', function() {
     // Ejecutar después de un breve delay por si hay scripts que se ejecutan después
     setTimeout(mostrarTodasLasFilasPagos, 1000);
     setTimeout(mostrarTodasLasFilasPagos, 2000);
+});
+
+
+
+// ========== FUNCIONALIDAD PARA MOSTRAR MONTOS DEL ADMIN ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar botones de revelar monto para los pedidos del admin
+    function agregarBotonesRevelarMonto() {
+        document.querySelectorAll('.monto-oculto-admin').forEach(montoElement => {
+            // Verificar si ya tiene un botón
+            if (!montoElement.nextElementSibling || !montoElement.nextElementSibling.classList.contains('btn-revelar-admin')) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-secondary ms-1 btn-revelar-admin';
+                btn.title = "Mostrar monto real";
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+                
+                montoElement.parentNode.appendChild(btn);
+            }
+        });
+    }
+
+    // Manejar clic en botones de revelar monto del admin
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-revelar-admin')) {
+            const btn = e.target.closest('.btn-revelar-admin');
+            const montoElement = btn.previousElementSibling;
+            const montoReal = montoElement.getAttribute('data-monto-real');
+            
+            if (montoElement.textContent === '****') {
+                // Mostrar monto real
+                montoElement.textContent = '$' + parseFloat(montoReal).toLocaleString('es-CO');
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                btn.title = "Ocultar monto";
+                
+                // Ocultar después de 5 segundos
+                setTimeout(() => {
+                    if (montoElement.textContent !== '****') {
+                        montoElement.textContent = '****';
+                        btn.innerHTML = '<i class="fas fa-eye"></i>';
+                        btn.title = "Mostrar monto real";
+                    }
+                }, 5000);
+            } else {
+                // Ocultar monto
+                montoElement.textContent = '****';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+                btn.title = "Mostrar monto real";
+            }
+        }
+    });
+
+    // Agregar estilos
+    const style = document.createElement('style');
+    style.textContent = `
+        .monto-oculto-admin {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid #ffeaa7;
+        }
+        .btn-revelar-admin {
+            padding: 0.1rem 0.3rem;
+            font-size: 0.75rem;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Ejecutar después de que la página cargue
+    setTimeout(agregarBotonesRevelarMonto, 100);
 });

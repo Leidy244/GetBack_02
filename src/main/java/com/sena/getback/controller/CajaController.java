@@ -114,9 +114,8 @@ public class CajaController {
 	                .mapToDouble(f -> f.getTotalPagar().doubleValue()).sum();
 	        model.addAttribute("ingresosTotales", ingresosTotales);
 
-	        // Cantidad de pedidos pendientes de cobro
-	        long pedidosPendientesPago = pedidoService.obtenerPedidosPendientes().size();
-	        model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
+            long pedidosPendientesPago = pedidoService.obtenerPedidosCompletados().size();
+            model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
 
 	        long ventasCanceladas = facturas.stream().filter(f -> "CANCELADO".equals(f.getEstadoPago())).count();
 	        model.addAttribute("ventasCanceladas", ventasCanceladas);
@@ -126,23 +125,14 @@ public class CajaController {
 	                .collect(Collectors.toList());
 	        model.addAttribute("actividadReciente", actividadReciente);
 
-	        // Pedidos para mostrar en cards en el inicio
-	        List<Pedido> pedidosPendientesBarTodos = pedidoService.obtenerPedidosPendientesBar();
+            List<Pedido> pedidosPendientesBar = pedidoService.obtenerPedidosPendientesBar();
+            List<Pedido> pedidosCompletadosBar = pedidoService.obtenerPedidosCompletados();
 
-	        List<Pedido> pedidosPendientesBar = pedidosPendientesBarTodos.stream()
-	                .filter(p -> p.getId() != null && !pedidosCompletadosInicioCaja.contains(p.getId()))
-	                .collect(Collectors.toList());
+            model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
+            model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
 
-	        List<Pedido> pedidosCompletadosBar = pedidosPendientesBarTodos.stream()
-	                .filter(p -> p.getId() != null && pedidosCompletadosInicioCaja.contains(p.getId()))
-	                .collect(Collectors.toList());
-
-	        model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
-	        model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
-
-	        // Para el dashboard, "Pedidos Pendientes" refleja los pedidos de BAR aún no marcados como completados en el inicio
-	        long pedidosPendientes = pedidosPendientesBar.size();
-	        model.addAttribute("pedidosPendientes", pedidosPendientes);
+            long pedidosPendientes = pedidosPendientesBar.size();
+            model.addAttribute("pedidosPendientes", pedidosPendientes);
 	    }
 
 	    if ("punto-venta".equals(activeSection)) {
@@ -158,9 +148,10 @@ public class CajaController {
 	        // Las mesas ya están cargadas arriba ✅
 	    }
 
-	    if ("pagos".equals(activeSection)) {
-	        model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosPendientes());
-	    }
+        if ("pagos".equals(activeSection)) {
+            model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosCompletados());
+            model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
+        }
 
 	    if ("historial-pagos".equals(activeSection)) {
 	        List<Pedido> pagosPagados = pedidoService.obtenerPedidosPagados();
@@ -219,12 +210,23 @@ public class CajaController {
 	    return "caja/panel_caja";
 	}
 
-	@PostMapping("/pagar")
-	public String pagarPedido(@RequestParam("pedidoId") Integer pedidoId,
-			@RequestParam(value = "montoRecibido", required = false) Double montoRecibido) {
-		pedidoService.marcarPedidoComoPagado(pedidoId, montoRecibido);
-		return "redirect:/caja?section=pagos";
-	}
+    @PostMapping("/pagar")
+    public String pagarPedido(@RequestParam("pedidoId") Integer pedidoId,
+                              @RequestParam(value = "montoRecibido", required = false) Double montoRecibido,
+                              @RequestParam(value = "metodoPago", required = false) String metodoPago,
+                              @RequestParam(value = "referenciaPago", required = false) String referenciaPago,
+                              @RequestParam(value = "clienteId", required = false) Long clienteId,
+                              RedirectAttributes ra) {
+        try {
+            pedidoService.marcarPedidoComoPagadoConMetodo(pedidoId, metodoPago, montoRecibido, referenciaPago, clienteId);
+            ra.addFlashAttribute("success", "Pago registrado correctamente");
+        } catch (IllegalStateException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", "Error al registrar el pago: " + ex.getMessage());
+        }
+        return "redirect:/caja?section=pagos";
+    }
 
 	@PostMapping("/marcar-completado")
 	public String marcarPedidoComoCompletadoDesdeInicio(@RequestParam("pedidoId") Integer pedidoId,
@@ -395,26 +397,15 @@ public class CajaController {
             }
         }
 
-	        // 4. Asignar menú por defecto (si menu_id es NOT NULL en la entidad)
-	        // Si cambiaste la entidad para hacer menu_id nullable, puedes omitir esto
-	        Menu menuDefault = menuService.findAll().stream()
-	                .findFirst()
-	                .orElse(null);
-	        if (menuDefault != null) {
-	            pedido.setMenu(menuDefault);
-	            System.out.println("Menú asignado: " + menuDefault.getNombreProducto());
-	        } else {
-	            // Si no hay menús, crear uno genérico de emergencia
-	            System.out.println("⚠️ No hay menús disponibles, creando uno genérico");
-	            Menu menuEmergencia = new Menu();
-	            menuEmergencia.setNombreProducto("Varios Productos");
-	            menuEmergencia.setPrecio(0.0);
-	            menuEmergencia.setDescripcion("Pedido múltiple");
-	            menuEmergencia.setDisponible(true);
-	            // Guardar el menú de emergencia si es necesario
-	            // menuEmergencia = menuService.save(menuEmergencia);
-	            pedido.setMenu(menuEmergencia);
-	        }
+        // 4. Asignar menú por defecto solo si existe en BD
+        // Si no hay menús, dejar null para evitar referencias transientes
+        Menu menuDefault = menuService.findAll().stream().findFirst().orElse(null);
+        if (menuDefault != null) {
+            pedido.setMenu(menuDefault);
+            System.out.println("Menú asignado: " + menuDefault.getNombreProducto());
+        } else {
+            System.out.println("⚠️ No hay menús disponibles, se dejará menu=null para evitar errores");
+        }
 
 	        // 5. Guardar el carrito como JSON en el campo orden
 	        pedido.setOrden(items);

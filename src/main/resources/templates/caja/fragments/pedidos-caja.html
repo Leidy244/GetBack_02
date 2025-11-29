@@ -18,7 +18,7 @@
 
 					<div class="pedido-card-header">
 						<div>
-							<span class="pedido-mesa" th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</span>
+                            <span class="pedido-mesa" th:text="${pago.labelMesa}">Mesa</span>
 							<span class="pedido-fecha"
 							      th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}"
 							      th:title="${pago.fechaCreacion}">12/11/2025 18:30</span>
@@ -29,10 +29,10 @@
 					<div class="pedido-card-body">
 						<div class="pedido-detalle-resumen">
 							<button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"
-									th:attr="data-pedido-id=${pago.id}, 
-											 data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
-											 data-total=${pago.total},
-											 data-detalle=${pago.orden}">
+                                    th:attr="data-pedido-id=${pago.id}, 
+                                             data-mesa=${pago.labelMesa},
+                                             data-total=${pago.total},
+                                             data-detalle=${pago.orden}">
 								<span class="detalle-resumen-text">
 									Ver detalle del pedido
 								</span>
@@ -71,7 +71,7 @@
 
 					<div class="pedido-card-header pedido-toggle">
 						<div>
-							<span class="pedido-mesa" th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</span>
+                            <span class="pedido-mesa" th:text="${pago.labelMesa}">Mesa</span>
 							<span class="pedido-fecha"
 							      th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}"
 							      th:title="${pago.fechaCreacion}">12/11/2025 18:30</span>
@@ -85,13 +85,13 @@
 					<div class="pedido-card-body">
 						<div class="pedido-detalle-resumen">
 							<button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"
-									th:attr="data-origen='historial',
-											 data-pedido-id=${pago.id},
-											 data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
-											 data-total=${pago.total},
-											 data-recibido=${pago.montoRecibido},
-											 data-cambio=${pago.cambio},
-											 data-detalle=${pago.orden}">
+                                    th:attr="data-origen='historial',
+                                             data-pedido-id=${pago.id},
+                                             data-mesa=${pago.labelMesa},
+                                             data-total=${pago.total},
+                                             data-recibido=${pago.montoRecibido},
+                                             data-cambio=${pago.cambio},
+                                             data-detalle=${pago.orden}">
 								<span class="detalle-resumen-text">
 									Ver detalle del pedido
 								</span>
@@ -116,7 +116,7 @@
 
 			<div class="pedidos-empty" th:if="${pedidosPagadosBar == null or #lists.isEmpty(pedidosPagadosBar)}">
 				<i class="fas fa-inbox"></i>
-				<p>Aún no hay pedidos completados de BAR.</p>
+				<p>Aún no hay pedidos completados.</p>
 			</div>
 		</div>
 	</div>
