@@ -48,7 +48,7 @@
     /* Dimensiones */
     --sidebar-width: 260px;
     --header-height: 80px;
-    --container-max-width: 1200px;
+    --container-max-width: 2000px;
 }
 
 /* ===== MODO OSCURO ===== */
@@ -535,21 +535,45 @@ body.caja-theme {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.55rem 1.4rem;
+    padding: 0.5rem 1rem;
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: var(--primary-gradient);
     color: #ffffff;
     border: none;
     cursor: pointer;
     transition: var(--transition);
     font-weight: 600;
     font-size: 0.9rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-md);
+}
+
+/* Ocultar caret default de Bootstrap; usamos nuestro ícono */
+.user-profile.dropdown-toggle::after {
+    display: none;
+}
+
+.btn.user-profile {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    box-shadow: var(--shadow-md);
+}
+
+.btn.user-profile:focus {
+    outline: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.user-profile span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-profile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--shadow-lg);
 }
 
 .dropdown-arrow {
@@ -566,21 +590,20 @@ body.caja-theme {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #111827;
+    background: var(--primary-gradient);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
 }
 
 .user-dropdown .dropdown-menu {
-    background: #050708;
-    border: none;
-    border-radius: 0.9rem;
-    padding: 0.35rem 0.2rem 0.5rem;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem 0.25rem 0.6rem;
+    box-shadow: var(--shadow-md);
     min-width: 230px;
     position: absolute;
     right: 0;
@@ -589,7 +612,7 @@ body.caja-theme {
     list-style: none;
     opacity: 0;
     transform: translateY(-10px);
-    transition: all 0.25s ease-in-out;
+    transition: var(--transition);
 }
 
 .user-dropdown .dropdown-menu.show {
@@ -598,16 +621,16 @@ body.caja-theme {
 }
 
 .user-dropdown .dropdown-item {
-    color: #F9FAFB;
+    color: var(--text-primary);
     padding: 0.85rem 1rem;
     display: flex;
     align-items: center;
     gap: 0.7rem;
-    border-radius: 0.6rem;
+    border-radius: var(--border-radius-sm);
     font-size: 0.95rem;
     font-weight: 500;
     text-decoration: none;
-    transition: var(--transition-fast);
+    transition: var(--transition);
     margin: 0.15rem 0.65rem;
     width: calc(100% - 1.3rem);
     background: transparent;
@@ -615,20 +638,20 @@ body.caja-theme {
 
 .user-dropdown .dropdown-item i {
     font-size: 1rem;
-    color: var(--secondary-color);
-    transition: var(--transition-fast);
+    color: var(--primary-color);
+    transition: var(--transition);
     width: 20px;
     text-align: center;
 }
 
 .user-dropdown .dropdown-item:hover {
-    background: #111827;
+    background: var(--primary-gradient);
     color: #FFFFFF;
-    transform: translateX(4px);
+    transform: translateY(-2px);
 }
 
 .user-dropdown .dropdown-item:hover i {
-    color: var(--secondary-color);
+    color: #FFFFFF;
 }
 
 .user-dropdown .dropdown-divider {
@@ -704,8 +727,43 @@ body.caja-theme {
 }
 
 .content-area {
-    max-width: var(--container-max-width);
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 0 auto;
+}
+
+/* Contenedor de dashboard con mismas proporciones que admin */
+.dashboard-container {
+    width: 100% !important;
+    max-width: 2000px !important;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Estilo del badge de fecha/hora igual al admin */
+.dashboard-container .date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+}
+
+.dashboard-container .date-badge i {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    color: var(--text-secondary);
+}
+
+.dashboard-container .date-badge #dashboardDate {
+    font-weight: 600;
+    letter-spacing: .2px;
 }
 
 .content-section {
@@ -727,22 +785,24 @@ body.caja-theme {
    ESTILOS PARA INICIO-CAJA
 =========================== */
 .section-header {
-    margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-top: 0.1rem;
+    margin-top: 0.1rem;
 }
 
 .section-header h2 {
-    font-size: 1.75rem;
-    font-weight: 700;
     color: var(--text-primary);
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
 .section-header h2 i {
@@ -757,9 +817,25 @@ body.caja-theme {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.2rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+    margin-left: auto;
+    max-width: 720px;
+}
+
+/* Lista vertical a la derecha (como Admin) */
+.stats-list-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-left: auto;
+    width: 100%;
+    max-width: 360px;
+}
+
+@media (max-width: 992px) {
+    .stats-list-right { max-width: none; margin-left: 0; }
 }
 
 .stat-card-link {
@@ -776,14 +852,65 @@ body.caja-theme {
 
 .stat-card {
     background: var(--bg-primary);
-    border-radius: var(--border-radius);
-    padding: 1.1rem 1.2rem;
+    border-radius: 12px;
+    padding: 1.5rem;
     box-shadow: var(--shadow-md);
     display: flex;
     align-items: center;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     border: 1px solid var(--border-color);
     position: relative;
+    overflow: hidden;
+    min-height: 120px;
+}
+
+/* Tarjetas compactas a la derecha (como Admin) */
+.compact-stat-cards { align-items: flex-start; }
+
+.stat-card-compact {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.stat-card-compact::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.stat-card-compact:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+.stat-card-compact .stat-content { display: flex; align-items: center; gap: 0.6rem; height: 100%; }
+.stat-card-compact .stat-icon { width: 44px; height: 44px; border-radius: 10px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:#fff; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+.stat-card-compact .stat-info { flex: 1; }
+.stat-card-compact .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.stat-card-compact .stat-label { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+.stat-card-compact .stat-description { font-size: 0.8rem; color: var(--text-light); opacity: 0.8; }
+.stat-card-compact .stat-icon.sales { background: linear-gradient(135deg, #701BA4, #8d3bc5) !important; }
+.stat-card-compact .stat-icon.income { background: linear-gradient(135deg, #48BB78, #68D391) !important; }
+.stat-card-compact .stat-icon.pending { background: linear-gradient(135deg, #FF6B6B, #FF8E8E) !important; }
+.stat-card-compact .stat-icon.users { background: linear-gradient(135deg, #A0AEC0, #CBD5E0) !important; }
+
+@media (max-width: 992px) {
+    .compact-stat-cards { align-items: stretch; }
+    .stat-card-compact { max-width: none; }
 }
 
 .stat-card::before {
@@ -791,24 +918,25 @@ body.caja-theme {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 4px;
-    background: var(--primary-gradient);
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
 }
 
 .stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: var(--border-radius);
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1.5rem;
+    margin-right: 1rem;
     color: white;
     font-size: 1.5rem;
     flex-shrink: 0;
@@ -824,8 +952,8 @@ body.caja-theme {
 }
 
 .stat-info h3 {
-    font-size: 1.75rem;
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
@@ -918,20 +1046,26 @@ body.caja-theme {
 
 .table {
     width: 100%;
-    margin-bottom: 0;
+    border-collapse: collapse;
     background: var(--bg-primary);
+    margin-bottom: 0;
+    font-size: 0.85rem;
 }
 
 .table th {
-    background: var(--bg-tertiary);
-    border-bottom: 2px solid var(--border-color);
+    background: var(--primary-color);
+    color: #FFFFFF;
+    padding: 0.75rem 1rem;
+    text-align: left;
     font-weight: 600;
-    color: var(--text-primary);
-    padding: 1rem;
+    border: none;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .table td {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
     color: var(--text-primary);
@@ -939,7 +1073,18 @@ body.caja-theme {
 }
 
 .table tbody tr:hover td {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
+}
+
+/* Alinear tablas del dashboard al centro como en Admin */
+.dashboard-container .table th, .dashboard-container .table td {
+    text-align: center;
+}
+
+/* Tamaño de botón pequeño igual al Admin */
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
 }
 
 .badge {
@@ -1163,6 +1308,108 @@ body.caja-theme {
     height: 4px;
     background: var(--primary-gradient);
     border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+}
+
+/* Formulario de gastos */
+.gastos-card .card-body {
+    padding: 1rem 1.25rem;
+}
+
+.gastos-card .form-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.gastos-card .input-group-text {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.gastos-card .btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+}
+
+.gastos-card .btn-primary:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.gastos-card .card-header {
+    background: var(--primary-gradient);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.55rem 0.85rem;
+    border-radius: 12px;
+    margin: 0.25rem 0.25rem 0.9rem;
+    text-align: left;
+}
+
+.gastos-card .card-header::before {
+    display: none;
+}
+
+.gastos-card .form-control {
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.gastos-card .form-control:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(112, 27, 164, 0.12);
+}
+
+.gastos-card .input-group-text {
+    border: 1px solid var(--border-color);
+    border-right: 0;
+}
+
+.gastos-card .input-group .form-control {
+    border-left: 0;
+}
+
+.gastos-card .btn-light {
+    border: 1px solid var(--border-color);
+}
+
+.gastos-summary {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.gastos-summary-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.gasto-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.gasto-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-secondary);
+}
+
+.gasto-amount {
+    background: var(--primary-gradient);
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    font-weight: 700;
 }
 
 /* ==========================
@@ -1937,6 +2184,7 @@ html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
     .grid-productos {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 992px) {
@@ -1954,10 +2202,7 @@ html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
         width: 100%;
         padding: 1rem;
     }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); margin-left: 0; max-width: none; }
     
     .section-header {
         flex-direction: column;
@@ -1998,6 +2243,7 @@ html:not([data-theme="dark"]) .user-dropdown .dropdown-item {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 0.75rem;
     }
+    .stats-grid { grid-template-columns: 1fr; }
     
     .acciones-configuracion,
     .acciones-devoluciones,

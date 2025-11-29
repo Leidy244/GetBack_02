@@ -18,6 +18,9 @@ class PanelCaja {
 
         // Inicializar orden del historial de pagos si existe
         this.setupHistorialOrden();
+
+        // Inicializar formulario de gastos (auto fecha)
+        this.setupGastosForm();
     }
 
     setupEventListeners() {
@@ -60,6 +63,22 @@ class PanelCaja {
         this.setupPedidosCards();
         // Corte de caja (inicio/cierre de caja)
         this.setupCorteCaja();
+    }
+
+    // Auto fecha para gastos del día de trabajo
+    setupGastosForm() {
+        const hiddenFecha = document.getElementById('gastoFechaHidden');
+        const fechaText = document.getElementById('fechaTrabajoText');
+        if (!hiddenFecha) return;
+
+        const hoy = new Date();
+        const yyyy = hoy.getFullYear();
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        hiddenFecha.value = `${yyyy}-${mm}-${dd}`;
+        if (fechaText) {
+            fechaText.textContent = hoy.toLocaleDateString();
+        }
     }
 
     // Ordenar historial de pagos (más reciente / más viejo)

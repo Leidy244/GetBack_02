@@ -14,34 +14,113 @@
 			</div>
 		</div>
 
-		<!-- Tarjetas resumen (clicables) -->
-		<div class="stats-grid">
-			<a th:href="@{/caja(section='historial-pagos')}" class="stat-card stat-card-link" title="Ver historial de pagos">
-				<div class="stat-icon bg-primary"><i class="fas fa-dollar-sign"></i></div>
-				<div class="stat-info">
-					<h3 th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
-					<p>Ventas Hoy</p>
-					<small th:text="${ventasHoy} + ' ventas'">0 ventas</small>
-				</div>
-			</a>
-		
-			<a th:href="@{/caja(section='pedidos')}" class="stat-card stat-card-link" title="Ver pedidos pendientes y completados">
-				<div class="stat-icon bg-warning"><i class="fas fa-undo"></i></div>
-				<div class="stat-info">
-					<h3 th:text="${pedidosPendientes}">0</h3>
-					<p>Pedidos Pendientes</p>
-					<small>Pedidos en proceso</small>
-				</div>
-			</a>
-		
-			<a th:href="@{/caja(section='pagos')}" class="stat-card stat-card-link" title="Ir a pedidos pendientes de cobro">
-				<div class="stat-icon bg-success"><i class="fas fa-list"></i></div>
-				<div class="stat-info">
-					<h3 th:text="${pedidosPendientesPago}">0</h3>
-					<p>Pedidos por cobrar</p>
-					<small th:text="${pedidosPendientesPago} + ' pedidos pendientes'">0 pedidos pendientes</small>
-				</div>
-			</a>
-		</div>
+        <!-- Fila: formulario a la izquierda, tarjetas a la derecha -->
+        <div class="row mt-2 mb-2 g-3 align-items-stretch">
+            <!-- Izquierda: Formulario de gastos -->
+            <div class="col-12 col-lg-7 ps-lg-0">
+                <div class="card shadow-sm border-0 h-100 gastos-card">
+                    <div class="card-header"><i class="fas fa-wallet"></i> Gastos</div>
+                    <div class="card-body">
+                        <form id="gastosForm" action="#" method="post" autocomplete="off">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Concepto</label>
+                                    <input type="text" class="form-control" placeholder="Ej: Compra de insumos" name="concepto" required>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label">Fecha de ingreso</label>
+                                    <div class="form-control" id="fechaTrabajoText" style="pointer-events:none;">
+                                        Hoy
+                                    </div>
+                                    <input type="hidden" name="fecha" id="gastoFechaHidden">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label">Monto</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="monto" step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label">Método</label>
+                                    <select class="form-select" name="metodo" required>
+                                        <option value="EFECTIVO">Efectivo</option>
+                                        <option value="TARJETA">Tarjeta</option>
+                                        <option value="TRANSFERENCIA">Transferencia</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label">Nota</label>
+                                    <input type="text" class="form-control" name="nota" placeholder="Información adicional (opcional)">
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="fas fa-plus me-2"></i>Registrar Gasto</button>
+                                <button type="reset" class="btn btn-light rounded-pill px-3">Limpiar</button>
+                            </div>
+                        </form>
+                        <div class="gastos-summary">
+                            <div class="gastos-summary-title">Últimos gastos</div>
+                            <div th:if="${ultimosGastos != null}">
+                                <div class="gasto-item" th:each="g : ${ultimosGastos}">
+                                    <div class="gasto-meta">
+                                        <i class="fas fa-receipt"></i>
+                                        <span th:text="${g.concepto}">Concepto</span>
+                                        <small th:text="${#temporals.format(g.fecha,'dd/MM/yyyy')}">01/01/2025</small>
+                                    </div>
+                                    <div class="gasto-amount" th:text="'$' + ${#numbers.formatDecimal(g.monto,1,'COMMA',2,'POINT')}">$0.00</div>
+                                </div>
+                            </div>
+                            <div th:if="${ultimosGastos == null}">
+                                <div class="gasto-item">
+                                    <div class="gasto-meta"><i class="fas fa-receipt"></i><span>Compra de insumos</span><small>Hoy</small></div>
+                                    <div class="gasto-amount">$0.00</div>
+                                </div>
+                                <div class="gasto-item">
+                                    <div class="gasto-meta"><i class="fas fa-receipt"></i><span>Transporte</span><small>Ayer</small></div>
+                                    <div class="gasto-amount">$0.00</div>
+                                </div>
+                                <div class="gasto-item">
+                                    <div class="gasto-meta"><i class="fas fa-receipt"></i><span>Otros</span><small>Esta semana</small></div>
+                                    <div class="gasto-amount">$0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Derecha: Tarjetas resumen listadas -->
+            <div class="col-12 col-lg-5 pe-lg-0">
+                <div class="stats-list-right">
+            <a th:href="@{/caja(section='historial-pagos')}" class="stat-card stat-card-link" title="Ver historial de pagos">
+                <div class="stat-icon bg-primary"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-info">
+                    <h3 th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <p>Ventas Hoy</p>
+                    <small th:text="${ventasHoy} + ' ventas'">0 ventas</small>
+                </div>
+            </a>
+        
+            <a th:href="@{/caja(section='pedidos')}" class="stat-card stat-card-link" title="Ver pedidos pendientes y completados">
+                <div class="stat-icon bg-warning"><i class="fas fa-undo"></i></div>
+                <div class="stat-info">
+                    <h3 th:text="${pedidosPendientes}">0</h3>
+                    <p>Pedidos Pendientes</p>
+                    <small>Pedidos en proceso</small>
+                </div>
+            </a>
+        
+            <a th:href="@{/caja(section='pagos')}" class="stat-card stat-card-link" title="Ir a pedidos pendientes de cobro">
+                <div class="stat-icon bg-success"><i class="fas fa-list"></i></div>
+                <div class="stat-info">
+                    <h3 th:text="${pedidosPendientesPago}">0</h3>
+                    <p>Pedidos por cobrar</p>
+                    <small th:text="${pedidosPendientesPago} + ' pedidos pendientes'">0 pedidos pendientes</small>
+                </div>
+            </a>
+                </div>
+            </div>
+        </div>
 	</div>
 </section>
