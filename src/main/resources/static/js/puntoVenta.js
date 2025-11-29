@@ -1,366 +1,454 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // ========== VARIABLES GLOBALES ==========
     let carrito = JSON.parse(localStorage.getItem('carritoPOS') || '[]');
     let totalGlobal = 0;
+    let pedidoActual = null;
 
-    // ========== FUNCIONES PRINCIPALES ==========
+    // Elementos importantes - PUNTO DE VENTA
+    const itemsCarritoEl = document.getElementById('items-carrito');
+    const totalCarritoEl = document.getElementById('total-carrito');
+    const btnFinalizarVenta = document.getElementById('btn-finalizar-venta');
+    const btnVaciarCarrito = document.getElementById('btn-vaciar-carrito');
+
+    // Modal Punto de Venta y sus elementos
+    const modalConfirmarVenta = document.getElementById('modalConfirmarVenta');
+    const tbodyDetalle = document.getElementById('detalle-venta-modal');
+    const totalModal = document.getElementById('total-modal');
+    const btnConfirmarVentaReal = document.getElementById('btn-confirmar-venta-real');
+    const selectMesaVenta = document.getElementById('select-mesa-venta');
+
+    // Modal PAGOS y sus elementos
+    const modalPago = document.getElementById('modalPago');
+    const modalTotalPago = document.getElementById('modal-total');
+    const modalRecibido = document.getElementById('modal-recibido');
+    const modalCambio = document.getElementById('modal-cambio');
+    const detalleCarritoModal = document.getElementById('detalle-carrito-modal');
+    const formConfirmarPago = document.getElementById('form-confirmar-pago');
+
+    // Instancias de modales
+    let modalPuntoVentaInstance = null;
+    let modalPagoInstance = null;
+
+    // ========== RENDERIZAR CARRITO ==========
     function renderCarrito() {
-        const contenedor = document.getElementById('items-carrito');
-        const totalEl = document.getElementById('total-carrito');
-        const modalTotalEl = document.getElementById('modal-total');
-        
-        if (!contenedor) {
-            console.error("❌ NO SE ENCUENTRA items-carrito");
+        if (!itemsCarritoEl) return;
+
+        itemsCarritoEl.innerHTML = '';
+        totalGlobal = 0;
+
+        if (carrito.length === 0) {
+            itemsCarritoEl.innerHTML = '<div class="text-center text-muted p-4">Carrito vacío</div>';
+            if (totalCarritoEl) totalCarritoEl.textContent = '$0';
+            localStorage.setItem('carritoPOS', JSON.stringify(carrito));
             return;
         }
-        
-        contenedor.innerHTML = '';
-        totalGlobal = 0;
-        
-        console.log("📦 Renderizando carrito con", carrito.length, "productos");
-        
-        if (carrito && carrito.length > 0) {
-            carrito.forEach((item, index) => {
-                const precio = parseFloat(item.precio) || 0;
-                const cantidad = parseInt(item.cantidad) || 1;
-                const subtotal = precio * cantidad;
-                totalGlobal += subtotal;
-                
-                console.log(`   Producto ${index + 1}: ${cantidad} x ${item.nombre} = $${subtotal}`);
 
-                const div = document.createElement('div');
-                div.className = 'item-carrito d-flex justify-content-between align-items-center p-2 border-bottom';
-                div.innerHTML = `
-                    <div>
-                        <strong>${item.nombre}</strong>
-                    </div>
+        carrito.forEach((item, index) => {
+            const subtotal = item.precio * item.cantidad;
+            totalGlobal += subtotal;
 
-                    <div class="d-flex align-items-center">
-                        <button class="btn btn-sm btn-outline-secondary btn-restar" data-index="${index}">−</button>
-                        <span class="mx-2">${cantidad}</span>
-                        <button class="btn btn-sm btn-outline-secondary btn-sumar" data-index="${index}">+</button>
+            const div = document.createElement('div');
+            div.className = 'item-carrito d-flex justify-content-between align-items-center p-2 border-bottom';
+            div.innerHTML = `
+                <div><strong>${item.nombre}</strong></div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-secondary btn-restar" data-index="${index}">−</button>
+                    <span class="fw-bold">${item.cantidad}</span>
+                    <button class="btn btn-sm btn-outline-secondary btn-sumar" data-index="${index}">+</button>
+                    <strong class="text-success ms-2">$ ${subtotal.toLocaleString('es-CO')}</strong>
+                    <button class="btn btn-danger btn-sm ms-2 btn-eliminar" data-index="${index}">×</button>
+                </div>
+            `;
+            itemsCarritoEl.appendChild(div);
+        });
 
-                        <strong class="ms-3">$ ${subtotal.toLocaleString('es-CO')}</strong>
-
-                        <button class="btn btn-danger btn-sm ms-2 btn-eliminar" data-index="${index}">×</button>
-                    </div>
-                `;
-                contenedor.appendChild(div);
-            });
-        } else {
-            console.log("🛒 Carrito vacío");
-            contenedor.innerHTML = '<div class="text-center text-muted p-3">Carrito vacío</div>';
+        if (totalCarritoEl) {
+            totalCarritoEl.textContent = '$' + totalGlobal.toLocaleString('es-CO');
         }
-
-        const totalTexto = '$' + totalGlobal.toLocaleString('es-CO');
-        console.log("💰 TOTAL CALCULADO:", totalGlobal);
-        
-        if (totalEl) totalEl.textContent = totalTexto;
-        if (modalTotalEl) modalTotalEl.textContent = totalTexto;
-
         localStorage.setItem('carritoPOS', JSON.stringify(carrito));
     }
 
-    function eliminarItem(index) {
-        console.log("🗑️ Eliminando item:", index);
-        if (index >= 0 && index < carrito.length) {
-            carrito.splice(index, 1);
-            renderCarrito();
-        }
-    }
+    // ========== MODIFICAR CANTIDAD ==========
+    itemsCarritoEl?.addEventListener('click', e => {
+        const btn = e.target;
+        const index = parseInt(btn.dataset.index);
+        if (isNaN(index)) return;
 
-    function actualizarCantidad(index, cambio) {
-        if (index >= 0 && index < carrito.length) {
-            carrito[index].cantidad += cambio;
+        if (btn.classList.contains('btn-eliminar')) {
+            carrito.splice(index, 1);
+        } else if (btn.classList.contains('btn-sumar')) {
+            carrito[index].cantidad++;
+        } else if (btn.classList.contains('btn-restar')) {
+            carrito[index].cantidad--;
             if (carrito[index].cantidad <= 0) {
                 carrito.splice(index, 1);
             }
-            renderCarrito();
         }
-    }
+        renderCarrito();
+    });
 
-    // ========== EVENT LISTENERS PARA CARRITO ==========
-    document.getElementById('btn-vaciar-carrito')?.addEventListener('click', () => {
-        console.log("🔄 Vaciar carrito clickeado");
-        if (confirm('¿Está seguro de que desea vaciar el carrito?')) {
+    // ========== VACIAR CARRITO ==========
+    btnVaciarCarrito?.addEventListener('click', () => {
+        if (carrito.length === 0) return;
+        if (confirm('¿Vaciar el carrito?')) {
             carrito = [];
             totalGlobal = 0;
             localStorage.removeItem('carritoPOS');
             renderCarrito();
-            console.log("✅ Carrito vaciado");
         }
     });
 
-    // Delegación de eventos para sumar, restar y eliminar
-    document.getElementById('items-carrito')?.addEventListener('click', (e) => {
-        const btn = e.target;
-
-        // ELIMINAR
-        if (btn.classList.contains('btn-eliminar')) {
-            const index = parseInt(btn.dataset.index);
-            eliminarItem(index);
-            return;
-        }
-
-        // SUMAR
-        if (btn.classList.contains('btn-sumar')) {
-            const index = parseInt(btn.dataset.index);
-            actualizarCantidad(index, +1);
-            return;
-        }
-
-        // RESTAR
-        if (btn.classList.contains('btn-restar')) {
-            const index = parseInt(btn.dataset.index);
-            actualizarCantidad(index, -1);
-            return;
-        }
-    });
-
-    // Agregar productos al carrito
+    // ========== AGREGAR PRODUCTO ==========
     document.querySelectorAll('.btn-agregar').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const productoCard = this.closest('.producto-card');
-            const id = productoCard.getAttribute('data-id');
-            const nombre = productoCard.getAttribute('data-nombre');
-            const precio = parseFloat(productoCard.getAttribute('data-precio'));
+        btn.addEventListener('click', function () {
+            const card = this.closest('.producto-card');
+            const id = card.dataset.id;
+            const nombre = card.dataset.nombre;
+            const precio = parseFloat(card.dataset.precio);
 
-            console.log("🛍️ AGREGANDO PRODUCTO:", { id, nombre, precio });
-
-            if (isNaN(precio) || precio <= 0) {
-                console.error("💥 PRECIO INVÁLIDO:", precio);
-                alert('Error: Precio inválido');
+            if (!id || !nombre || isNaN(precio) || precio <= 0) {
+                alert('Error al agregar el producto');
                 return;
             }
 
-            const itemExistente = carrito.find(item => item.id === id);
-            if (itemExistente) {
-                itemExistente.cantidad++;
+            const existe = carrito.find(p => p.id === id);
+            if (existe) {
+                existe.cantidad++;
             } else {
                 carrito.push({ id, nombre, precio, cantidad: 1 });
             }
-
             renderCarrito();
         });
     });
 
-    // ========== FILTRO DE BÚSQUEDA ==========
-    const inputBusqueda = document.getElementById('buscar-productos');
-    const btnBuscar = document.getElementById('btn-buscar');
+    // ========== PUNTO DE VENTA: FINALIZAR VENTA → ABRIR MODAL ==========
+    btnFinalizarVenta?.addEventListener('click', function () {
+        if (carrito.length === 0) {
+            alert('El carrito está vacío');
+            return;
+        }
 
-    function filtrarProductos() {
-        const texto = inputBusqueda.value.toLowerCase().trim();
-        const productos = document.querySelectorAll('.producto-card');
+        totalGlobal = 0;
+        carrito.forEach(item => totalGlobal += item.precio * item.cantidad);
 
-        productos.forEach(card => {
-            const nombre = card.dataset.nombre.toLowerCase();
-            const descripcion = card.querySelector('p')?.textContent.toLowerCase() || '';
-
-            card.style.display =
-                nombre.includes(texto) || descripcion.includes(texto)
-                ? 'block'
-                : 'none';
+        // Actualizar detalles del pedido
+        tbodyDetalle.innerHTML = '';
+        carrito.forEach(item => {
+            const subtotal = item.precio * item.cantidad;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center fw-bold">${item.cantidad}</td>
+                <td>${item.nombre}</td>
+                <td class="text-end">$ ${item.precio.toLocaleString('es-CO')}</td>
+                <td class="text-end text-success fw-bold">$ ${subtotal.toLocaleString('es-CO')}</td>
+            `;
+            tbodyDetalle.appendChild(tr);
         });
+
+        totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO');
+        modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
+        modalPuntoVentaInstance.show();
+    });
+
+    // ========== ENVIAR VENTA A PENDIENTES ==========
+    btnConfirmarVentaReal?.addEventListener('click', function () {
+        if (carrito.length === 0) {
+            alert('El carrito está vacío');
+            return;
+        }
+
+        if (!confirm(`¿Enviar esta venta por $${totalGlobal.toLocaleString('es-CO')} a la lista de pendientes?`)) {
+            return;
+        }
+
+        // Obtener mesa seleccionada
+        const mesaId = selectMesaVenta ? selectMesaVenta.value : '';
+
+        // Crear formulario dinámicamente
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/caja/crear-pedido-pendiente-form';
+        form.style.display = 'none';
+
+        // Campo items
+        const itemsInput = document.createElement('input');
+        itemsInput.type = 'hidden';
+        itemsInput.name = 'items';
+        itemsInput.value = JSON.stringify(carrito);
+
+        // Campo total
+        const totalInput = document.createElement('input');
+        totalInput.type = 'hidden';
+        totalInput.name = 'total';
+        totalInput.value = totalGlobal;
+
+        // Campo mesa (opcional)
+        if (mesaId) {
+            const mesaInput = document.createElement('input');
+            mesaInput.type = 'hidden';
+            mesaInput.name = 'mesaId';
+            mesaInput.value = mesaId;
+            form.appendChild(mesaInput);
+        }
+
+        // Agregar campos al formulario
+        form.appendChild(itemsInput);
+        form.appendChild(totalInput);
+
+        // Mostrar loading en el botón
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando pedido...';
+        this.disabled = true;
+
+        // Agregar formulario al body y enviar después de un breve delay para mostrar el loading
+        setTimeout(() => {
+            document.body.appendChild(form);
+            form.submit();
+        }, 500);
+    });
+
+    // ========== PAGOS: CONECTAR BOTONES "COBRAR" ==========
+    document.querySelectorAll('.btn-abrir-modal-pago').forEach(button => {
+        button.addEventListener('click', function() {
+            const pedidoId = this.getAttribute('data-pedido-id');
+            const mesa = this.getAttribute('data-mesa');
+            const total = parseFloat(this.getAttribute('data-total'));
+            const detalle = this.getAttribute('data-detalle');
+            
+            abrirModalPago(pedidoId, mesa, total, detalle);
+        });
+    });
+
+	// ========== PAGOS: ABRIR MODAL DE PAGO ==========
+	function abrirModalPago(pedidoId, mesa, total, detalle) {
+	    pedidoActual = {
+	        id: pedidoId,
+	        mesa: mesa,
+	        total: total,
+	        detalle: detalle
+	    };
+	    
+	    console.log("💰 Abriendo modal de pago para pedido:", pedidoId);
+	    
+	    // Llenar datos en el modal
+	    document.getElementById('modal-pedido-id').textContent = pedidoId;
+	    document.getElementById('modal-mesa-info').textContent = mesa;
+	    modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
+	    
+	    // Llenar campos del formulario
+	    document.getElementById('input-pedido-id').value = pedidoId;
+	    document.getElementById('input-total').value = total;
+	    document.getElementById('input-carrito').value = detalle;
+	    
+	    // Parsear y mostrar detalles del pedido
+	    mostrarDetallesPedido(detalle);
+	    
+	    // Resetear campos
+	    modalRecibido.value = '';
+	    modalCambio.value = '$0';
+	    document.getElementById('modal-error').style.display = 'none';
+	    document.getElementById('modal-info').style.display = 'block';
+	    
+	    // Mostrar modal
+	    modalPagoInstance = new bootstrap.Modal(modalPago);
+	    modalPagoInstance.show();
+	}
+
+	// ========== PAGOS: MANEJAR ENVÍO DEL FORMULARIO ==========
+	formConfirmarPago?.addEventListener('submit', function(e) {
+	    e.preventDefault();
+	    
+	    if (!pedidoActual) {
+	        alert('Error: No hay pedido seleccionado');
+	        return;
+	    }
+	    
+	    const recibido = parseFloat(modalRecibido.value) || 0;
+	    const total = pedidoActual.total;
+	    
+	    // Validaciones
+	    if (recibido <= 0) {
+	        alert('Ingrese el monto recibido');
+	        return;
+	    }
+	    
+	    if (recibido < total) {
+	        alert('El monto recibido es insuficiente');
+	        return;
+	    }
+	    
+	    // Mostrar loading
+	    const submitBtn = document.getElementById('btn-confirmar-pago');
+	    const originalText = submitBtn.innerHTML;
+	    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+	    submitBtn.disabled = true;
+	    
+	    console.log("✅ Enviando pago para pedido:", pedidoActual.id);
+	    
+	    // Enviar formulario
+	    this.submit();
+	});
+
+    // ========== PAGOS: MOSTRAR DETALLES DEL PEDIDO ==========
+    function mostrarDetallesPedido(detalleJson) {
+        const contenedor = detalleCarritoModal;
+        contenedor.innerHTML = '';
+        
+        try {
+            const items = JSON.parse(detalleJson);
+            let html = '';
+            
+            items.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                html += `
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <div>
+                            <strong>${item.cantidad}x</strong> ${item.nombre}
+                        </div>
+                        <div>$ ${subtotal.toLocaleString('es-CO')}</div>
+                    </div>
+                `;
+            });
+            
+            contenedor.innerHTML = html;
+        } catch (error) {
+            console.error('Error al parsear detalles:', error);
+            contenedor.innerHTML = '<p class="text-muted">Error al cargar detalles</p>';
+        }
     }
 
-    inputBusqueda?.addEventListener('input', filtrarProductos);
-    btnBuscar?.addEventListener('click', filtrarProductos);
-
-    // ========== MODAL MÉTODOS DE PAGO ==========
-    const btnFinalizar = document.getElementById('btn-finalizar-venta');
-    const modalMetodosEl = document.getElementById('metodosPagoModal');
-    const modalPagoEl = document.getElementById('modalPago');
-
-    btnFinalizar?.addEventListener('click', function() {
-        console.log("🔄 Finalizar venta clickeado");
-        
-        renderCarrito();
-        
-        if (carrito.length === 0) {
-            alert('❌ Carrito vacío. Agregue productos antes de finalizar la venta.');
-            return;
-        }
-
-        if (totalGlobal <= 0) {
-            alert('❌ Error: El total debe ser mayor a 0');
-            return;
-        }
-
-        if (modalMetodosEl) {
-            const modal = new bootstrap.Modal(modalMetodosEl);
-            modal.show();
-        }
-    });
-
-    // ========== BOTÓN EFECTIVO ==========
-    const btnEfectivo = document.querySelector('#metodosPagoModal [data-metodo="EFECTIVO"]');
-    
-    btnEfectivo?.addEventListener('click', function() {
-        console.log("💰 Método efectivo seleccionado");
-        
-        const metodosModal = bootstrap.Modal.getInstance(modalMetodosEl);
-        if (metodosModal) metodosModal.hide();
-
-        const modalTotalEl = document.getElementById('modal-total');
-        if (modalTotalEl) modalTotalEl.textContent = '$' + totalGlobal.toLocaleString('es-CO');
-
-        const recibidoInput = document.getElementById('modal-recibido');
-        const cambioInput = document.getElementById('modal-cambio');
-        
-        if (recibidoInput) recibidoInput.value = '';
-        if (cambioInput) cambioInput.value = '$0';
-
-        if (modalPagoEl) {
-            const modalPago = new bootstrap.Modal(modalPagoEl);
-            modalPago.show();
-        }
-    });
-
-    // ========== CÁLCULO DE CAMBIO ==========
-    const recibidoInput = document.getElementById('modal-recibido');
-    const cambioInput = document.getElementById('modal-cambio');
-    
-    recibidoInput?.addEventListener('input', function() {
+    // ========== PAGOS: CALCULAR CAMBIO EN TIEMPO REAL ==========
+    modalRecibido?.addEventListener('input', function() {
+        const total = pedidoActual ? pedidoActual.total : 0;
         const recibido = parseFloat(this.value) || 0;
-
-        if (recibido >= totalGlobal) {
-            const cambio = recibido - totalGlobal;
-            if (cambioInput) cambioInput.value = '$' + cambio.toLocaleString('es-CO');
+        const cambio = recibido - total;
+        
+        if (cambio >= 0) {
+            modalCambio.value = '$' + cambio.toLocaleString('es-CO');
+            document.getElementById('input-monto-recibido').value = recibido;
+            document.getElementById('modal-error').style.display = 'none';
+            document.getElementById('modal-info').style.display = 'block';
         } else {
-            if (cambioInput) cambioInput.value = '$0';
+            modalCambio.value = '$0';
+            document.getElementById('input-monto-recibido').value = '';
+            document.getElementById('modal-error').style.display = 'block';
+            document.getElementById('modal-info').style.display = 'none';
         }
     });
 
-    // ========== FORMULARIO DE CONFIRMACIÓN ==========
-    const formConfirmar = document.getElementById('form-confirmar-pago');
-    
-    formConfirmar?.addEventListener('submit', function(e) {
+    // ========== PAGOS: MANEJAR ENVÍO DEL FORMULARIO ==========
+    formConfirmarPago?.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const montoRecibido = parseFloat(document.getElementById('modal-recibido').value) || 0;
-
-        if (carrito.length === 0) {
-            alert('❌ Error: Carrito vacío');
+        if (!pedidoActual) {
+            alert('Error: No hay pedido seleccionado');
             return;
         }
-
-        if (totalGlobal <= 0) {
-            alert('❌ Error: Total inválido');
-            return;
-        }
-
-        if (montoRecibido <= 0) {
-            alert('❌ Error: Ingrese monto recibido');
-            return;
-        }
-
-        if (montoRecibido < totalGlobal) {
-            alert('❌ Error: Monto insuficiente');
-            return;
-        }
-
-        const inputTotal = document.getElementById('input-total');
-        const inputMontoRecibido = document.getElementById('input-monto-recibido');
-        const inputCarrito = document.getElementById('input-carrito');
-        const inputMesaId = document.getElementById('hidden-mesa-id');
         
-        if (inputTotal) inputTotal.value = totalGlobal.toFixed(2);
-        if (inputMontoRecibido) inputMontoRecibido.value = montoRecibido.toFixed(2);
-        if (inputCarrito) inputCarrito.value = JSON.stringify(carrito);
-        if (inputMesaId) inputMesaId.value = document.getElementById('modal-mesa')?.value || '';
-
-        const confirmMessage = `¿Confirmar venta por $${totalGlobal.toLocaleString('es-CO')}?\nMonto recibido: $${montoRecibido.toLocaleString('es-CO')}\nCambio: $${(montoRecibido - totalGlobal).toLocaleString('es-CO')}`;
+        const recibido = parseFloat(modalRecibido.value) || 0;
+        const total = pedidoActual.total;
         
-        if (confirm(confirmMessage)) {
-            carrito = [];
-            totalGlobal = 0;
-            localStorage.removeItem('carritoPOS');
-            renderCarrito();
-            this.submit();
+        // Validaciones
+        if (recibido <= 0) {
+            alert('Ingrese el monto recibido');
+            return;
         }
+        
+        if (recibido < total) {
+            alert('El monto recibido es insuficiente');
+            return;
+        }
+        
+        // Mostrar loading
+        const submitBtn = document.getElementById('btn-confirmar-pago');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        submitBtn.disabled = true;
+        
+        // Enviar formulario
+        this.submit();
     });
 
-    // ========== CLIENTES FRECUENTES ==========
-    const inputBuscarCliente = document.getElementById('buscar-cliente-frecuente-pos');
-    const tbodyClientes = document.getElementById('clientesFrecuentesTableBody');
-
-    if (inputBuscarCliente && tbodyClientes) {
-        const filas = Array.from(tbodyClientes.querySelectorAll('tr[data-row]'));
-
-        function filtrarClientes() {
-            const q = (inputBuscarCliente.value || '').toLowerCase().trim();
-            filas.forEach(tr => {
-                const nombreTd = tr.querySelector('td');
-                const nombre = nombreTd ? (nombreTd.textContent || '').toLowerCase() : '';
-                tr.style.display = (!q || nombre.includes(q)) ? '' : 'none';
-            });
-        }
-
-        inputBuscarCliente.addEventListener('input', filtrarClientes);
-    }
-
-    // ========== PAGO CON ABONO ==========
-    modalMetodosEl?.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-pagar-con-abono');
-        if (!btn) return;
-
-        const clienteId = btn.getAttribute('data-cliente-id');
-        const clienteNombre = btn.getAttribute('data-cliente-nombre') || '';
-
-        let totalTexto = document.getElementById('total-carrito')?.textContent || '0';
-        totalTexto = totalTexto.replace('$', '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
-        const monto = parseFloat(totalTexto);
-
-        if (isNaN(monto) || monto <= 0) {
-            alert('El total de la venta debe ser mayor que 0 para poder pagar con abono.');
-            return;
-        }
-
-        if (!clienteId) {
-            alert('No se encontró el cliente.');
-            return;
-        }
-
-        const ok = confirm(
-            '¿Deseas descontar $' + monto.toFixed(2) +
-            ' del saldo de "' + clienteNombre + '"?'
-        );
-        if (!ok) return;
-
-        const form = document.createElement('form');
-        form.method = 'post';
-        form.action = '/admin/clientes/consumo';
-
-        const inputId = document.createElement('input');
-        inputId.type = 'hidden';
-        inputId.name = 'clienteId';
-        inputId.value = clienteId;
-        form.appendChild(inputId);
-
-        const inputMonto = document.createElement('input');
-        inputMonto.type = 'hidden';
-        inputMonto.name = 'monto';
-        inputMonto.value = monto.toFixed(2);
-        form.appendChild(inputMonto);
-
-        const inputDesc = document.createElement('input');
-        inputDesc.type = 'hidden';
-        inputDesc.name = 'descripcion';
-        inputDesc.value = 'Consumo desde caja - Punto de venta';
-        form.appendChild(inputDesc);
-
-        const inputFromCaja = document.createElement('input');
-        inputFromCaja.type = 'hidden';
-        inputFromCaja.name = 'fromCaja';
-        inputFromCaja.value = 'true';
-        form.appendChild(inputFromCaja);
-
-        document.body.appendChild(form);
-        form.submit();
+    // ========== BÚSQUEDA DE PRODUCTOS ==========
+    document.getElementById('buscar-productos')?.addEventListener('input', function () {
+        const texto = this.value.toLowerCase().trim();
+        document.querySelectorAll('.producto-card').forEach(card => {
+            const nombre = (card.dataset.nombre || '').toLowerCase();
+            const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
+            card.style.display = (nombre.includes(texto) || desc.includes(texto)) ? 'block' : 'none';
+        });
     });
 
-    // ========== INICIALIZACIÓN ==========
-    console.log("🎬 INICIALIZANDO PUNTO DE VENTA...");
+    // ========== FILTRAR TABLA DE PAGOS ==========
+    document.getElementById('busqueda-pagos')?.addEventListener('input', function() {
+        const filtro = this.value.toLowerCase();
+        const filas = document.querySelectorAll('#tabla-pagos-pendientes tbody tr');
+        
+        filas.forEach(fila => {
+            const textoFila = fila.textContent.toLowerCase();
+            if (textoFila.includes(filtro)) {
+                fila.style.display = '';
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+    });
+
+    // ========== INICIALIZAR ==========
     renderCarrito();
-    console.log("✅ PUNTO DE VENTA INICIALIZADO");
+    console.log("Sistema de Punto de Venta y Pagos cargado y listo");
+});
+
+
+
+
+// Agrega esto al final de tu puntoVenta.js
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔍 Forzando visibilidad de la tabla de pagos...");
+    
+    // Función para mostrar todas las filas
+    function mostrarTodasLasFilasPagos() {
+        const tabla = document.getElementById('tabla-pagos-pendientes');
+        if (!tabla) {
+            console.log("❌ No se encontró la tabla de pagos");
+            return;
+        }
+        
+        const filas = tabla.querySelectorAll('tbody tr');
+        console.log(`📊 Filas encontradas en la tabla: ${filas.length}`);
+        
+        // Forzar mostrar todas las filas
+        filas.forEach((fila, index) => {
+            fila.style.display = 'table-row';
+            fila.style.visibility = 'visible';
+            fila.style.opacity = '1';
+            fila.style.height = 'auto';
+            
+            // Debug: mostrar información de cada fila
+            const celdas = fila.querySelectorAll('td');
+            console.log(`   Fila ${index + 1}:`, {
+                id: celdas[0]?.textContent,
+                mesa: celdas[1]?.textContent,
+                total: celdas[3]?.textContent
+            });
+        });
+        
+        // Remover cualquier estilo que oculte el tbody
+        const tbody = tabla.querySelector('tbody');
+        if (tbody) {
+            tbody.style.display = 'table-row-group';
+            tbody.style.visibility = 'visible';
+            tbody.style.opacity = '1';
+        }
+    }
+    
+    // Ejecutar inmediatamente
+    mostrarTodasLasFilasPagos();
+    
+    // Ejecutar después de que la página cargue completamente
+    window.addEventListener('load', mostrarTodasLasFilasPagos);
+    
+    // Ejecutar después de un breve delay por si hay scripts que se ejecutan después
+    setTimeout(mostrarTodasLasFilasPagos, 1000);
+    setTimeout(mostrarTodasLasFilasPagos, 2000);
 });

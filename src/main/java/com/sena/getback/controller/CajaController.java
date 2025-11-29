@@ -2,6 +2,7 @@ package com.sena.getback.controller;
 
 import com.sena.getback.model.Estado;
 import com.sena.getback.model.Factura;
+import com.sena.getback.model.Menu;
 import com.sena.getback.model.Mesa;
 import com.sena.getback.model.Pedido;
 import com.sena.getback.model.Usuario;
@@ -11,37 +12,35 @@ import com.sena.getback.repository.UsuarioRepository;
 import com.sena.getback.service.MenuService;
 import com.sena.getback.service.MesaService;
 import com.sena.getback.service.CategoriaService;
-import com.sena.getback.service.FacturaService;
 import com.sena.getback.service.PedidoService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sena.getback.repository.ClienteFrecuenteRepository;
 import com.sena.getback.repository.EstadoRepository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAdjusters;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 @RequestMapping("/caja")
@@ -78,146 +77,146 @@ public class CajaController {
 
 	@GetMapping
 	public String panelCaja(@RequestParam(required = false) String section,
-			@RequestParam(required = false) String categoria, @RequestParam(required = false) String filtro,
-			Model model) {
+	        @RequestParam(required = false) String categoria, @RequestParam(required = false) String filtro,
+	        Model model) {
 
-		String activeSection = (section != null && !section.isEmpty()) ? section : "inicio-caja";
-		model.addAttribute("activeSection", activeSection);
-		model.addAttribute("title", "Panel principal - Cajero");
+	    String activeSection = (section != null && !section.isEmpty()) ? section : "inicio-caja";
+	    model.addAttribute("activeSection", activeSection);
+	    model.addAttribute("title", "Panel principal - Cajero");
+	    
+	    // ✅ SIEMPRE CARGAR LAS MESAS PARA EL MODAL
+	    model.addAttribute("mesas", mesaService.findAll());
 
-		if ("inicio-caja".equals(activeSection) || "pedidos".equals(activeSection)) {
-			List<Factura> facturas = facturaRepository.findAll();
-			List<Pedido> pedidos = pedidoRepository.findAll();
-			long totalUsuarios = usuarioRepository.count();
+	    if ("inicio-caja".equals(activeSection) || "pedidos".equals(activeSection)) {
+	        List<Factura> facturas = facturaRepository.findAll();
+	        List<Pedido> pedidos = pedidoRepository.findAll();
+	        long totalUsuarios = usuarioRepository.count();
 
-			long totalVentas = facturas.size();
-			model.addAttribute("totalVentas", totalVentas);
-			model.addAttribute("totalUsuarios", totalUsuarios);
+	        long totalVentas = facturas.size();
+	        model.addAttribute("totalVentas", totalVentas);
+	        model.addAttribute("totalUsuarios", totalUsuarios);
 
-			// Ventas del día basadas en los pedidos pagados que genera caja
-			List<Pedido> pedidosPagados = pedidoService.obtenerPedidosPagados();
-			LocalDate hoy = LocalDate.now();
+	        // Ventas del día basadas en los pedidos pagados que genera caja
+	        List<Pedido> pedidosPagados = pedidoService.obtenerPedidosPagados();
+	        LocalDate hoy = LocalDate.now();
 
-			long ventasHoy = pedidosPagados.stream()
-					.filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-					.count();
-			model.addAttribute("ventasHoy", ventasHoy);
+	        long ventasHoy = pedidosPagados.stream()
+	                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
+	                .count();
+	        model.addAttribute("ventasHoy", ventasHoy);
 
-			double ingresosHoy = pedidosPagados.stream()
-					.filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-					.mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0).sum();
-			model.addAttribute("ingresosHoy", ingresosHoy);
+	        double ingresosHoy = pedidosPagados.stream()
+	                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
+	                .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0).sum();
+	        model.addAttribute("ingresosHoy", ingresosHoy);
 
-			double ingresosTotales = facturas.stream().filter(f -> "PAGADO".equals(f.getEstadoPago()))
-					.mapToDouble(f -> f.getTotalPagar().doubleValue()).sum();
-			model.addAttribute("ingresosTotales", ingresosTotales);
+	        double ingresosTotales = facturas.stream().filter(f -> "PAGADO".equals(f.getEstadoPago()))
+	                .mapToDouble(f -> f.getTotalPagar().doubleValue()).sum();
+	        model.addAttribute("ingresosTotales", ingresosTotales);
 
-			// Cantidad de pedidos pendientes de cobro (se usa en la tarjeta verde del
-			// dashboard y en la sección Pagos)
-			long pedidosPendientesPago = pedidoService.obtenerPedidosPendientes().size();
-			model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
+	        // Cantidad de pedidos pendientes de cobro
+	        long pedidosPendientesPago = pedidoService.obtenerPedidosPendientes().size();
+	        model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
 
-			long ventasCanceladas = facturas.stream().filter(f -> "CANCELADO".equals(f.getEstadoPago())).count();
-			model.addAttribute("ventasCanceladas", ventasCanceladas);
+	        long ventasCanceladas = facturas.stream().filter(f -> "CANCELADO".equals(f.getEstadoPago())).count();
+	        model.addAttribute("ventasCanceladas", ventasCanceladas);
 
-			List<Factura> actividadReciente = facturas.stream()
-					.sorted(Comparator.comparing(Factura::getFechaEmision).reversed()).limit(5)
-					.collect(Collectors.toList());
-			model.addAttribute("actividadReciente", actividadReciente);
+	        List<Factura> actividadReciente = facturas.stream()
+	                .sorted(Comparator.comparing(Factura::getFechaEmision).reversed()).limit(5)
+	                .collect(Collectors.toList());
+	        model.addAttribute("actividadReciente", actividadReciente);
 
-			// Pedidos para mostrar en cards en el inicio
-			List<Pedido> pedidosPendientesBarTodos = pedidoService.obtenerPedidosPendientesBar();
+	        // Pedidos para mostrar en cards en el inicio
+	        List<Pedido> pedidosPendientesBarTodos = pedidoService.obtenerPedidosPendientesBar();
 
-			List<Pedido> pedidosPendientesBar = pedidosPendientesBarTodos.stream()
-					.filter(p -> p.getId() != null && !pedidosCompletadosInicioCaja.contains(p.getId()))
-					.collect(Collectors.toList());
+	        List<Pedido> pedidosPendientesBar = pedidosPendientesBarTodos.stream()
+	                .filter(p -> p.getId() != null && !pedidosCompletadosInicioCaja.contains(p.getId()))
+	                .collect(Collectors.toList());
 
-			List<Pedido> pedidosCompletadosBar = pedidosPendientesBarTodos.stream()
-					.filter(p -> p.getId() != null && pedidosCompletadosInicioCaja.contains(p.getId()))
-					.collect(Collectors.toList());
+	        List<Pedido> pedidosCompletadosBar = pedidosPendientesBarTodos.stream()
+	                .filter(p -> p.getId() != null && pedidosCompletadosInicioCaja.contains(p.getId()))
+	                .collect(Collectors.toList());
 
-			model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
-			model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
+	        model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
+	        model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
 
-			// Para el dashboard, "Pedidos Pendientes" refleja los pedidos de BAR aún no
-			// marcados como completados en el inicio
-			long pedidosPendientes = pedidosPendientesBar.size();
-			model.addAttribute("pedidosPendientes", pedidosPendientes);
-		}
+	        // Para el dashboard, "Pedidos Pendientes" refleja los pedidos de BAR aún no marcados como completados en el inicio
+	        long pedidosPendientes = pedidosPendientesBar.size();
+	        model.addAttribute("pedidosPendientes", pedidosPendientes);
+	    }
 
-		if ("punto-venta".equals(activeSection)) {
-			model.addAttribute("categorias", categoriaService.findAll());
+	    if ("punto-venta".equals(activeSection)) {
+	        model.addAttribute("categorias", categoriaService.findAll());
 
-			if (categoria != null && !categoria.isEmpty()) {
-				model.addAttribute("menus", menuService.findByCategoriaNombre(categoria));
-			} else {
-				model.addAttribute("menus", menuService.findAll());
-			}
+	        if (categoria != null && !categoria.isEmpty()) {
+	            model.addAttribute("menus", menuService.findByCategoriaNombre(categoria));
+	        } else {
+	            model.addAttribute("menus", menuService.findAll());
+	        }
 
-			model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
-			model.addAttribute("mesas", mesaService.findAll());
-		}
+	        model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
+	        // Las mesas ya están cargadas arriba ✅
+	    }
 
-		if ("pagos".equals(activeSection)) {
-			model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosPendientes());
-		}
+	    if ("pagos".equals(activeSection)) {
+	        model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosPendientes());
+	    }
 
-		if ("historial-pagos".equals(activeSection)) {
-			List<Pedido> pagosPagados = pedidoService.obtenerPedidosPagados();
+	    if ("historial-pagos".equals(activeSection)) {
+	        List<Pedido> pagosPagados = pedidoService.obtenerPedidosPagados();
 
-			if (filtro != null && !filtro.isEmpty()) {
-				LocalDate hoy = LocalDate.now();
+	        if (filtro != null && !filtro.isEmpty()) {
+	            LocalDate hoy = LocalDate.now();
 
-				if (filtro.equalsIgnoreCase("hoy")) {
-					pagosPagados = pagosPagados.stream()
-							.filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-							.collect(Collectors.toList());
+	            if (filtro.equalsIgnoreCase("hoy")) {
+	                pagosPagados = pagosPagados.stream()
+	                        .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
+	                        .collect(Collectors.toList());
 
-				} else if (filtro.equalsIgnoreCase("semana")) {
-					// Rango de la semana actual: lunes a domingo
-					LocalDate inicioSemana = hoy.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-					LocalDate finSemana = hoy.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+	            } else if (filtro.equalsIgnoreCase("semana")) {
+	                LocalDate inicioSemana = hoy.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+	                LocalDate finSemana = hoy.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
-					pagosPagados = pagosPagados.stream().filter(p -> p.getFechaCreacion() != null).filter(p -> {
-						LocalDate fecha = p.getFechaCreacion().toLocalDate();
-						return (fecha.isEqual(inicioSemana) || fecha.isAfter(inicioSemana))
-								&& (fecha.isEqual(finSemana) || fecha.isBefore(finSemana));
-					}).collect(Collectors.toList());
+	                pagosPagados = pagosPagados.stream().filter(p -> p.getFechaCreacion() != null).filter(p -> {
+	                    LocalDate fecha = p.getFechaCreacion().toLocalDate();
+	                    return (fecha.isEqual(inicioSemana) || fecha.isAfter(inicioSemana))
+	                            && (fecha.isEqual(finSemana) || fecha.isBefore(finSemana));
+	                }).collect(Collectors.toList());
 
-				} else if (filtro.equalsIgnoreCase("mes")) {
-					pagosPagados = pagosPagados.stream().filter(p -> p.getFechaCreacion() != null).filter(p -> {
-						LocalDate fecha = p.getFechaCreacion().toLocalDate();
-						return fecha.getYear() == hoy.getYear() && fecha.getMonth() == hoy.getMonth();
-					}).collect(Collectors.toList());
+	            } else if (filtro.equalsIgnoreCase("mes")) {
+	                pagosPagados = pagosPagados.stream().filter(p -> p.getFechaCreacion() != null).filter(p -> {
+	                    LocalDate fecha = p.getFechaCreacion().toLocalDate();
+	                    return fecha.getYear() == hoy.getYear() && fecha.getMonth() == hoy.getMonth();
+	                }).collect(Collectors.toList());
 
-				} else if (filtro.equalsIgnoreCase("anio")) {
-					pagosPagados = pagosPagados.stream().filter(p -> p.getFechaCreacion() != null)
-							.filter(p -> p.getFechaCreacion().toLocalDate().getYear() == hoy.getYear())
-							.collect(Collectors.toList());
-				}
-			}
+	            } else if (filtro.equalsIgnoreCase("anio")) {
+	                pagosPagados = pagosPagados.stream().filter(p -> p.getFechaCreacion() != null)
+	                        .filter(p -> p.getFechaCreacion().toLocalDate().getYear() == hoy.getYear())
+	                        .collect(Collectors.toList());
+	            }
+	        }
 
-			model.addAttribute("pagosPagados", pagosPagados);
-			model.addAttribute("filtro", filtro);
-		}
+	        model.addAttribute("pagosPagados", pagosPagados);
+	        model.addAttribute("filtro", filtro);
+	    }
 
-		if ("corte-caja".equals(activeSection)) {
-			LocalDate hoy = LocalDate.now();
+	    if ("corte-caja".equals(activeSection)) {
+	        LocalDate hoy = LocalDate.now();
 
-			List<Pedido> pagosPagadosHoy = pedidoService.obtenerPedidosPagados().stream()
-					.filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
-					.collect(Collectors.toList());
+	        List<Pedido> pagosPagadosHoy = pedidoService.obtenerPedidosPagados().stream()
+	                .filter(p -> p.getFechaCreacion() != null && p.getFechaCreacion().toLocalDate().equals(hoy))
+	                .collect(Collectors.toList());
 
-			long ventasDia = pagosPagadosHoy.size();
-			double ingresosDia = pagosPagadosHoy.stream().mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
-					.sum();
+	        long ventasDia = pagosPagadosHoy.size();
+	        double ingresosDia = pagosPagadosHoy.stream().mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
+	                .sum();
 
-			model.addAttribute("fechaCorte", hoy);
-			model.addAttribute("ventasDia", ventasDia);
-			model.addAttribute("ingresosDia", ingresosDia);
-		}
+	        model.addAttribute("fechaCorte", hoy);
+	        model.addAttribute("ventasDia", ventasDia);
+	        model.addAttribute("ingresosDia", ingresosDia);
+	    }
 
-		return "caja/panel_caja";
+	    return "caja/panel_caja";
 	}
 
 	@PostMapping("/pagar")
@@ -252,117 +251,202 @@ public class CajaController {
 	}
 
 	// VENTA RÁPIDA DESDE PUNTO DE VENTA
-	@PostMapping("/punto-venta/registrar")
-	public String registrarVentaRapida(@RequestParam("total") Double total,
-			@RequestParam("montoRecibido") Double montoRecibido,
-			@RequestParam(value = "mesaId", required = false) Integer mesaId,
-			@RequestParam(value = "metodoPago", defaultValue = "EFECTIVO") String metodoPago,
-			@RequestParam("carrito") String carrito, HttpSession session, RedirectAttributes ra) {
+    @PostMapping("/crear-pedido-pendiente")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> crearPedidoPendiente(@RequestBody Map<String, Object> requestData,
+                                                                   HttpSession session) {
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "mensaje", "Usuario no autenticado"));
+            }
 
-		try {
-			System.out.println("=== DATOS RECIBIDOS ===");
-			System.out.println("Total: " + total);
-			System.out.println("Monto recibido: " + montoRecibido);
-			System.out.println("Mesa ID: " + mesaId);
-			System.out.println("Método pago: " + metodoPago);
-			System.out.println("Carrito: " + carrito);
+	        System.out.println("=== CREANDO PEDIDO PENDIENTE ===");
+	        System.out.println("Datos recibidos: " + requestData);
 
-			// OBTENER USUARIO DESDE LA SESIÓN HTTP
-			Usuario cajero = (Usuario) session.getAttribute("usuarioLogueado");
+	        // Crear pedido básico
+            Pedido pedido = new Pedido();
+            pedido.setTotal(Double.valueOf(requestData.get("total").toString()));
+            pedido.setComentariosGenerales("Pedido desde punto de venta");
+            pedido.setFechaCreacion(LocalDateTime.now());
+            pedido.setUsuario(usuario);
 
-			if (cajero == null) {
-				ra.addFlashAttribute("mensajeError", "Usuario no autenticado. Por favor inicie sesión.");
-				return "redirect:/caja?section=punto-venta";
-			}
+	        // Buscar estado PENDIENTE
+	        Estado estadoPendiente = estadoRepository.findAll().stream()
+	                .filter(estado -> "PENDIENTE".equals(estado.getNombreEstado()))
+	                .findFirst()
+	                .orElseGet(() -> {
+	                    Estado nuevoEstado = new Estado();
+	                    nuevoEstado.setNombreEstado("PENDIENTE");
+	                    return estadoRepository.save(nuevoEstado);
+	                });
 
-			System.out.println("Cajero desde sesión: " + cajero.getNombre() + " " + cajero.getApellido());
+            pedido.setEstado(estadoPendiente);
 
-			// Validar datos esenciales
-			if (total == null || total <= 0) {
-				ra.addFlashAttribute("mensajeError", "Total inválido");
-				return "redirect:/caja?section=punto-venta";
-			}
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                String ordenJson = mapper.writeValueAsString(requestData);
+                pedido.setOrden(ordenJson);
+            } catch (Exception ex) {
+                pedido.setOrden(requestData.toString());
+            }
 
-			if (montoRecibido == null || montoRecibido < total) {
-				ra.addFlashAttribute("mensajeError", "Monto recibido insuficiente");
-				return "redirect:/caja?section=punto-venta";
-			}
+            Object mesaIdObj = requestData.get("mesaId");
+            if (mesaIdObj != null) {
+                try {
+                    Integer mesaId = Integer.valueOf(String.valueOf(mesaIdObj));
+                    Mesa mesaSeleccionada = mesaService.findById(mesaId).orElse(null);
+                    if (mesaSeleccionada != null) {
+                        pedido.setMesa(mesaSeleccionada);
+                    }
+                } catch (Exception ignored) {}
+            }
+            if (pedido.getMesa() == null) {
+                Mesa mesaBar = mesaService.findAll().stream()
+                        .filter(m -> (m.getDescripcion() != null && (
+                                            m.getDescripcion().equalsIgnoreCase("Bar") ||
+                                            m.getDescripcion().equalsIgnoreCase("Barra") ||
+                                            m.getDescripcion().equalsIgnoreCase("Mostrador")))
+                                || (m.getNumero() != null && (
+                                            m.getNumero().equalsIgnoreCase("Bar") ||
+                                            m.getNumero().equalsIgnoreCase("Barra"))) )
+                        .findFirst()
+                        .orElse(null);
+                if (mesaBar != null) {
+                    pedido.setMesa(mesaBar);
+                }
+            }
 
-			// 1. Crear el Pedido
-			Pedido pedido = new Pedido();
-			pedido.setTotal(total);
-			pedido.setMontoRecibido(montoRecibido);
-			pedido.setCambio(montoRecibido - total);
-			pedido.setComentariosGenerales("Venta rápida - POS");
-			pedido.setFechaCreacion(LocalDateTime.now());
-			pedido.setUsuario(cajero); // ASIGNAR EL CAJERO DESDE LA SESIÓN
+	        // Guardar pedido
+            pedido = pedidoRepository.save(pedido);
 
-			// Estado PAGADO - CÓDIGO CORREGIDO
-			// SOLUCIÓN 1: Buscar manualmente en la lista de estados
-			List<Estado> todosEstados = estadoRepository.findAll();
-			Estado estadoPagado = todosEstados.stream().filter(estado -> "PAGADO".equals(estado.getNombreEstado()))
-					.findFirst().orElse(null);
+	        System.out.println("✅ Pedido pendiente creado con ID: " + pedido.getId());
 
-			// Si no existe estado PAGADO → crearlo
-			if (estadoPagado == null) {
-			    estadoPagado = new Estado();
-			    estadoPagado.setNombreEstado("PAGADO");
-			    estadoPagado = estadoRepository.save(estadoPagado);
-			    System.out.println("✅ Estado PAGADO creado con ID: " + estadoPagado.getId());
-			}
+	        return ResponseEntity.ok(Map.of("success", true, "mensaje", "Pedido creado exitosamente"));
 
-			// 💥 SIEMPRE asignar el estado al pedido (esté dentro o fuera del IF)
-			pedido.setEstado(estadoPagado);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(500).body(Map.of("success", false, "mensaje", "Error: " + e.getMessage()));
+	    }
+	}
+	
+	@PostMapping("/crear-pedido-pendiente-form")
+	public String crearPedidoPendienteForm(@RequestParam String items,
+	                                      @RequestParam Double total,
+	                                      @RequestParam(required = false) Integer mesaId,
+	                                      HttpSession session,
+	                                      RedirectAttributes ra) {
+	    try {
+	        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+	        if (usuario == null) {
+	            ra.addFlashAttribute("error", "Usuario no autenticado");
+	            return "redirect:/login";
+	        }
 
-			// Mesa opcional
-			if (mesaId != null && mesaId > 0) {
-			    Mesa mesa = mesaService.findById(mesaId).orElse(null);
-			    pedido.setMesa(mesa);
-			}
+	        System.out.println("=== CREANDO PEDIDO PENDIENTE DESDE FORMULARIO ===");
+	        System.out.println("Total: " + total);
+	        System.out.println("Items: " + items);
+	        System.out.println("Mesa ID: " + mesaId);
 
-			// Guardar carrito JSON
-			if (carrito != null && !carrito.trim().isEmpty()) {
-			    pedido.setOrden(carrito);
-			} else {
-			    pedido.setOrden("[]");
-			}
+	        // 1. Crear el Pedido
+	        Pedido pedido = new Pedido();
+	        pedido.setTotal(total);
+	        pedido.setComentariosGenerales("Pedido desde punto de venta");
+	        pedido.setFechaCreacion(LocalDateTime.now());
+	        pedido.setUsuario(usuario);
 
-			pedido = pedidoRepository.save(pedido);
+	        // 2. Buscar estado PENDIENTE (OBLIGATORIO)
+	        Estado estadoPendiente = estadoRepository.findAll().stream()
+	                .filter(estado -> "PENDIENTE".equals(estado.getNombreEstado()))
+	                .findFirst()
+	                .orElseGet(() -> {
+	                    Estado nuevoEstado = new Estado();
+	                    nuevoEstado.setNombreEstado("PENDIENTE");
+	                    return estadoRepository.save(nuevoEstado);
+	                });
+	        pedido.setEstado(estadoPendiente);
 
-			// ------------------
-			//  CREAR FACTURA
-			// ------------------
-			Factura factura = new Factura();
-			factura.setPedido(pedido);
-			factura.setNumeroFactura("POS-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")));
-			factura.setTotalPagar(BigDecimal.valueOf(total));
-			factura.setSubtotal(BigDecimal.valueOf(total));
-			factura.setMonto(BigDecimal.valueOf(total));
-			factura.setMetodoPago(metodoPago);
-			factura.setEstadoPago("PAGADO");
-			factura.setEstadoFactura("GENERADA");
-			factura.setFechaEmision(LocalDateTime.now());
-			factura.setFechaPago(LocalDateTime.now());
-			factura.setUsuario(cajero);
+	        // 3. Manejar la mesa (OPCIONAL)
+	        if (mesaId != null) {
+	            // Buscar la mesa seleccionada
+	            Mesa mesaSeleccionada = mesaService.findById(mesaId)
+	                    .orElseThrow(() -> new RuntimeException("Mesa no encontrada con ID: " + mesaId));
+	            pedido.setMesa(mesaSeleccionada);
+	            System.out.println("Mesa asignada: " + mesaSeleccionada.getNumero());
+        } else {
+            // Si no se selecciona mesa, buscar una mesa llamada "Bar" o "Mostrador"
+            Mesa mesaBar = mesaService.findAll().stream()
+                    .filter(m -> (m.getDescripcion() != null && (
+                                    m.getDescripcion().equalsIgnoreCase("Bar") ||
+                                    m.getDescripcion().equalsIgnoreCase("Barra") ||
+                                    m.getDescripcion().equalsIgnoreCase("Mostrador")))
+                            || (m.getNumero() != null && (
+                                    m.getNumero().equalsIgnoreCase("Bar") ||
+                                    m.getNumero().equalsIgnoreCase("Barra"))) )
+                    .findFirst()
+                    .orElse(null);
 
-			if (mesaId != null && mesaId > 0) {
-			    factura.setNumeroMesa(mesaId);
-			}
+            if (mesaBar != null) {
+                pedido.setMesa(mesaBar);
+                System.out.println("Mesa por defecto asignada: " + mesaBar.getNumero());
+            } else {
+                System.out.println("No se asignó mesa - será null");
+                // Dejar null para que en UI se muestre "Bar/Mostrador"
+            }
+        }
 
-			facturaRepository.save(factura);
+	        // 4. Asignar menú por defecto (si menu_id es NOT NULL en la entidad)
+	        // Si cambiaste la entidad para hacer menu_id nullable, puedes omitir esto
+	        Menu menuDefault = menuService.findAll().stream()
+	                .findFirst()
+	                .orElse(null);
+	        if (menuDefault != null) {
+	            pedido.setMenu(menuDefault);
+	            System.out.println("Menú asignado: " + menuDefault.getNombreProducto());
+	        } else {
+	            // Si no hay menús, crear uno genérico de emergencia
+	            System.out.println("⚠️ No hay menús disponibles, creando uno genérico");
+	            Menu menuEmergencia = new Menu();
+	            menuEmergencia.setNombreProducto("Varios Productos");
+	            menuEmergencia.setPrecio(0.0);
+	            menuEmergencia.setDescripcion("Pedido múltiple");
+	            menuEmergencia.setDisponible(true);
+	            // Guardar el menú de emergencia si es necesario
+	            // menuEmergencia = menuService.save(menuEmergencia);
+	            pedido.setMenu(menuEmergencia);
+	        }
 
-			ra.addFlashAttribute("mensajeExito",
-			        "Venta rápida registrada → Factura: " + factura.getNumeroFactura()
-			                + " | Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+	        // 5. Guardar el carrito como JSON en el campo orden
+	        pedido.setOrden(items);
 
-			System.out.println("Venta registrada exitosamente: " + factura.getNumeroFactura());
-			System.out.println("Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+	        // 6. Guardar pedido
+	        pedido = pedidoRepository.save(pedido);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			ra.addFlashAttribute("mensajeError", "Error al registrar venta rápida: " + e.getMessage());
-		}
+	        System.out.println("✅ Pedido pendiente creado con ID: " + pedido.getId());
+	        System.out.println("📊 Total: $" + total);
+	        System.out.println("🍽️  Items: " + items);
 
-		return "redirect:/caja?section=punto-venta";
+	        // 7. Limpiar carrito del localStorage (se hará en el frontend al recargar)
+	        ra.addFlashAttribute("success", "✅ Pedido creado exitosamente. Ahora aparece en 'Pagos de Pedidos'.");
+	        return "redirect:/caja?section=pagos";
+
+	    } catch (Exception e) {
+	        System.err.println("❌ Error al crear pedido: " + e.getMessage());
+	        e.printStackTrace();
+	        ra.addFlashAttribute("error", "❌ Error al crear pedido: " + e.getMessage());
+	        return "redirect:/caja?section=punto-venta";
+	    }
+	}
+	
+	// Método temporal para debug
+	@GetMapping("/debug-rutas")
+	@ResponseBody
+	public String debugRutas() {
+	    return "Rutas disponibles en CajaController:\n" +
+	           "POST /caja/crear-pedido-pendiente-form\n" +
+	           "GET  /caja\n" +
+	           "POST /caja/pagar\n" +
+	           "POST /caja/marcar-completado\n" +
+	           "POST /caja/punto-venta/registrar";
 	}
 }

@@ -14,10 +14,23 @@
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                 <input type="text" id="busqueda-pagos" class="form-control" placeholder="Filtrar pagos (mesa, fecha o detalle)">
             </div>
-            <button class="btn btn-primary">
+            <a th:href="@{/caja(section='pagos')}" class="btn btn-primary">
                 <i class="fas fa-sync"></i> Actualizar lista
-            </button>
+            </a>
         </div>
+    </div>
+
+    <!-- Mensajes flash -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> 
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> 
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
     <div class="table-container mb-4">
@@ -33,25 +46,31 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="pago, iStat : ${pagosPendientes}">
+                <tr th:each="pago, iStat : ${pagosPendientes}"
+                    th:with="isBar=(pago.mesa != null) ? ((pago.mesa.descripcion != null and (#strings.equalsIgnoreCase(pago.mesa.descripcion,'Bar') or #strings.equalsIgnoreCase(pago.mesa.descripcion,'Barra') or #strings.equalsIgnoreCase(pago.mesa.descripcion,'Mostrador'))) or (pago.mesa.numero != null and (#strings.equalsIgnoreCase(pago.mesa.numero,'Bar') or #strings.equalsIgnoreCase(pago.mesa.numero,'Barra')))) : false,
+                             labelMesa=(pago.mesa == null or isBar) ? 'Barra' : 'Mesa ' + pago.mesa.numero">
                     <td th:text="${iStat.index + 1}">1</td>
                     <td>
-                        <strong th:text="${pago.mesa != null ? 'Mesa ' + pago.mesa.numero : 'Sin mesa'}">Mesa 1</strong>
+                        <strong th:text="${labelMesa}">Mesa</strong>
                         <br>
-                        <small th:text="${pago.fechaCreacion}">2025-11-12 18:30</small>
+                        <small th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}">28/11/2025 21:30</small>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-link p-0 text-start ver-detalle-pago"
+                        <button type="button" class="btn btn-link btn-sm ver-detalle-pago"
                                 th:attr="data-pedido-id=${pago.id}, 
-                                         data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
+                                         data-mesa=${labelMesa},
                                          data-total=${pago.total},
-                                         data-detalle=${pago.orden}">
+                                         data-detalle=${pago.orden}"
+                                title="Ver detalle del pedido">
                             <span class="d-inline-block text-truncate detalle-resumen-text" style="max-width: 320px;">
                                 Ver detalle del pedido
                             </span>
                         </button>
                     </td>
-                    <td th:text="${#strings.concat('$', #numbers.formatDecimal(pago.total, 0, 'POINT', 0, 'POINT'))}">$0</td>
+                    <!-- CORRECCIÓN: Formato de números MÁS SIMPLE -->
+                    <td class="fw-bold text-success">
+                        $<span th:text="${pago.total}">0</span>
+                    </td>
                     <td>
                         <span class="badge bg-warning"
                               th:text="${pago.estado != null ? pago.estado.nombreEstado : 'PENDIENTE'}">PENDIENTE</span>
@@ -59,31 +78,23 @@
                     <td>
                         <button type="button" class="btn btn-success btn-sm btn-abrir-modal-pago"
                                 th:attr="data-pedido-id=${pago.id}, 
-                                         data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
+                                         data-mesa=${labelMesa},
                                          data-total=${pago.total},
                                          data-detalle=${pago.orden}">
                             <i class="fas fa-money-bill-wave"></i> Cobrar
                         </button>
                     </td>
                 </tr>
-
-                <tr th:if="${pagosPendientes == null or #lists.isEmpty(pagosPendientes)}">
-                    <td colspan="6" class="text-center py-4">
-                        <i class="fas fa-check-circle" style="font-size:2rem; color: var(--success-color);"></i>
-                        <p class="mt-2 mb-0">No hay pedidos pendientes de pago.</p>
-                        <small class="text-muted">Los pedidos aparecerán aquí cuando estén listos para ser cobrados.</small>
-                    </td>
-                </tr>
+                
             </tbody>
         </table>
     </div>
 
-
-    <!-- Modal de Pago -->
+    <!-- Modal de Pago efectivo -->
     <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-success text-white">
                     <h5 class="modal-title" id="modalPagoLabel">
                         <i class="fas fa-credit-card"></i> Procesar Pago
                     </h5>
@@ -93,37 +104,39 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card">
-                                <div class="card-header">
+                                <div class="card-header bg-light">
                                     <h6 class="mb-0"><i class="fas fa-receipt"></i> Detalles del Pedido</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Mesa:</strong> <span id="modal-mesa">Mesa 1</span></p>
-                                    <p><strong>Detalle:</strong></p>
-                                    <div id="modal-detalle" class="border p-2 rounded bg-light" style="max-height: 150px; overflow-y: auto;">
-                                        Consumo bar / restaurante
-                                    </div>
+                                    <p><strong>Pedido ID: <span id="modal-pedido-id">-</span></strong></p>
+                                    <p><strong>Mesa: <span id="modal-mesa-info">Bar</span></strong></p>
                                     <hr>
-                                    <h5 class="text-primary"><strong>Total a pagar: <span id="modal-total">$0.00</span></strong></h5>
+                                    <p><strong>Detalle:</strong></p>
+                                    <div id="detalle-carrito-modal" class="mb-3"></div>
+                                    <hr>
+                                    <h5 class="text-primary"><strong>Total a pagar: <span
+                                                id="modal-total">$0.00</span></strong></h5>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card">
-                                <div class="card-header">
+                                <div class="card-header bg-light">
                                     <h6 class="mb-0"><i class="fas fa-calculator"></i> Cálculo de Pago</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label for="modal-recibido" class="form-label">Monto recibido del cliente:</label>
-                                        <input type="number" step="0.01" min="0" class="form-control form-control-lg" 
-                                               id="modal-recibido" placeholder="0">
+                                        <input type="number" step="0.01" min="0"
+                                            class="form-control form-control-lg" id="modal-recibido"
+                                            placeholder="0" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="modal-cambio" class="form-label">Cambio a devolver:</label>
-                                        <input type="text" class="form-control form-control-lg" 
-                                               id="modal-cambio" value="$0" readonly>
+                                        <input type="text" class="form-control form-control-lg" id="modal-cambio"
+                                            value="$0" readonly>
                                     </div>
-                                    <div class="alert alert-info" id="modal-info" style="display: none;">
+                                    <div class="alert alert-info" id="modal-info">
                                         <i class="fas fa-info-circle"></i> Ingrese el monto recibido para calcular el cambio.
                                     </div>
                                     <div class="alert alert-danger" id="modal-error" style="display: none;">
@@ -138,11 +151,16 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
-                    <form id="form-confirmar-pago" th:action="@{/caja/pagar}" method="post" class="d-inline">
-                        <input type="hidden" name="pedidoId" id="modal-pedido-id">
-                        <input type="hidden" name="montoRecibido" id="modal-monto-recibido-hidden">
-                        <button type="submit" class="btn btn-success" id="btn-confirmar-pago" disabled>
-                            <i class="fas fa-check"></i> Ya está pagado
+                    
+                    <form id="form-confirmar-pago"
+                          th:action="@{/caja/pagar}"
+                          method="post">
+                          
+                        <input type="hidden" name="pedidoId" id="input-pedido-id" value="" />
+                        <input type="hidden" name="montoRecibido" id="input-monto-recibido" value="0" />
+
+                        <button type="submit" class="btn btn-success btn-lg" id="btn-confirmar-pago">
+                            <i class="fas fa-check"></i> Confirmar Pago
                         </button>
                     </form>
                 </div>
@@ -151,5 +169,5 @@
     </div>
 </div>
 
-</body>
+<script th:src="@{/js/puntoVenta.js}"></script>
 </html>

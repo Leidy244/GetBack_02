@@ -37,11 +37,11 @@ public class Pedido {
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id", nullable = false)
+    @JoinColumn(name = "menu_id", nullable = true)
     private Menu menu;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mesa_id", nullable = false)
+    @JoinColumn(name = "mesa_id", nullable = true)
     private Mesa mesa;
 
     @ManyToOne(fetch = FetchType.LAZY)

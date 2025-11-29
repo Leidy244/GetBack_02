@@ -172,7 +172,7 @@ class PanelCaja {
                 if (items.length > 0) {
                     const lineas = items.map(item => {
                         const cantidad = item.cantidad ?? item.quantity ?? 0;
-                        const nombre = item.productoNombre ?? item.name ?? 'Producto';
+                        const nombre = item.productoNombre ?? item.nombre ?? item.name ?? 'Producto';
                         const subtotal = item.subtotal ?? (item.precio ?? item.price ?? 0) * (cantidad || 1);
 
                         const subtotalNumber = Number(subtotal);
