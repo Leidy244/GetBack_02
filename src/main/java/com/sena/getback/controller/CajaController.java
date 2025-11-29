@@ -114,9 +114,8 @@ public class CajaController {
 	                .mapToDouble(f -> f.getTotalPagar().doubleValue()).sum();
 	        model.addAttribute("ingresosTotales", ingresosTotales);
 
-	        // Cantidad de pedidos pendientes de cobro
-	        long pedidosPendientesPago = pedidoService.obtenerPedidosPendientes().size();
-	        model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
+            long pedidosPendientesPago = pedidoService.obtenerPedidosCompletados().size();
+            model.addAttribute("pedidosPendientesPago", pedidosPendientesPago);
 
 	        long ventasCanceladas = facturas.stream().filter(f -> "CANCELADO".equals(f.getEstadoPago())).count();
 	        model.addAttribute("ventasCanceladas", ventasCanceladas);
@@ -126,23 +125,14 @@ public class CajaController {
 	                .collect(Collectors.toList());
 	        model.addAttribute("actividadReciente", actividadReciente);
 
-	        // Pedidos para mostrar en cards en el inicio
-	        List<Pedido> pedidosPendientesBarTodos = pedidoService.obtenerPedidosPendientesBar();
+            List<Pedido> pedidosPendientesBar = pedidoService.obtenerPedidosPendientesBar();
+            List<Pedido> pedidosCompletadosBar = pedidoService.obtenerPedidosCompletados();
 
-	        List<Pedido> pedidosPendientesBar = pedidosPendientesBarTodos.stream()
-	                .filter(p -> p.getId() != null && !pedidosCompletadosInicioCaja.contains(p.getId()))
-	                .collect(Collectors.toList());
+            model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
+            model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
 
-	        List<Pedido> pedidosCompletadosBar = pedidosPendientesBarTodos.stream()
-	                .filter(p -> p.getId() != null && pedidosCompletadosInicioCaja.contains(p.getId()))
-	                .collect(Collectors.toList());
-
-	        model.addAttribute("pedidosPendientesBar", pedidosPendientesBar);
-	        model.addAttribute("pedidosPagadosBar", pedidosCompletadosBar);
-
-	        // Para el dashboard, "Pedidos Pendientes" refleja los pedidos de BAR aún no marcados como completados en el inicio
-	        long pedidosPendientes = pedidosPendientesBar.size();
-	        model.addAttribute("pedidosPendientes", pedidosPendientes);
+            long pedidosPendientes = pedidosPendientesBar.size();
+            model.addAttribute("pedidosPendientes", pedidosPendientes);
 	    }
 
 	    if ("punto-venta".equals(activeSection)) {
@@ -158,9 +148,9 @@ public class CajaController {
 	        // Las mesas ya están cargadas arriba ✅
 	    }
 
-	    if ("pagos".equals(activeSection)) {
-	        model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosPendientes());
-	    }
+        if ("pagos".equals(activeSection)) {
+            model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosCompletados());
+        }
 
 	    if ("historial-pagos".equals(activeSection)) {
 	        List<Pedido> pagosPagados = pedidoService.obtenerPedidosPagados();
