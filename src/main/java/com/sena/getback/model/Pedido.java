@@ -41,7 +41,7 @@ public class Pedido {
     private Menu menu;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mesa_id", nullable = false)
+    @JoinColumn(name = "mesa_id", nullable = true)
     private Mesa mesa;
 
     @ManyToOne(fetch = FetchType.LAZY)

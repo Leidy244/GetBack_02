@@ -62,7 +62,7 @@
                                          data-mesa=${pago.mesa != null ? pago.mesa.numero : 'Sin mesa'},
                                          data-total=${pago.total},
                                          data-detalle=${pago.orden}">
-                            <i class="fas fa-money-bill-wave"></i> Cobrar
+                            <i  id="btn-finalizar-venta"class="fas fa-money-bill-wave"></i> Cobrar
                         </button>
                     </td>
                 </tr>
@@ -79,77 +79,176 @@
     </div>
 
 
-    <!-- Modal de Pago -->
-    <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalPagoLabel">
-                        <i class="fas fa-credit-card"></i> Procesar Pago
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0"><i class="fas fa-receipt"></i> Detalles del Pedido</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Mesa:</strong> <span id="modal-mesa">Mesa 1</span></p>
-                                    <p><strong>Detalle:</strong></p>
-                                    <div id="modal-detalle" class="border p-2 rounded bg-light" style="max-height: 150px; overflow-y: auto;">
-                                        Consumo bar / restaurante
-                                    </div>
-                                    <hr>
-                                    <h5 class="text-primary"><strong>Total a pagar: <span id="modal-total">$0.00</span></strong></h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0"><i class="fas fa-calculator"></i> Cálculo de Pago</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="modal-recibido" class="form-label">Monto recibido del cliente:</label>
-                                        <input type="number" step="0.01" min="0" class="form-control form-control-lg" 
-                                               id="modal-recibido" placeholder="0">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="modal-cambio" class="form-label">Cambio a devolver:</label>
-                                        <input type="text" class="form-control form-control-lg" 
-                                               id="modal-cambio" value="$0" readonly>
-                                    </div>
-                                    <div class="alert alert-info" id="modal-info" style="display: none;">
-                                        <i class="fas fa-info-circle"></i> Ingrese el monto recibido para calcular el cambio.
-                                    </div>
-                                    <div class="alert alert-danger" id="modal-error" style="display: none;">
-                                        <i class="fas fa-exclamation-triangle"></i> El monto recibido debe ser igual o mayor al total.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-                    <form id="form-confirmar-pago" th:action="@{/caja/pagar}" method="post" class="d-inline">
-                        <input type="hidden" name="pedidoId" id="modal-pedido-id">
-                        <input type="hidden" name="montoRecibido" id="modal-monto-recibido-hidden">
-                        <button type="submit" class="btn btn-success" id="btn-confirmar-pago" disabled>
-                            <i class="fas fa-check"></i> Ya está pagado
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+	<!-- Modal Métodos de Pago y Clientes Frecuentes -->
+			<div class="modal fade" id="metodosPagoModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Métodos de pago</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+						</div>
+						<div class="modal-body">
+							<!-- Métodos de pago -->
+							<div class="mb-3">
+								<h6 class="mb-2">Seleccione método de pago</h6>
+								<div class="d-flex flex-wrap gap-2">
+									<button type="button" class="btn btn-outline-primary" data-metodo="TARJETA">
+										Tarjeta
+									</button>
+									<button type="button" class="btn btn-outline-primary" data-metodo="EFECTIVO">
+										Efectivo
+									</button>
+									<button type="button" class="btn btn-outline-primary" data-metodo="TRANSFERENCIA">
+										Transferencia
+									</button>
+									<button type="button" class="btn btn-outline-primary" data-metodo="MIXTO">
+										Mixto
+									</button>
+								</div>
+							</div>
+							<hr>
+							<div class="mb-2">
+								<input type="text" id="buscar-cliente-frecuente-pos" class="form-control form-control-sm"
+									placeholder="Buscar cliente por nombre...">
+							</div>
+							<!-- Clientes frecuentes -->
+							<div>
+								<h6 class="mb-2">Clientes frecuentes</h6>
+								<div class="table-responsive">
+									<table class="table table-striped table-hover align-middle text-center">
+										<thead class="table-dark">
+											<tr>
+												<th>Nombre</th>
+												<th>Nota</th>
+												<th>Acciones</th>
+											</tr>
+										</thead>
+										<tbody id="clientesFrecuentesTableBody">
+											<tr th:each="c : ${clientes}" data-row>
+												<td th:text="${c.nombre}"></td>
+												<td>
+													<span th:text="${c.nota != null ? c.nota : '—'}"></span>
+												</td>
+												<td>
+													<button type="button"
+														class="btn btn-success btn-sm rounded-pill px-3 btn-pagar-con-abono"
+														th:data-cliente-id="${c.id}" th:data-cliente-nombre="${c.nombre}">
+														<i class="fas fa-check"></i> Pagar
+													</button>
+												</td>
+											</tr>
+											<tr th:if="${clientes == null or clientes.isEmpty()}">
+												<td colspan="8" class="text-center py-4 text-muted">
+													<i class="fas fa-id-card fa-2x mb-3"></i>
+													<p>No hay clientes frecuentes registrados.</p>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-success">
+									Confirmar
+								</button>
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+									Cancelar
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
+			<!-- Modal de Pago efectivo -->
+			<div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+			    <div class="modal-dialog modal-lg">
+			        <div class="modal-content">
+			            <div class="modal-header">
+			                <h5 class="modal-title" id="modalPagoLabel">
+			                    <i class="fas fa-credit-card"></i> Procesar Pago
+			                </h5>
+			                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			            </div>
+			            <div class="modal-body">
+			                <div class="row">
+			                    <div class="col-md-6">
+			                        <div class="card">
+			                            <div class="card-header">
+			                                <h6 class="mb-0"><i class="fas fa-receipt"></i> Detalles del Pedido</h6>
+			                            </div>
+			                            <div class="card-body">
+			                                <p><strong>Detalle:</strong></p>
+			                                <div id="detalle-carrito-modal"></div>
+			                                <hr>
+			                                <h5 class="text-primary"><strong>Total a pagar: <span
+			                                            id="modal-total">$0.00</span></strong></h5>
+			                            </div>
+			                        </div>
+			                    </div>
+			                    <div class="col-md-6">
+			                        <div class="card">
+			                            <div class="card-header">
+			                                <h6 class="mb-0"><i class="fas fa-calculator"></i> Cálculo de Pago</h6>
+			                            </div>
+			                            <div class="card-body">
+			                                <div class="mb-3">
+			                                    <label for="modal-recibido" class="form-label">Monto recibido del cliente:</label>
+			                                    <input type="number" step="0.01" min="0"
+			                                        class="form-control form-control-lg" id="modal-recibido"
+			                                        placeholder="0" required>
+			                                </div>
+			                                <div class="mb-3">
+			                                    <label for="modal-cambio" class="form-label">Cambio a devolver:</label>
+			                                    <input type="text" class="form-control form-control-lg" id="modal-cambio"
+			                                        value="$0" readonly>
+			                                </div>
+			                                <div class="alert alert-info" id="modal-info">
+			                                    <i class="fas fa-info-circle"></i> Ingrese el monto recibido para calcular el cambio.
+			                                </div>
+			                                <div class="alert alert-danger" id="modal-error" style="display: none;">
+			                                    <i class="fas fa-exclamation-triangle"></i> El monto recibido debe ser igual o mayor al total.
+			                                </div>
+			                            </div>
+			                        </div>
+			                    </div>
+			                </div>
+			            </div>
+			            <div class="modal-footer">
+			                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+			                    <i class="fas fa-times"></i> Cancelar
+			                </button>
+			                <form id="form-confirmar-pago"
+			                      th:action="@{/caja/punto-venta/registrar}"
+			                      method="post">
+
+			                    <!-- TODOS LOS CAMPOS REQUERIDOS -->
+			                    <input type="hidden" name="total" id="input-total" value="0" />
+			                    <input type="hidden" name="montoRecibido" id="input-monto-recibido" value="0" />
+			                    <input type="hidden" name="metodoPago" id="input-metodo-pago" value="EFECTIVO" />
+			                    <input type="hidden" name="mesaId" id="hidden-mesa-id" value="" />
+			                    <input type="hidden" name="carrito" id="input-carrito" value="" />
+
+			                    <button type="submit" class="btn btn-success btn-lg w-100" id="btn-confirmar-pago">
+			                        <i class="fas fa-check"></i> Ya está pagado
+			                    </button>
+			                </form>
+			            </div>
+			        </div>
+			    </div>
+			</div>
+			<!-- Mensajes flash de éxito/error -->
+			<div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+			    <i class="fas fa-check-circle"></i> <strong>¡Éxito!</strong> <span th:text="${mensajeExito}"></span>
+			    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
+
+			<div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+			    <i class="fas fa-exclamation-triangle"></i> <strong>Error:</strong> <span th:text="${mensajeError}"></span>
+			    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			</div>
 </body>
+
+<script th:src="@{/js/puntoVenta.js}"></script>
 </html>
+ pagos html

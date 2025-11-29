@@ -2,6 +2,7 @@ package com.sena.getback.controller;
 
 import com.sena.getback.model.Estado;
 import com.sena.getback.model.Factura;
+import com.sena.getback.model.Menu;
 import com.sena.getback.model.Mesa;
 import com.sena.getback.model.Pedido;
 import com.sena.getback.model.Usuario;
@@ -11,34 +12,31 @@ import com.sena.getback.repository.UsuarioRepository;
 import com.sena.getback.service.MenuService;
 import com.sena.getback.service.MesaService;
 import com.sena.getback.service.CategoriaService;
-import com.sena.getback.service.FacturaService;
 import com.sena.getback.service.PedidoService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sena.getback.repository.ClienteFrecuenteRepository;
 import com.sena.getback.repository.EstadoRepository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAdjusters;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -252,117 +250,147 @@ public class CajaController {
 	}
 
 	// VENTA RÁPIDA DESDE PUNTO DE VENTA
-	@PostMapping("/punto-venta/registrar")
-	public String registrarVentaRapida(@RequestParam("total") Double total,
-			@RequestParam("montoRecibido") Double montoRecibido,
-			@RequestParam(value = "mesaId", required = false) Integer mesaId,
-			@RequestParam(value = "metodoPago", defaultValue = "EFECTIVO") String metodoPago,
-			@RequestParam("carrito") String carrito, HttpSession session, RedirectAttributes ra) {
+	@PostMapping("/crear-pedido-pendiente")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> crearPedidoPendiente(@RequestBody Map<String, Object> requestData,
+	                                                               HttpSession session) {
+	    try {
+	        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+	        if (usuario == null) {
+	            return ResponseEntity.status(401).body(Map.of("success", false, "mensaje", "Usuario no autenticado"));
+	        }
 
-		try {
-			System.out.println("=== DATOS RECIBIDOS ===");
-			System.out.println("Total: " + total);
-			System.out.println("Monto recibido: " + montoRecibido);
-			System.out.println("Mesa ID: " + mesaId);
-			System.out.println("Método pago: " + metodoPago);
-			System.out.println("Carrito: " + carrito);
+	        System.out.println("=== CREANDO PEDIDO PENDIENTE ===");
+	        System.out.println("Datos recibidos: " + requestData);
 
-			// OBTENER USUARIO DESDE LA SESIÓN HTTP
-			Usuario cajero = (Usuario) session.getAttribute("usuarioLogueado");
+	        // Crear pedido básico
+	        Pedido pedido = new Pedido();
+	        pedido.setTotal(Double.valueOf(requestData.get("total").toString()));
+	        pedido.setComentariosGenerales("Pedido desde punto de venta");
+	        pedido.setFechaCreacion(LocalDateTime.now());
+	        pedido.setUsuario(usuario);
 
-			if (cajero == null) {
-				ra.addFlashAttribute("mensajeError", "Usuario no autenticado. Por favor inicie sesión.");
-				return "redirect:/caja?section=punto-venta";
-			}
+	        // Buscar estado PENDIENTE
+	        Estado estadoPendiente = estadoRepository.findAll().stream()
+	                .filter(estado -> "PENDIENTE".equals(estado.getNombreEstado()))
+	                .findFirst()
+	                .orElseGet(() -> {
+	                    Estado nuevoEstado = new Estado();
+	                    nuevoEstado.setNombreEstado("PENDIENTE");
+	                    return estadoRepository.save(nuevoEstado);
+	                });
 
-			System.out.println("Cajero desde sesión: " + cajero.getNombre() + " " + cajero.getApellido());
+	        pedido.setEstado(estadoPendiente);
 
-			// Validar datos esenciales
-			if (total == null || total <= 0) {
-				ra.addFlashAttribute("mensajeError", "Total inválido");
-				return "redirect:/caja?section=punto-venta";
-			}
+	        // Guardar carrito como string simple
+	        pedido.setOrden(requestData.toString());
 
-			if (montoRecibido == null || montoRecibido < total) {
-				ra.addFlashAttribute("mensajeError", "Monto recibido insuficiente");
-				return "redirect:/caja?section=punto-venta";
-			}
+	        // Guardar pedido
+	        pedido = pedidoRepository.save(pedido);
 
-			// 1. Crear el Pedido
-			Pedido pedido = new Pedido();
-			pedido.setTotal(total);
-			pedido.setMontoRecibido(montoRecibido);
-			pedido.setCambio(montoRecibido - total);
-			pedido.setComentariosGenerales("Venta rápida - POS");
-			pedido.setFechaCreacion(LocalDateTime.now());
-			pedido.setUsuario(cajero); // ASIGNAR EL CAJERO DESDE LA SESIÓN
+	        System.out.println("✅ Pedido pendiente creado con ID: " + pedido.getId());
 
-			// Estado PAGADO - CÓDIGO CORREGIDO
-			// SOLUCIÓN 1: Buscar manualmente en la lista de estados
-			List<Estado> todosEstados = estadoRepository.findAll();
-			Estado estadoPagado = todosEstados.stream().filter(estado -> "PAGADO".equals(estado.getNombreEstado()))
-					.findFirst().orElse(null);
+	        return ResponseEntity.ok(Map.of("success", true, "mensaje", "Pedido creado exitosamente"));
 
-			// Si no existe estado PAGADO → crearlo
-			if (estadoPagado == null) {
-			    estadoPagado = new Estado();
-			    estadoPagado.setNombreEstado("PAGADO");
-			    estadoPagado = estadoRepository.save(estadoPagado);
-			    System.out.println("✅ Estado PAGADO creado con ID: " + estadoPagado.getId());
-			}
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(500).body(Map.of("success", false, "mensaje", "Error: " + e.getMessage()));
+	    }
+	}
+	
+	@PostMapping("/crear-pedido-pendiente-form")
+	public String crearPedidoPendienteForm(@RequestParam String items,
+	                                      @RequestParam Double total,
+	                                      @RequestParam(required = false) Integer mesaId,
+	                                      HttpSession session,
+	                                      RedirectAttributes ra) {
+	    try {
+	        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+	        if (usuario == null) {
+	            ra.addFlashAttribute("error", "Usuario no autenticado");
+	            return "redirect:/login";
+	        }
 
-			// 💥 SIEMPRE asignar el estado al pedido (esté dentro o fuera del IF)
-			pedido.setEstado(estadoPagado);
+	        System.out.println("=== CREANDO PEDIDO PENDIENTE DESDE FORMULARIO ===");
+	        System.out.println("Total: " + total);
+	        System.out.println("Items: " + items);
+	        System.out.println("Mesa ID: " + mesaId);
 
-			// Mesa opcional
-			if (mesaId != null && mesaId > 0) {
-			    Mesa mesa = mesaService.findById(mesaId).orElse(null);
-			    pedido.setMesa(mesa);
-			}
+	        // 1. Crear el Pedido
+	        Pedido pedido = new Pedido();
+	        pedido.setTotal(total);
+	        pedido.setComentariosGenerales("Pedido desde punto de venta");
+	        pedido.setFechaCreacion(LocalDateTime.now());
+	        pedido.setUsuario(usuario);
 
-			// Guardar carrito JSON
-			if (carrito != null && !carrito.trim().isEmpty()) {
-			    pedido.setOrden(carrito);
-			} else {
-			    pedido.setOrden("[]");
-			}
+	        // 2. Buscar estado PENDIENTE
+	        Estado estadoPendiente = estadoRepository.findAll().stream()
+	                .filter(estado -> "PENDIENTE".equals(estado.getNombreEstado()))
+	                .findFirst()
+	                .orElseGet(() -> {
+	                    Estado nuevoEstado = new Estado();
+	                    nuevoEstado.setNombreEstado("PENDIENTE");
+	                    return estadoRepository.save(nuevoEstado);
+	                });
+	        pedido.setEstado(estadoPendiente);
 
-			pedido = pedidoRepository.save(pedido);
+	        // 3. Manejar la mesa (opcional)
+	        if (mesaId != null) {
+	            Mesa mesa = mesaService.findById(mesaId)
+	                    .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
+	            pedido.setMesa(mesa);
+	        } else {
+	            // Si no se selecciona mesa, buscar una mesa llamada "Bar" o crear una genérica
+	            Mesa mesaBar = mesaService.findAll().stream()
+	                    .filter(m -> "Bar".equalsIgnoreCase(m.getDescripcion()) || 
+	                                "Bar".equalsIgnoreCase(m.getNumero()))
+	                    .findFirst()
+	                    .orElse(null);
+	            
+	            if (mesaBar == null) {
+	                // Si no existe mesa Bar, usar la primera disponible
+	                mesaBar = mesaService.findAll().stream()
+	                        .findFirst()
+	                        .orElse(null);
+	            }
+	            pedido.setMesa(mesaBar);
+	        }
 
-			// ------------------
-			//  CREAR FACTURA
-			// ------------------
-			Factura factura = new Factura();
-			factura.setPedido(pedido);
-			factura.setNumeroFactura("POS-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")));
-			factura.setTotalPagar(BigDecimal.valueOf(total));
-			factura.setSubtotal(BigDecimal.valueOf(total));
-			factura.setMonto(BigDecimal.valueOf(total));
-			factura.setMetodoPago(metodoPago);
-			factura.setEstadoPago("PAGADO");
-			factura.setEstadoFactura("GENERADA");
-			factura.setFechaEmision(LocalDateTime.now());
-			factura.setFechaPago(LocalDateTime.now());
-			factura.setUsuario(cajero);
+	        // 4. Asignar menú por defecto (mantener como null si cambiaste la entidad)
+	        // Si mantienes menu_id como NOT NULL, necesitas asignar uno:
+	        Menu menuDefault = menuService.findAll().stream()
+	                .findFirst()
+	                .orElse(null);
+	        if (menuDefault != null) {
+	            pedido.setMenu(menuDefault);
+	        }
 
-			if (mesaId != null && mesaId > 0) {
-			    factura.setNumeroMesa(mesaId);
-			}
+	        pedido.setOrden(items);
 
-			facturaRepository.save(factura);
+	        // 5. Guardar pedido
+	        pedido = pedidoRepository.save(pedido);
 
-			ra.addFlashAttribute("mensajeExito",
-			        "Venta rápida registrada → Factura: " + factura.getNumeroFactura()
-			                + " | Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+	        System.out.println("✅ Pedido pendiente creado con ID: " + pedido.getId());
 
-			System.out.println("Venta registrada exitosamente: " + factura.getNumeroFactura());
-			System.out.println("Cajero: " + cajero.getNombre() + " " + cajero.getApellido());
+	        ra.addFlashAttribute("success", "✅ Pedido creado exitosamente. Ahora aparece en 'Pagos de Pedidos'.");
+	        return "redirect:/caja?section=pagos";
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			ra.addFlashAttribute("mensajeError", "Error al registrar venta rápida: " + e.getMessage());
-		}
-
-		return "redirect:/caja?section=punto-venta";
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        ra.addFlashAttribute("error", "❌ Error al crear pedido: " + e.getMessage());
+	        return "redirect:/caja?section=punto-venta";
+	    }
+	}
+	
+	// Método temporal para debug
+	@GetMapping("/debug-rutas")
+	@ResponseBody
+	public String debugRutas() {
+	    return "Rutas disponibles en CajaController:\n" +
+	           "POST /caja/crear-pedido-pendiente-form\n" +
+	           "GET  /caja\n" +
+	           "POST /caja/pagar\n" +
+	           "POST /caja/marcar-completado\n" +
+	           "POST /caja/punto-venta/registrar";
 	}
 }
