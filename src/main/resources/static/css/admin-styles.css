@@ -88,21 +88,26 @@ body[data-admin-theme="azul"] {
 	--sidebar-gradient: linear-gradient(150deg, #0047CC 0%, #5E9AFF 50%, #00C2FF 100%);
 }
 
-[data-color="verde"] {
-	/* Manteniendo compatibilidad con nombres originales */
-	--morado: var(--primary-color);
-	--turquesa: var(--secondary-color);
-	--rosado: var(--primary-light);
-	--gradiente: var(--primary-gradient);
-	
-	/* Sistema de colores verde */
-	--primary-color: #065F46;
-	--primary-light: #10B981;
-	--primary-dark: #064E3B;
-	--secondary-color: #22C55E;
-	--accent-color: #34D399;
-	--primary-gradient: linear-gradient(135deg, #064E3B, #065F46, #22C55E);
-	--sidebar-gradient: linear-gradient(160deg, #064E3B, #10B981, #22C55E);
+/* ===== TEMA VERDE  ===== */
+body[data-admin-theme="verde"] {
+    --primary-color: #065F46;
+    --primary-light: #10B981;
+    --primary-dark: #064E3B;
+    --secondary-color: #22C55E;
+    --accent-color: #34D399;
+    --primary-gradient: linear-gradient(135deg, #064E3B, #065F46, #22C55E);
+    --sidebar-gradient: linear-gradient(160deg, #064E3B, #10B981, #22C55E);
+}
+
+/* ===== TEMA DORADO  ===== */
+body[data-admin-theme="dorado"] {
+    --primary-color: #C9A227;
+    --primary-light: #E8D9A6;
+    --primary-dark: #A47E1B;
+    --secondary-color: #D6B94C;
+    --accent-color: #E8C04B;
+    --primary-gradient: linear-gradient(135deg, #A47E1B, #C9A227, #E8D9A6);
+    --sidebar-gradient: linear-gradient(150deg, #A47E1B 0%, #C9A227 70%);
 }
 
 body[data-admin-theme="rojo"] {
@@ -115,21 +120,6 @@ body[data-admin-theme="rojo"] {
 	--sidebar-gradient: linear-gradient(150deg, #6D28D9 0%, #C4B5FD 100%);
 }
 
-[data-color="dorado"] {
-	--morado: #A47E1B;         /* Dorado oscuro (primary-dark) */
-	--turquesa: #E8D9A6;       /* Dorado claro (primary-light) */
-	--rosado: #C9A227;         /* Dorado principal (primary-color) */
-	--gradiente: linear-gradient(135deg, #A47E1B, #C9A227, #E8D9A6);
-	
-	/* Variables del tema dorado completo */
-	--primary-color: #C9A227;
-	--primary-light: #E8D9A6;
-	--primary-dark: #A47E1B;
-	--secondary-color: #D6B94C;
-	--accent-color: #E8C04B;
-	--primary-gradient: linear-gradient(135deg, #A47E1B, #C9A227, #E8D9A6);
-	--sidebar-gradient: linear-gradient(150deg, #A47E1B 0%, #C9A227 70%);
-}
 
 body[data-admin-theme="rosa"] {
   --primary-color:    #DB2777;   /* Rosa intenso perfecto (Pink 600 de Tailwind) */
