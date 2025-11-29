@@ -122,7 +122,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ========== PUNTO DE VENTA: FINALIZAR VENTA → ABRIR MODAL ==========
-    btnFinalizarVenta?.addEventListener('click', function () {
+    btnFinalizarVenta?.addEventListener('click', function (e) {
+        // Evitar conflicto con otros listeners que también están enlazados al mismo botón
+        // (por ejemplo, panel_caja.js). Asegura que solo este flujo de Punto de Venta se ejecute.
+        try { e.preventDefault(); e.stopImmediatePropagation(); } catch (ignored) {}
+
         if (carrito.length === 0) {
             alert('El carrito está vacío');
             return;
@@ -146,8 +150,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO');
-        modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
-        modalPuntoVentaInstance.show();
+        // Verificar que Bootstrap esté disponible y el modal exista
+        if (typeof bootstrap !== 'undefined' && modalConfirmarVenta) {
+            modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
+            modalPuntoVentaInstance.show();
+        } else {
+            alert('No se pudo abrir el modal de confirmación. Verifica la carga de Bootstrap.');
+        }
     });
 
     // ========== ENVIAR VENTA A PENDIENTES ==========

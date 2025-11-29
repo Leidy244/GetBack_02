@@ -46,19 +46,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="pago, iStat : ${pagosPendientes}"
-                    th:with="isBar=(pago.mesa != null) ? ((pago.mesa.descripcion != null and (#strings.equalsIgnoreCase(pago.mesa.descripcion,'Bar') or #strings.equalsIgnoreCase(pago.mesa.descripcion,'Barra') or #strings.equalsIgnoreCase(pago.mesa.descripcion,'Mostrador'))) or (pago.mesa.numero != null and (#strings.equalsIgnoreCase(pago.mesa.numero,'Bar') or #strings.equalsIgnoreCase(pago.mesa.numero,'Barra')))) : false,
-                             labelMesa=(pago.mesa == null or isBar) ? 'Barra' : 'Mesa ' + pago.mesa.numero">
+                <tr th:each="pago, iStat : ${pagosPendientes}">
                     <td th:text="${iStat.index + 1}">1</td>
                     <td>
-                        <strong th:text="${labelMesa}">Mesa</strong>
+                        <strong th:text="${pago.labelMesa}">Mesa</strong>
                         <br>
                         <small th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}">28/11/2025 21:30</small>
                     </td>
                     <td>
                         <button type="button" class="btn btn-link btn-sm ver-detalle-pago"
                                 th:attr="data-pedido-id=${pago.id}, 
-                                         data-mesa=${labelMesa},
+                                         data-mesa=${pago.labelMesa},
                                          data-total=${pago.total},
                                          data-detalle=${pago.orden}"
                                 title="Ver detalle del pedido">
@@ -78,7 +76,7 @@
                     <td>
                         <button type="button" class="btn btn-success btn-sm btn-abrir-modal-pago"
                                 th:attr="data-pedido-id=${pago.id}, 
-                                         data-mesa=${labelMesa},
+                                         data-mesa=${pago.labelMesa},
                                          data-total=${pago.total},
                                          data-detalle=${pago.orden}">
                             <i class="fas fa-money-bill-wave"></i> Cobrar

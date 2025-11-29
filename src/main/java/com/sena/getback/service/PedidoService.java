@@ -297,10 +297,12 @@ public class PedidoService {
     }
 
     // Obtener pedidos PENDIENTES para el panel de inicio de caja
-    // (por ahora no filtramos por área para evitar dejar la vista vacía
-    // si las categorías no tienen configurado correctamente el campo "area")
     public List<Pedido> obtenerPedidosPendientesBar() {
-        return obtenerPedidosPendientes();
+        return obtenerPedidosPendientes().stream()
+                .filter(p -> p.getUsuario() != null
+                        && p.getUsuario().getRol() != null
+                        && "MESERO".equalsIgnoreCase(p.getUsuario().getRol().getNombre()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // Marcar pedido como COMPLETADO (estado id=3) para flujo de BAR/CAJA

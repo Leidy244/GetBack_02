@@ -183,4 +183,32 @@ public class Pedido {
     public void setFactura(Factura factura) {
         this.factura = factura;
     }
+
+    public String getLabelMesa() {
+        if (this.mesa == null) {
+            return "Barra";
+        }
+        String desc = this.mesa.getDescripcion();
+        String num = this.mesa.getNumero();
+        boolean esBarDesc = desc != null && (
+                desc.equalsIgnoreCase("Bar") ||
+                desc.equalsIgnoreCase("Barra") ||
+                desc.equalsIgnoreCase("Mostrador")
+        );
+        boolean esBarNum = num != null && (
+                num.equalsIgnoreCase("Bar") ||
+                num.equalsIgnoreCase("Barra")
+        );
+        if (esBarDesc || esBarNum) {
+            return "Barra";
+        }
+        if (num != null && !num.isBlank()) {
+            return "Mesa " + num;
+        }
+        Integer idMesa = this.mesa.getId();
+        if (idMesa != null) {
+            return "Mesa #" + idMesa;
+        }
+        return "Mesa";
+    }
 }

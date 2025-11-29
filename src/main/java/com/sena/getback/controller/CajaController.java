@@ -395,26 +395,15 @@ public class CajaController {
             }
         }
 
-	        // 4. Asignar menú por defecto (si menu_id es NOT NULL en la entidad)
-	        // Si cambiaste la entidad para hacer menu_id nullable, puedes omitir esto
-	        Menu menuDefault = menuService.findAll().stream()
-	                .findFirst()
-	                .orElse(null);
-	        if (menuDefault != null) {
-	            pedido.setMenu(menuDefault);
-	            System.out.println("Menú asignado: " + menuDefault.getNombreProducto());
-	        } else {
-	            // Si no hay menús, crear uno genérico de emergencia
-	            System.out.println("⚠️ No hay menús disponibles, creando uno genérico");
-	            Menu menuEmergencia = new Menu();
-	            menuEmergencia.setNombreProducto("Varios Productos");
-	            menuEmergencia.setPrecio(0.0);
-	            menuEmergencia.setDescripcion("Pedido múltiple");
-	            menuEmergencia.setDisponible(true);
-	            // Guardar el menú de emergencia si es necesario
-	            // menuEmergencia = menuService.save(menuEmergencia);
-	            pedido.setMenu(menuEmergencia);
-	        }
+        // 4. Asignar menú por defecto solo si existe en BD
+        // Si no hay menús, dejar null para evitar referencias transientes
+        Menu menuDefault = menuService.findAll().stream().findFirst().orElse(null);
+        if (menuDefault != null) {
+            pedido.setMenu(menuDefault);
+            System.out.println("Menú asignado: " + menuDefault.getNombreProducto());
+        } else {
+            System.out.println("⚠️ No hay menús disponibles, se dejará menu=null para evitar errores");
+        }
 
 	        // 5. Guardar el carrito como JSON en el campo orden
 	        pedido.setOrden(items);
