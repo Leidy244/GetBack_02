@@ -2,9 +2,6 @@ package com.sena.getback.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sena.getback.model.Pedido;
-import com.sena.getback.model.Usuario;
-import com.sena.getback.model.Menu;
-import com.sena.getback.model.Estado;
 import com.sena.getback.model.Factura;
 import com.sena.getback.repository.MesaRepository;
 import com.sena.getback.repository.PedidoRepository;
@@ -24,9 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
-import java.util.Comparator;
 
 @Service
 public class PedidoService {
@@ -244,15 +239,27 @@ public class PedidoService {
             }
         });
     }
-
-    // Obtener todos los pedidos con estado de pago PENDIENTE (ID 1 o 3)
     public List<Pedido> obtenerPedidosPendientes() {
-        return pedidoRepository.findAll().stream()
-                .filter(p -> p.getEstado() != null
-                        && p.getEstado().getId() != null
-                        && (p.getEstado().getId() == 1 || p.getEstado().getId() == 3))
-                .toList();
+        System.out.println("🔍 Buscando pedidos pendientes...");
+        
+        // Opción 1: Buscar por estado PENDIENTE
+        List<Pedido> pedidos = pedidoRepository.findAll().stream()
+                .filter(p -> {
+                    boolean esPendiente = p.getEstado() != null && 
+                                       "PENDIENTE".equals(p.getEstado().getNombreEstado());
+                    if (esPendiente) {
+                        System.out.println("✅ Pedido pendiente encontrado - ID: " + p.getId() + 
+                                         ", Total: " + p.getTotal() + 
+                                         ", Estado: " + (p.getEstado() != null ? p.getEstado().getNombreEstado() : "null"));
+                    }
+                    return esPendiente;
+                })
+                .collect(Collectors.toList());
+        
+        System.out.println("📊 Total pedidos pendientes encontrados: " + pedidos.size());
+        return pedidos;
     }
+   
 
     // Obtener todos los pedidos con estado de pago PAGADO (historial, ID 2)
     public List<Pedido> obtenerPedidosPagados() {

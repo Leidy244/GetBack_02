@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tbodyDetalle = document.getElementById('detalle-venta-modal');
     const totalModal = document.getElementById('total-modal');
     const btnConfirmarVentaReal = document.getElementById('btn-confirmar-venta-real');
+    const selectMesaVenta = document.getElementById('select-mesa-venta');
 
     // Modal PAGOS y sus elementos
     const modalPago = document.getElementById('modalPago');
@@ -130,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
         totalGlobal = 0;
         carrito.forEach(item => totalGlobal += item.precio * item.cantidad);
 
+        // Actualizar detalles del pedido
         tbodyDetalle.innerHTML = '';
         carrito.forEach(item => {
             const subtotal = item.precio * item.cantidad;
@@ -148,44 +150,63 @@ document.addEventListener('DOMContentLoaded', function () {
         modalPuntoVentaInstance.show();
     });
 
-    // ========== PUNTO DE VENTA: ENVIAR VENTA A PENDIENTES ==========
-	// ========== ENVIAR VENTA A PENDIENTES ==========
-	btnConfirmarVentaReal?.addEventListener('click', function () {
-	    if (carrito.length === 0) {
-	        alert('El carrito está vacío');
-	        return;
-	    }
+    // ========== ENVIAR VENTA A PENDIENTES ==========
+    btnConfirmarVentaReal?.addEventListener('click', function () {
+        if (carrito.length === 0) {
+            alert('El carrito está vacío');
+            return;
+        }
 
-	    if (!confirm(`¿Enviar esta venta por $${totalGlobal.toLocaleString('es-CO')} a la lista de pendientes?`)) {
-	        return;
-	    }
+        if (!confirm(`¿Enviar esta venta por $${totalGlobal.toLocaleString('es-CO')} a la lista de pendientes?`)) {
+            return;
+        }
 
-	    // Crear formulario dinámicamente
-	    const form = document.createElement('form');
-	    form.method = 'POST';
-	    form.action = '/caja/crear-pedido-pendiente-form';
-	    form.style.display = 'none';
+        // Obtener mesa seleccionada
+        const mesaId = selectMesaVenta ? selectMesaVenta.value : '';
 
-	    // Campo items
-	    const itemsInput = document.createElement('input');
-	    itemsInput.type = 'hidden';
-	    itemsInput.name = 'items';
-	    itemsInput.value = JSON.stringify(carrito);
+        // Crear formulario dinámicamente
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/caja/crear-pedido-pendiente-form';
+        form.style.display = 'none';
 
-	    // Campo total
-	    const totalInput = document.createElement('input');
-	    totalInput.type = 'hidden';
-	    totalInput.name = 'total';
-	    totalInput.value = totalGlobal;
+        // Campo items
+        const itemsInput = document.createElement('input');
+        itemsInput.type = 'hidden';
+        itemsInput.name = 'items';
+        itemsInput.value = JSON.stringify(carrito);
 
-	    // Agregar campos al formulario
-	    form.appendChild(itemsInput);
-	    form.appendChild(totalInput);
+        // Campo total
+        const totalInput = document.createElement('input');
+        totalInput.type = 'hidden';
+        totalInput.name = 'total';
+        totalInput.value = totalGlobal;
 
-	    // Agregar formulario al body y enviar
-	    document.body.appendChild(form);
-	    form.submit();
-	});
+        // Campo mesa (opcional)
+        if (mesaId) {
+            const mesaInput = document.createElement('input');
+            mesaInput.type = 'hidden';
+            mesaInput.name = 'mesaId';
+            mesaInput.value = mesaId;
+            form.appendChild(mesaInput);
+        }
+
+        // Agregar campos al formulario
+        form.appendChild(itemsInput);
+        form.appendChild(totalInput);
+
+        // Mostrar loading en el botón
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando pedido...';
+        this.disabled = true;
+
+        // Agregar formulario al body y enviar después de un breve delay para mostrar el loading
+        setTimeout(() => {
+            document.body.appendChild(form);
+            form.submit();
+        }, 500);
+    });
+
     // ========== PAGOS: CONECTAR BOTONES "COBRAR" ==========
     document.querySelectorAll('.btn-abrir-modal-pago').forEach(button => {
         button.addEventListener('click', function() {
@@ -198,33 +219,75 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ========== PAGOS: ABRIR MODAL DE PAGO ==========
-    function abrirModalPago(pedidoId, mesa, total, detalle) {
-        pedidoActual = {
-            id: pedidoId,
-            mesa: mesa,
-            total: total,
-            detalle: detalle
-        };
-        
-        // Llenar datos en el modal
-        modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
-        document.getElementById('input-total').value = total;
-        document.getElementById('input-carrito').value = detalle;
-        
-        // Parsear y mostrar detalles del pedido
-        mostrarDetallesPedido(detalle);
-        
-        // Resetear campos
-        modalRecibido.value = '';
-        modalCambio.value = '$0';
-        document.getElementById('modal-error').style.display = 'none';
-        document.getElementById('modal-info').style.display = 'block';
-        
-        // Mostrar modal
-        modalPagoInstance = new bootstrap.Modal(modalPago);
-        modalPagoInstance.show();
-    }
+	// ========== PAGOS: ABRIR MODAL DE PAGO ==========
+	function abrirModalPago(pedidoId, mesa, total, detalle) {
+	    pedidoActual = {
+	        id: pedidoId,
+	        mesa: mesa,
+	        total: total,
+	        detalle: detalle
+	    };
+	    
+	    console.log("💰 Abriendo modal de pago para pedido:", pedidoId);
+	    
+	    // Llenar datos en el modal
+	    document.getElementById('modal-pedido-id').textContent = pedidoId;
+	    document.getElementById('modal-mesa-info').textContent = mesa;
+	    modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
+	    
+	    // Llenar campos del formulario
+	    document.getElementById('input-pedido-id').value = pedidoId;
+	    document.getElementById('input-total').value = total;
+	    document.getElementById('input-carrito').value = detalle;
+	    
+	    // Parsear y mostrar detalles del pedido
+	    mostrarDetallesPedido(detalle);
+	    
+	    // Resetear campos
+	    modalRecibido.value = '';
+	    modalCambio.value = '$0';
+	    document.getElementById('modal-error').style.display = 'none';
+	    document.getElementById('modal-info').style.display = 'block';
+	    
+	    // Mostrar modal
+	    modalPagoInstance = new bootstrap.Modal(modalPago);
+	    modalPagoInstance.show();
+	}
+
+	// ========== PAGOS: MANEJAR ENVÍO DEL FORMULARIO ==========
+	formConfirmarPago?.addEventListener('submit', function(e) {
+	    e.preventDefault();
+	    
+	    if (!pedidoActual) {
+	        alert('Error: No hay pedido seleccionado');
+	        return;
+	    }
+	    
+	    const recibido = parseFloat(modalRecibido.value) || 0;
+	    const total = pedidoActual.total;
+	    
+	    // Validaciones
+	    if (recibido <= 0) {
+	        alert('Ingrese el monto recibido');
+	        return;
+	    }
+	    
+	    if (recibido < total) {
+	        alert('El monto recibido es insuficiente');
+	        return;
+	    }
+	    
+	    // Mostrar loading
+	    const submitBtn = document.getElementById('btn-confirmar-pago');
+	    const originalText = submitBtn.innerHTML;
+	    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+	    submitBtn.disabled = true;
+	    
+	    console.log("✅ Enviando pago para pedido:", pedidoActual.id);
+	    
+	    // Enviar formulario
+	    this.submit();
+	});
 
     // ========== PAGOS: MOSTRAR DETALLES DEL PEDIDO ==========
     function mostrarDetallesPedido(detalleJson) {
@@ -334,4 +397,58 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========== INICIALIZAR ==========
     renderCarrito();
     console.log("Sistema de Punto de Venta y Pagos cargado y listo");
+});
+
+
+
+
+// Agrega esto al final de tu puntoVenta.js
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔍 Forzando visibilidad de la tabla de pagos...");
+    
+    // Función para mostrar todas las filas
+    function mostrarTodasLasFilasPagos() {
+        const tabla = document.getElementById('tabla-pagos-pendientes');
+        if (!tabla) {
+            console.log("❌ No se encontró la tabla de pagos");
+            return;
+        }
+        
+        const filas = tabla.querySelectorAll('tbody tr');
+        console.log(`📊 Filas encontradas en la tabla: ${filas.length}`);
+        
+        // Forzar mostrar todas las filas
+        filas.forEach((fila, index) => {
+            fila.style.display = 'table-row';
+            fila.style.visibility = 'visible';
+            fila.style.opacity = '1';
+            fila.style.height = 'auto';
+            
+            // Debug: mostrar información de cada fila
+            const celdas = fila.querySelectorAll('td');
+            console.log(`   Fila ${index + 1}:`, {
+                id: celdas[0]?.textContent,
+                mesa: celdas[1]?.textContent,
+                total: celdas[3]?.textContent
+            });
+        });
+        
+        // Remover cualquier estilo que oculte el tbody
+        const tbody = tabla.querySelector('tbody');
+        if (tbody) {
+            tbody.style.display = 'table-row-group';
+            tbody.style.visibility = 'visible';
+            tbody.style.opacity = '1';
+        }
+    }
+    
+    // Ejecutar inmediatamente
+    mostrarTodasLasFilasPagos();
+    
+    // Ejecutar después de que la página cargue completamente
+    window.addEventListener('load', mostrarTodasLasFilasPagos);
+    
+    // Ejecutar después de un breve delay por si hay scripts que se ejecutan después
+    setTimeout(mostrarTodasLasFilasPagos, 1000);
+    setTimeout(mostrarTodasLasFilasPagos, 2000);
 });

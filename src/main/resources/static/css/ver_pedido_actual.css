@@ -410,3 +410,109 @@ body {
         min-width: calc(50% - 6px);
     }
 }
+
+/* ==========================
+   CORRECCIÓN PARA TABLA DE PAGOS
+   ESTILOS QUE MUESTRAN TODOS LOS PEDIDOS
+=========================== */
+
+/* Forzar que todas las filas de la tabla sean visibles */
+#tabla-pagos-pendientes tbody tr {
+    display: table-row !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+}
+
+/* Remover cualquier display: none que pueda estar ocultando las filas */
+#tabla-pagos-pendientes tr,
+.table tbody tr,
+.pagos-section tr {
+    display: table-row !important;
+}
+
+/* Asegurar que la tabla se muestre completa */
+.table-container {
+    overflow: visible !important;
+}
+
+#tabla-pagos-pendientes {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+#tabla-pagos-pendientes tbody {
+    display: table-row-group !important;
+}
+
+/* Estilos específicos para las celdas de la tabla de pagos */
+#tabla-pagos-pendientes td {
+    padding: 12px 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    vertical-align: middle !important;
+}
+
+#tabla-pagos-pendientes th {
+    padding: 12px 8px !important;
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    font-weight: 600 !important;
+}
+
+/* Remover cualquier filtro de búsqueda que pueda estar ocultando filas */
+#tabla-pagos-pendientes tbody tr[style*="display: none"] {
+    display: table-row !important;
+}
+
+#tabla-pagos-pendientes tbody tr[style*="visibility: hidden"] {
+    visibility: visible !important;
+}
+
+/* Asegurar que el contenedor de la tabla no tenga overflow que esconda contenido */
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* Estilos para el botón de ver detalle */
+.ver-detalle-pago {
+    background: none !important;
+    border: none !important;
+    color: var(--primary-color) !important;
+    cursor: pointer !important;
+    text-decoration: underline !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.ver-detalle-pago:hover {
+    color: var(--primary-dark) !important;
+    text-decoration: none !important;
+}
+
+/* Estilos para el botón cobrar */
+.btn-abrir-modal-pago {
+    background: var(--success-color) !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+}
+
+.btn-abrir-modal-pago:hover {
+    background: var(--success-color) !important;
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Debug visual temporal - puedes remover esto después */
+#tabla-pagos-pendientes {
+    border: 2px solid #00ff00 !important; /* Verde para debug */
+}
+
+#tabla-pagos-pendientes tbody tr {
+    border: 1px solid #ff0000 !important; /* Rojo para debug */
+}

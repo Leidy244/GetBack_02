@@ -4,6 +4,7 @@ import com.sena.getback.model.Mesa;
 import com.sena.getback.model.Location;
 import com.sena.getback.service.MesaService;
 import com.sena.getback.service.LocationService;
+import com.sena.getback.repository.PedidoRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.stream.Collectors;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,9 @@ public class MesaController {
 
     @Autowired
     private LocationService locationService;
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
     // 📌 Mostrar página de gestión de mesas
     @GetMapping("/mesas")
@@ -158,9 +163,20 @@ public class MesaController {
                     redirectAttributes.addFlashAttribute("error",
                             "No se puede eliminar la mesa " + mesa.getNumero() + " porque está OCUPADA");
                 } else {
-                    mesaService.deleteById(id);
-                    redirectAttributes.addFlashAttribute("success",
-                            "Mesa " + mesa.getNumero() + " eliminada exitosamente");
+                    var pedidos = pedidoRepository.findByMesaId(id);
+                    boolean tienePendientes = pedidos.stream()
+                            .anyMatch(p -> p.getEstado() != null &&
+                                    "PENDIENTE".equalsIgnoreCase(p.getEstado().getNombreEstado()));
+
+                    if (tienePendientes) {
+                        redirectAttributes.addFlashAttribute("error",
+                                "No se puede eliminar la mesa " + mesa.getNumero() + " porque tiene pedidos PENDIENTES");
+                    } else {
+                        pedidos.forEach(p -> { p.setMesa(null); pedidoRepository.save(p); });
+                        mesaService.deleteById(id);
+                        redirectAttributes.addFlashAttribute("success",
+                                "Mesa " + mesa.getNumero() + " eliminada exitosamente");
+                    }
                 }
             } else {
                 redirectAttributes.addFlashAttribute("error", "Mesa no encontrada");
@@ -230,6 +246,15 @@ public class MesaController {
         model.addAttribute("totalMesas", mesas.size());
         model.addAttribute("mesasDisponibles", contarMesasPorEstado(mesas, "DISPONIBLE"));
         model.addAttribute("mesasOcupadas", contarMesasPorEstado(mesas, "OCUPADA"));
+
+        var mesasConPendientes = mesas.stream()
+                .map(Mesa::getId)
+                .filter(java.util.Objects::nonNull)
+                .filter(id -> pedidoRepository.findByMesaId(id).stream()
+                        .anyMatch(p -> p.getEstado() != null &&
+                                "PENDIENTE".equalsIgnoreCase(p.getEstado().getNombreEstado())))
+                .collect(Collectors.toSet());
+        model.addAttribute("mesasConPendientes", mesasConPendientes);
     }
 
     private void cargarDatosPorDefecto(Model model) {

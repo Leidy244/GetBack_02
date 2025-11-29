@@ -64,24 +64,38 @@
 				</div>
 			</div>
 		</div>
-		
-		<!-- Modal Confirmar Venta -->
+
+		<!-- Formulario oculto para pedidos pendientes -->
+		<form id="form-pedido-pendiente" method="POST" action="/caja/crear-pedido-pendiente-form" style="display: none;">
+			<!-- Los campos se agregan dinámicamente -->
+		</form>
+
+		<!-- Modal Confirmar Venta CORREGIDO -->
 		<div class="modal fade" id="modalConfirmarVenta" tabindex="-1">
 		    <div class="modal-dialog modal-lg">
 		        <div class="modal-content">
 		            <div class="modal-header bg-primary text-white">
-		                <h5 class="modal-title">Confirmar Pedido</h5>
+		                <h5 class="modal-title"> Confirmar Pedido</h5>
 		                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 		            </div>
 		            <div class="modal-body">
-		                <!-- Selector de Mesa -->
+		                <!-- Selector de Mesa CORREGIDO -->
 		                <div class="mb-4">
 		                    <label class="form-label fw-bold"> Seleccionar Mesa</label>
-		                    <select class="form-select" id="select-mesa-venta">
-		                        <option value="">-- Bar (Mostrador) --</option>
-		                        <!-- Las mesas se cargarán dinámicamente con JavaScript -->
+		                    <select class="form-select" id="select-mesa-venta" name="mesaId">
+		                        <option value="">-- Barra (Mostrador) --</option>
+		                        <!-- CORRECCIÓN: Agregar th:text para mostrar el texto -->
+								<!-- OPCIÓN ROBUSTA: Usar th:with para manejar nulls -->
+								<option th:each="mesa : ${mesas}"
+								        th:value="${mesa.id}"
+								        th:with="desc=${mesa.descripcion != null ? mesa.descripcion : ''}"
+								        th:text="${'Mesa ' + mesa.numero + (desc != '' ? ' - ' + desc : '')}">
+								    Mesa
+								</option>
 		                    </select>
 		                    <div class="form-text">Selecciona una mesa o deja "Bar" para pedidos en mostrador</div>
+		                    <!-- Debug: mostrar cantidad de mesas cargadas -->
+		                    <small class="text-muted" th:if="${mesas}" th:text="'Mesas disponibles: ' + ${#lists.size(mesas)}"></small>
 		                </div>
 
 		                <!-- Detalles del Pedido -->
@@ -113,12 +127,13 @@
 		            <div class="modal-footer">
 		                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
 		                <button type="button" class="btn btn-success" id="btn-confirmar-venta-real">
-		                    ✅ Confirmar Pedido Pendiente
+		                    Confirmar Pedido Pendiente
 		                </button>
 		            </div>
 		        </div>
 		    </div>
 		</div>
+	</div>
 </body>
 <script th:src="@{/js/puntoVenta.js}"></script>
 </html>
