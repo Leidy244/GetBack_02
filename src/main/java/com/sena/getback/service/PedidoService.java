@@ -83,8 +83,11 @@ public class PedidoService {
                 .orElse(null);
     }
 
-    // Crear nuevo pedido
     public Pedido crearPedido(Integer mesaId, String itemsJson, String comentarios, Double total) {
+        return crearPedido(mesaId, itemsJson, comentarios, total, null);
+    }
+
+    public Pedido crearPedido(Integer mesaId, String itemsJson, String comentarios, Double total, com.sena.getback.model.Usuario usuarioOverride) {
         // 1) Validar stock a partir de itemsJson antes de crear el pedido
         validarStockParaItems(itemsJson);
 
@@ -113,16 +116,16 @@ public class PedidoService {
             pedido.setMesa(mesa);
         });
 
-        // Configurar usuario por defecto (primer usuario disponible o crear uno
-        // genérico)
-        usuarioRepository.findAll().stream().findFirst().ifPresent(pedido::setUsuario);
+        if (usuarioOverride != null) {
+            pedido.setUsuario(usuarioOverride);
+        } else {
+            usuarioRepository.findAll().stream().findFirst().ifPresent(pedido::setUsuario);
+        }
 
         // Configurar menú por defecto (primer menú disponible)
         menuRepository.findAll().stream().findFirst().ifPresent(pedido::setMenu);
 
-        // Configurar estado por defecto usando la tabla estados: ID 1 = PENDIENTE
-        estadoRepository.findById(1)
-                .ifPresent(pedido::setEstado);
+        estadoRepository.findById(1).ifPresent(pedido::setEstado);
 
         // 2) Registrar consumo real de inventario por los productos del pedido
         try {
@@ -257,12 +260,15 @@ public class PedidoService {
         // Opción 1: Buscar por estado PENDIENTE
         List<Pedido> pedidos = pedidoRepository.findAll().stream()
                 .filter(p -> {
-                    boolean esPendiente = p.getEstado() != null && 
-                                       "PENDIENTE".equals(p.getEstado().getNombreEstado());
+                    String nombreEstado = (p.getEstado() != null && p.getEstado().getNombreEstado() != null)
+                            ? p.getEstado().getNombreEstado().trim()
+                            : null;
+                    boolean esPendiente = nombreEstado != null &&
+                            nombreEstado.equalsIgnoreCase("PENDIENTE");
                     if (esPendiente) {
-                        System.out.println("✅ Pedido pendiente encontrado - ID: " + p.getId() + 
-                                         ", Total: " + p.getTotal() + 
-                                         ", Estado: " + (p.getEstado() != null ? p.getEstado().getNombreEstado() : "null"));
+                        System.out.println("✅ Pedido pendiente encontrado - ID: " + p.getId() +
+                                ", Total: " + p.getTotal() +
+                                ", Estado: " + nombreEstado);
                     }
                     return esPendiente;
                 })
@@ -298,10 +304,17 @@ public class PedidoService {
 
     // Obtener pedidos PENDIENTES para el panel de inicio de caja
     public List<Pedido> obtenerPedidosPendientesBar() {
-        return obtenerPedidosPendientes().stream()
-                .filter(p -> p.getUsuario() != null
-                        && p.getUsuario().getRol() != null
-                        && "MESERO".equalsIgnoreCase(p.getUsuario().getRol().getNombre()))
+        return obtenerPedidosPendientes();
+    }
+
+    public List<Pedido> obtenerPedidosCompletados() {
+        return pedidoRepository.findAll().stream()
+                .filter(p -> {
+                    String nombreEstado = (p.getEstado() != null && p.getEstado().getNombreEstado() != null)
+                            ? p.getEstado().getNombreEstado().trim()
+                            : null;
+                    return nombreEstado != null && nombreEstado.equalsIgnoreCase("COMPLETADO");
+                })
                 .collect(java.util.stream.Collectors.toList());
     }
 

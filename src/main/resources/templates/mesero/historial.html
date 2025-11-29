@@ -88,6 +88,7 @@
                         <th>Total</th>
                         <th>Estado</th>
                         <th>Mesero</th>
+                        <th>Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -98,6 +99,16 @@
                         <td th:text="${#numbers.formatDecimal(pedido.total, 0, 'POINT', 0, 'POINT')}">$0</td>
                         <td th:text="${pedido.estado != null ? pedido.estado.nombreEstado : 'SIN ESTADO'}">PENDIENTE</td>
                         <td th:text="${pedido.usuario != null ? pedido.usuario.nombre + ' ' + pedido.usuario.apellido : 'No asignado'}">admin ana</td>
+                        <td>
+                            <form th:if="${pedido.estado != null and pedido.estado.nombreEstado == 'PENDIENTE'}"
+                                  th:action="@{/mesero/pedidos/confirmar}"
+                                  method="post">
+                                <input type="hidden" name="pedidoId" th:value="${pedido.id}" />
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> Confirmar
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(pedidos)}">
                         <td colspan="6" style="text-align:center; padding:20px;">No hay pedidos registrados.</td>

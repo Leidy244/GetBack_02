@@ -259,11 +259,15 @@ public class MeseroController {
 
     // Confirmar y persistir pedido desde borrador
     @PostMapping("/pedidos/confirmar")
-    public String confirmarPedido(HttpSession session) {
-        Integer mesaId = (Integer) session.getAttribute("draftMesaId");
-        String itemsJson = (String) session.getAttribute("draftItemsJson");
-        String comentarios = (String) session.getAttribute("draftComentarios");
-        Double total = (Double) session.getAttribute("draftTotal");
+    public String confirmarPedido(HttpSession session,
+                                  @RequestParam(required = false) Integer mesaId,
+                                  @RequestParam(required = false) String itemsJson,
+                                  @RequestParam(required = false) String comentarios,
+                                  @RequestParam(required = false) Double total) {
+        if (mesaId == null) mesaId = (Integer) session.getAttribute("draftMesaId");
+        if (itemsJson == null) itemsJson = (String) session.getAttribute("draftItemsJson");
+        if (comentarios == null) comentarios = (String) session.getAttribute("draftComentarios");
+        if (total == null) total = (Double) session.getAttribute("draftTotal");
 
         System.out.println("=== CONFIRMANDO PEDIDO ===");
         System.out.println("Mesa ID: " + mesaId);
@@ -277,13 +281,14 @@ public class MeseroController {
         }
 
         try {
-            Pedido pedidoCreado = pedidoService.crearPedido(mesaId, itemsJson, comentarios, total);
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Pedido pedidoCreado = pedidoService.crearPedido(mesaId, itemsJson, comentarios, total, usuario);
             System.out.println("ÉXITO: Pedido creado con ID: " + pedidoCreado.getId());
             
             // limpiar borrador
             clearDraft(session);
             
-            // Redireccionar a la vista de mesas del mesero (fusionMesas)
+            // Redireccionar a la vista de Mesas del mesero
             return "redirect:/mesero";
         } catch (Exception e) {
             System.out.println("ERROR al crear pedido: " + e.getMessage());
@@ -363,8 +368,8 @@ public class MeseroController {
         return map;
     }
 
-	@GetMapping("/historial")
-	public String mostrarHistorialPedidos(
+    @GetMapping("/historial")
+    public String mostrarHistorialPedidos(
 	        @RequestParam(name = "page", defaultValue = "0") int page,
 	        @RequestParam(name = "size", defaultValue = "10") int size,
 	        @RequestParam(name = "mesa", required = false) String mesa,
@@ -414,8 +419,25 @@ public class MeseroController {
 	        model.addAttribute("meseros", usuarioRepository.findByRol_Nombre("MESERO"));
 	    }
 
-	    return "mesero/historial";
-	}
+        return "mesero/historial";
+    }
+
+    @PostMapping("/mesero/pedidos/confirmar")
+    public String confirmarPedidoPendiente(@RequestParam("pedidoId") Integer pedidoId,
+                                           HttpSession session) {
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Pedido p = pedidoService.findById(pedidoId);
+            if (p != null && p.getUsuario() != null && usuario != null &&
+                p.getUsuario().getId() != null && usuario.getId() != null &&
+                p.getUsuario().getId().longValue() == usuario.getId().longValue()) {
+                // Marcar como COMPLETADO (flujo de BAR/CAJA existente)
+                pedidoService.marcarPedidoComoCompletadoBar(pedidoId);
+            }
+        } catch (Exception ignored) {}
+        // Volver al historial filtrado en pendientes para visualizar el cambio
+        return "redirect:/historial?estado=PENDIENTE";
+    }
 
 	@GetMapping("/configuracion")
 	public String mostrarConfiguracion() {
