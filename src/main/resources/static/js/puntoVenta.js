@@ -273,21 +273,38 @@ document.addEventListener('DOMContentLoaded', function () {
 	    
     const recibido = parseFloat(modalRecibido.value) || 0;
     const total = pedidoActual.total;
-    const metodo = (document.getElementById('input-metodo-pago')?.value || 'EFECTIVO').toUpperCase();
+    const metodoSelect = document.getElementById('metodo-pago');
+    const metodoHidden = document.getElementById('input-metodo-pago');
+    const metodo = ((metodoSelect && metodoSelect.value) || (metodoHidden && metodoHidden.value) || 'EFECTIVO').toUpperCase();
 	    
-	    // Validaciones
-    if (metodo === 'EFECTIVO' || metodo === 'MIXTO') {
-    if (metodo === 'EFECTIVO' || metodo === 'MIXTO') {
+    // Validaciones
+    if (metodo === 'EFECTIVO') {
         if (recibido <= 0) {
             alert('Ingrese el monto recibido');
             return;
         }
-        
         if (recibido < total) {
             alert('El monto recibido es insuficiente');
             return;
         }
-    }
+    } else if (metodo === 'MIXTO') {
+        const elecInput = document.getElementById('modal-electronico');
+        const electronico = elecInput ? (parseFloat(elecInput.value) || 0) : 0;
+        const sum = recibido + electronico;
+        if (sum <= 0) {
+            alert('Ingrese montos de efectivo y/o transferencia');
+            return;
+        }
+        if (sum < total) {
+            alert('El total recibido es insuficiente');
+            return;
+        }
+        const hiddenRecibido = document.getElementById('input-monto-recibido');
+        if (hiddenRecibido) hiddenRecibido.value = sum.toFixed(2);
+        const hiddenEfectivo = document.getElementById('input-monto-efectivo');
+        if (hiddenEfectivo) hiddenEfectivo.value = recibido.toFixed(2);
+        const hiddenElectronico = document.getElementById('input-monto-electronico');
+        if (hiddenElectronico) hiddenElectronico.value = electronico.toFixed(2);
     }
 	    
 	    // Mostrar loading
@@ -338,11 +355,21 @@ document.addEventListener('DOMContentLoaded', function () {
     if (metodo !== 'EFECTIVO' && metodo !== 'MIXTO') {
         return;
     }
-    const cambio = recibido - total;
+    let sum = recibido;
+    if (metodo === 'MIXTO') {
+        const elecInput = document.getElementById('modal-electronico');
+        const electronico = elecInput ? (parseFloat(elecInput.value) || 0) : 0;
+        sum = recibido + electronico;
+        const hiddenEfectivo = document.getElementById('input-monto-efectivo');
+        const hiddenElectronico = document.getElementById('input-monto-electronico');
+        if (hiddenEfectivo) hiddenEfectivo.value = recibido.toFixed(2);
+        if (hiddenElectronico) hiddenElectronico.value = electronico.toFixed(2);
+    }
+    const cambio = sum - total;
         
         if (cambio >= 0) {
             modalCambio.value = '$' + cambio.toLocaleString('es-CO');
-            document.getElementById('input-monto-recibido').value = recibido;
+            document.getElementById('input-monto-recibido').value = sum;
             document.getElementById('modal-error').style.display = 'none';
             document.getElementById('modal-info').style.display = 'block';
         } else {
@@ -364,16 +391,38 @@ document.addEventListener('DOMContentLoaded', function () {
         
         const recibido = parseFloat(modalRecibido.value) || 0;
         const total = pedidoActual.total;
+        const metodoSelect = document.getElementById('metodo-pago');
+        const metodoHidden = document.getElementById('input-metodo-pago');
+        const metodo = ((metodoSelect && metodoSelect.value) || (metodoHidden && metodoHidden.value) || 'EFECTIVO').toUpperCase();
         
-        // Validaciones
-        if (recibido <= 0) {
-            alert('Ingrese el monto recibido');
-            return;
-        }
-        
-        if (recibido < total) {
-            alert('El monto recibido es insuficiente');
-            return;
+        // Validaciones solo para EFECTIVO/MIXTO
+        if (metodo === 'EFECTIVO') {
+            if (recibido <= 0) {
+                alert('Ingrese el monto recibido');
+                return;
+            }
+            if (recibido < total) {
+                alert('El monto recibido es insuficiente');
+                return;
+            }
+        } else if (metodo === 'MIXTO') {
+            const elecInput = document.getElementById('modal-electronico');
+            const electronico = elecInput ? (parseFloat(elecInput.value) || 0) : 0;
+            const sum = recibido + electronico;
+            if (sum <= 0) {
+                alert('Ingrese montos de efectivo y/o transferencia');
+                return;
+            }
+            if (sum < total) {
+                alert('El total recibido es insuficiente');
+                return;
+            }
+            const hiddenRecibido = document.getElementById('input-monto-recibido');
+            if (hiddenRecibido) hiddenRecibido.value = sum.toFixed(2);
+            const hiddenEfectivo = document.getElementById('input-monto-efectivo');
+            if (hiddenEfectivo) hiddenEfectivo.value = recibido.toFixed(2);
+            const hiddenElectronico = document.getElementById('input-monto-electronico');
+            if (hiddenElectronico) hiddenElectronico.value = electronico.toFixed(2);
         }
         
         // Mostrar loading

@@ -424,7 +424,7 @@ public class PedidoService {
         Double total = pedido.getTotal() != null ? pedido.getTotal() : 0.0;
         String metodo = (metodoPago != null && !metodoPago.isBlank()) ? metodoPago : "EFECTIVO";
 
-        if (!"EFECTIVO".equalsIgnoreCase(metodo)) {
+        if (!"EFECTIVO".equalsIgnoreCase(metodo) && !"MIXTO".equalsIgnoreCase(metodo)) {
             montoRecibido = total;
         } else if (montoRecibido == null) {
             montoRecibido = total;
@@ -450,17 +450,18 @@ public class PedidoService {
             }
             var cliente = clienteOpt.get();
             Double saldoActual = cliente.getSaldo() != null ? cliente.getSaldo() : 0.0;
-            if (saldoActual < total) {
-                throw new IllegalStateException("Saldo insuficiente del cliente (saldo: " + String.format("%.2f", saldoActual) + ")");
-            }
-            cliente.setSaldo(saldoActual - total);
+            Double nuevoSaldo = saldoActual - total; // permitir saldo negativo
+            cliente.setSaldo(nuevoSaldo);
             clienteFrecuenteRepository.save(cliente);
 
             com.sena.getback.model.MovimientoCredito mov = new com.sena.getback.model.MovimientoCredito();
             mov.setCliente(cliente);
             mov.setTipo("CONSUMO");
             mov.setMonto(total);
-            mov.setDescripcion("Consumo por pedido " + pedido.getId());
+            String deficitInfo = (saldoActual < total)
+                    ? " (saldo insuficiente: falta " + String.format("%.2f", (total - saldoActual)) + ")"
+                    : "";
+            mov.setDescripcion("Consumo por pedido " + pedido.getId() + deficitInfo);
             movimientoCreditoRepository.save(mov);
         }
 

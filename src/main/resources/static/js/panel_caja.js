@@ -273,10 +273,14 @@ class PanelCaja {
         const grupoCliente = document.getElementById('grupo-cliente');
         const grupoRecibido = document.getElementById('grupo-recibido');
         const grupoCambio = document.getElementById('grupo-cambio');
+        const grupoElectronico = document.getElementById('grupo-electronico');
+        const modalElectronico = document.getElementById('modal-electronico');
         const clienteSelect = document.getElementById('cliente-frecuente');
         const inputMetodoPagoHidden = document.getElementById('input-metodo-pago');
         const inputReferenciaHidden = document.getElementById('input-referencia-pago');
         const inputClienteHidden = document.getElementById('input-cliente-id');
+        const inputMontoEfectivoHidden = document.getElementById('input-monto-efectivo');
+        const inputMontoElectronicoHidden = document.getElementById('input-monto-electronico');
         const inputBusquedaPagos = document.getElementById('busqueda-pagos');
         const tablaPagosPendientes = document.getElementById('tabla-pagos-pendientes');
 
@@ -510,6 +514,35 @@ class PanelCaja {
 
                 const recibido = parseFloat(modalRecibido.value) || 0;
 
+                const metodo = (inputMetodoPagoHidden.value || 'EFECTIVO').toUpperCase();
+                if (metodo === 'MIXTO') {
+                    const electronico = modalElectronico ? (parseFloat(modalElectronico.value) || 0) : 0;
+                    const sum = recibido + electronico;
+                    const cambio = sum - total;
+                    const hiddenRecibido = document.getElementById('input-monto-recibido');
+                    if (inputMontoEfectivoHidden) inputMontoEfectivoHidden.value = recibido.toFixed(2);
+                    if (inputMontoElectronicoHidden) inputMontoElectronicoHidden.value = electronico.toFixed(2);
+                    if (hiddenRecibido) hiddenRecibido.value = sum.toFixed(2);
+                    if (sum > 0) {
+                        modalInfo.style.display = 'none';
+                        if (cambio >= 0) {
+                            modalCambio.value = `$${formatearMonto(cambio)}`;
+                            modalError.style.display = 'none';
+                            btnConfirmarPago.disabled = false;
+                        } else {
+                            modalCambio.value = '$0.00';
+                            modalError.style.display = 'block';
+                            btnConfirmarPago.disabled = true;
+                        }
+                    } else {
+                        modalCambio.value = '$0.00';
+                        modalInfo.style.display = 'block';
+                        modalError.style.display = 'none';
+                        btnConfirmarPago.disabled = true;
+                    }
+                    return;
+                }
+
                 if (recibido > 0) {
                     modalInfo.style.display = 'none';
                     
@@ -532,6 +565,42 @@ class PanelCaja {
                     modalInfo.style.display = 'block';
                     modalError.style.display = 'none';
                     btnConfirmarPago.disabled = true;
+                }
+            });
+        }
+
+        if (modalElectronico) {
+            modalElectronico.addEventListener('input', () => {
+                const metodo = (inputMetodoPagoHidden.value || 'EFECTIVO').toUpperCase();
+                if (metodo === 'MIXTO') {
+                    // Replicar cálculo mixto
+                    const totalElement = document.getElementById('modal-total');
+                    const total = parseFloat(totalElement.textContent.replace('$', '').replace(/\./g, '')) || 0;
+                    const efectivo = parseFloat(modalRecibido.value) || 0;
+                    const electronico = parseFloat(modalElectronico.value) || 0;
+                    const sum = efectivo + electronico;
+                    const cambio = sum - total;
+                    const hiddenRecibido = document.getElementById('input-monto-recibido');
+                    if (inputMontoEfectivoHidden) inputMontoEfectivoHidden.value = efectivo.toFixed(2);
+                    if (inputMontoElectronicoHidden) inputMontoElectronicoHidden.value = electronico.toFixed(2);
+                    if (hiddenRecibido) hiddenRecibido.value = sum.toFixed(2);
+                    if (sum > 0) {
+                        modalInfo.style.display = 'none';
+                        if (cambio >= 0) {
+                            modalCambio.value = `$${formatearMonto(cambio)}`;
+                            modalError.style.display = 'none';
+                            btnConfirmarPago.disabled = false;
+                        } else {
+                            modalCambio.value = '$0.00';
+                            modalError.style.display = 'block';
+                            btnConfirmarPago.disabled = true;
+                        }
+                    } else {
+                        modalCambio.value = '$0.00';
+                        modalInfo.style.display = 'block';
+                        modalError.style.display = 'none';
+                        btnConfirmarPago.disabled = true;
+                    }
                 }
             });
         }
@@ -562,6 +631,7 @@ class PanelCaja {
                 grupoReferencia.style.display = 'block';
                 grupoCliente.style.display = 'none';
                 grupoRecibido && (grupoRecibido.style.display = 'none');
+                grupoElectronico && (grupoElectronico.style.display = 'none');
                 grupoCambio && (grupoCambio.style.display = 'none');
                 modalRecibido.type = 'number';
                 modalRecibido.readOnly = true;
@@ -577,17 +647,25 @@ class PanelCaja {
                 grupoReferencia.style.display = 'block';
                 grupoCliente.style.display = 'none';
                 grupoRecibido && (grupoRecibido.style.display = 'block');
+                grupoElectronico && (grupoElectronico.style.display = 'block');
                 grupoCambio && (grupoCambio.style.display = 'block');
                 modalRecibido.type = 'number';
                 modalRecibido.readOnly = false;
                 modalRecibido.required = true;
                 modalRecibido.placeholder = '0';
+                if (modalElectronico) {
+                    modalElectronico.readOnly = false;
+                    modalElectronico.required = true;
+                    modalElectronico.placeholder = '0';
+                    modalElectronico.value = '';
+                }
                 btnConfirmarPago.disabled = true;
                 modalInfo.style.display = 'block';
             } else if (metodo === 'CLIENTE_FRECUENTE') {
                 grupoReferencia.style.display = 'none';
                 grupoCliente.style.display = 'block';
                 grupoRecibido && (grupoRecibido.style.display = 'block');
+                grupoElectronico && (grupoElectronico.style.display = 'none');
                 grupoCambio && (grupoCambio.style.display = 'none');
                 modalRecibido.type = 'password';
                 modalRecibido.readOnly = true;
@@ -597,6 +675,8 @@ class PanelCaja {
                 modalCambio.value = '$0';
                 const hiddenRecibido = document.getElementById('input-monto-recibido');
                 if (hiddenRecibido) hiddenRecibido.value = '0';
+                if (inputMontoEfectivoHidden) inputMontoEfectivoHidden.value = '0';
+                if (inputMontoElectronicoHidden) inputMontoElectronicoHidden.value = '0';
                 btnConfirmarPago.disabled = true;
                 modalInfo.style.display = 'none';
                 modalError.style.display = 'none';
