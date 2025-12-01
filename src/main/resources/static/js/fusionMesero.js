@@ -46,6 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
 
+    const escapeHtml = (s) => String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
     // ✅ DECLARAR updateTotal ANTES de cualquier uso
     const updateTotal = () => {
         if (pedidoTotalValue) {
@@ -88,6 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const orderComments = document.getElementById('order-comments');
+    const commentsModal = document.getElementById('commentsModal');
+    const commentsCloseBtn = commentsModal?.querySelector('.close-modal');
+    const commentsCancelBtn = commentsModal?.querySelector('.btn-cancel');
+    const commentsSaveBtn = commentsModal?.querySelector('.btn-save');
 
     // Inicializar desde borrador (flujo de "Editar") si existe
     try {
@@ -264,15 +275,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 orderItems[existingItemIndex].quantity = quantity;
                 orderItems[existingItemIndex].subtotal = price * quantity;
             } else {
+                const el = document.querySelector(`.product-item[data-producto-id="${productId}"]`);
+                const area = el ? (el.getAttribute('data-area') || '') : '';
                 orderItems.push({
                     id: productId,
                     name: productName,
                     price: price,
                     quantity: quantity,
-                    subtotal: price * quantity
+                    subtotal: price * quantity,
+                    area: area
                 });
             }
         }
+    }
+
+    // Reconstruye la lista de items directamente desde el DOM según las cantidades seleccionadas
+    function rebuildOrderItemsFromDom() {
+        const newItems = [];
+        const products = document.querySelectorAll('.product-item');
+        products.forEach(product => {
+            const quantityInput = product.querySelector('.quantity-input');
+            const quantity = quantityInput ? parseInt(quantityInput.value) || 0 : 0;
+            if (quantity > 0) {
+                const productId = product.getAttribute('data-producto-id');
+                const productName = product.getAttribute('data-producto-nombre') ||
+                    (product.querySelector('.product-name')?.textContent || 'Producto');
+                const price = parseFloat(product.getAttribute('data-precio')) ||
+                    parseFloat(product.querySelector('.product-price')?.textContent.replace('$', '').replace('.', '').replace(',', '.') || '0');
+                const area = product.getAttribute('data-area') || '';
+                newItems.push({
+                    id: String(productId),
+                    name: productName,
+                    price: price,
+                    quantity: quantity,
+                    subtotal: price * quantity,
+                    area: area
+                });
+            }
+        });
+        orderItems = newItems;
+        totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+        updateTotal();
     }
 
     // ❌ ELIMINAR esta declaración duplicada de updateTotal (está en las líneas ~250-256)
@@ -345,19 +388,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Comments functionality
+    // Comments modal functionality
     const commentsBtn = document.getElementById('btn-comments');
-    const commentsContainer = document.getElementById('comments-container');
-
-    if (commentsBtn && commentsContainer) {
+    if (commentsBtn && commentsModal) {
         commentsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            commentsContainer.classList.toggle('active');
+            e.preventDefault();
+            commentsModal.style.display = 'flex';
         });
 
-        document.addEventListener('click', (e) => {
-            if (!commentsContainer.contains(e.target) && e.target !== commentsBtn) {
-                commentsContainer.classList.remove('active');
+        if (commentsCloseBtn) {
+            commentsCloseBtn.addEventListener('click', () => {
+                commentsModal.style.display = 'none';
+            });
+        }
+
+        if (commentsCancelBtn) {
+            commentsCancelBtn.addEventListener('click', () => {
+                commentsModal.style.display = 'none';
+            });
+        }
+
+        if (commentsSaveBtn) {
+            commentsSaveBtn.addEventListener('click', () => {
+                commentsModal.style.display = 'none';
+                showNotification('✅ Comentario guardado');
+            });
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === commentsModal) {
+                commentsModal.style.display = 'none';
             }
         });
     }
@@ -371,6 +431,8 @@ document.addEventListener('DOMContentLoaded', () => {
             orderSummary.innerHTML = '<p class="no-items">No hay productos en el pedido</p>';
             return;
         }
+
+        const commentText = orderComments ? orderComments.value.trim() : '';
 
         let summaryHTML = `
             <div class="order-items">
@@ -387,7 +449,13 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         });
 
-        summaryHTML += `
+        const commentSection = commentText ? `
+                </div>
+                <div class="order-comment-modal">
+                    <strong>Comentarios:</strong>
+                    <div class="comment-text">${escapeHtml(commentText)}</div>
+                </div>
+        ` : `
                 </div>
                 <div class="order-total-modal">
                     <strong>Total: $${formatMonto(totalOrder)}</strong>
@@ -395,10 +463,23 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        summaryHTML += commentSection;
+
+        if (commentText) {
+            summaryHTML += `
+                <div class="order-total-modal">
+                    <strong>Total: $${formatMonto(totalOrder)}</strong>
+                </div>
+            `;
+        }
+
         orderSummary.innerHTML = summaryHTML;
     }
 
     function sendOrder() {
+        // Antes de enviar, reconstruir la lista de items desde el DOM para asegurar coherencia
+        rebuildOrderItemsFromDom();
+
         if (orderItems.length === 0) {
             showNotification('❌ No hay productos en el pedido', 'error');
             return;
@@ -416,7 +497,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 cantidad: item.quantity,
                 precio: item.price,
                 subtotal: item.price * item.quantity,
-                comentarios: ''
+                comentarios: '',
+                tipo: (item.area || '').toUpperCase()
             })),
             total: totalOrder
         };
@@ -467,8 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (orderComments) orderComments.value = '';
-
-        if (commentsContainer) commentsContainer.classList.remove('active');
+        if (commentsModal) commentsModal.style.display = 'none';
     }
 
     // Notification system
@@ -530,6 +611,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .item-name { flex: 2; }
         .item-subtotal { flex: 1; text-align: right; font-weight: bold; }
         .order-total-modal { margin-top: 15px; padding-top: 10px; border-top: 2px solid var(--primary); text-align: center; font-size: 1.2em; }
+        .order-comment-modal { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); }
+        .order-comment-modal strong { display: block; margin-bottom: 6px; color: var(--accent); }
+        .comment-text { background: rgba(0,0,0,0.2); border: 1px solid var(--primary-light); border-radius: 8px; padding: 8px; color: var(--text-primary); white-space: pre-wrap; }
     `;
     document.head.appendChild(style);
 

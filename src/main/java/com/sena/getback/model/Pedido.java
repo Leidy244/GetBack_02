@@ -31,6 +31,9 @@ public class Pedido {
     @Column(name = "fechaCreacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "recogido")
+    private Boolean recogido = false;
+
     // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
@@ -69,6 +72,7 @@ public class Pedido {
         this.mesa = mesa;
         this.estado = estado;
         this.fechaCreacion = LocalDateTime.now();
+        this.recogido = false;
     }
 
     // Getters y Setters
@@ -182,6 +186,14 @@ public class Pedido {
 
     public void setFactura(Factura factura) {
         this.factura = factura;
+    }
+
+    public Boolean getRecogido() {
+        return recogido;
+    }
+
+    public void setRecogido(Boolean recogido) {
+        this.recogido = recogido;
     }
 
     public String getLabelMesa() {

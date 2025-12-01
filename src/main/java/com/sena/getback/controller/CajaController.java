@@ -190,7 +190,176 @@ public class CajaController {
 	    }
 
         if ("pagos".equals(activeSection)) {
-            model.addAttribute("pagosPendientes", pedidoService.obtenerPedidosCompletados());
+            List<com.sena.getback.model.Pedido> completados = pedidoService.obtenerPedidosCompletados();
+
+            java.util.Map<Integer, java.util.List<com.sena.getback.model.Pedido>> porMesa = new java.util.HashMap<>();
+            for (var p : completados) {
+                Integer mesaId = (p.getMesa() != null) ? p.getMesa().getId() : null;
+                porMesa.computeIfAbsent(mesaId != null ? mesaId : -1, k -> new java.util.ArrayList<>()).add(p);
+            }
+
+            java.util.List<java.util.Map<String, Object>> pagosAgrupados = new java.util.ArrayList<>();
+            for (var entry : porMesa.entrySet()) {
+                var lista = entry.getValue();
+                if (lista.isEmpty()) continue;
+                var primero = lista.get(0);
+                double total = lista.stream().mapToDouble(x -> x.getTotal() != null ? x.getTotal() : 0.0).sum();
+                java.time.LocalDateTime fechaMax = lista.stream()
+                        .map(com.sena.getback.model.Pedido::getFechaCreacion)
+                        .filter(java.util.Objects::nonNull)
+                        .max(java.util.Comparator.naturalOrder())
+                        .orElse(null);
+                java.util.List<Integer> ids = lista.stream()
+                        .map(com.sena.getback.model.Pedido::getId)
+                        .filter(java.util.Objects::nonNull)
+                        .toList();
+
+                // Construir detalle agrupado (items + comentarios)
+                java.util.Map<String, Integer> itemsAgregados = new java.util.HashMap<>();
+                java.util.Map<String, Double> preciosPorProducto = new java.util.HashMap<>();
+                java.util.List<String> comentarios = new java.util.ArrayList<>();
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                for (var ped : lista) {
+                    String ordenJson = ped.getOrden();
+                    if (ordenJson != null && !ordenJson.isBlank()) {
+                        try {
+                            // Intenta parsear como Map raíz
+                            Object rootObj = mapper.readValue(ordenJson, Object.class);
+                            java.util.List<?> itemsList = null;
+                            String comentariosStr = null;
+
+                            if (rootObj instanceof java.util.Map<?,?> root) {
+                                Object itemsObj = root.get("items");
+                                if (itemsObj == null) itemsObj = root.get("Items");
+                                if (itemsObj instanceof java.util.List<?>) {
+                                    itemsList = (java.util.List<?>) itemsObj;
+                                } else if (itemsObj instanceof String sItems) {
+                                    // Cuando items está como String JSON
+                                    try {
+                                        Object nested = mapper.readValue(sItems, Object.class);
+                                        if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                                        else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                                            Object nestedItems = nestedMap.get("items");
+                                            if (nestedItems == null) nestedItems = nestedMap.get("Items");
+                                            if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                                        }
+                                    } catch (Exception ignored) {}
+                                } else if (itemsObj instanceof java.util.Map<?,?> itemsMap) {
+                                    Object nestedItems = itemsMap.get("items");
+                                    if (nestedItems == null) nestedItems = itemsMap.get("Items");
+                                    if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                                } else {
+                                    // Fallback: algunos flujos guardan 'itemsJson'
+                                    Object itemsJsonObj = root.get("itemsJson");
+                                    if (itemsJsonObj instanceof String sJson) {
+                                        try {
+                                            Object nested = mapper.readValue(sJson, Object.class);
+                                            if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                                            else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                                                Object nestedItems = nestedMap.get("items");
+                                                if (nestedItems == null) nestedItems = nestedMap.get("Items");
+                                                if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                                            }
+                                        } catch (Exception ignored) {}
+                                    }
+                                }
+                                Object commRoot = root.get("comentarios");
+                                if (commRoot instanceof String s && !s.isBlank()) comentariosStr = s;
+                            } else if (rootObj instanceof java.util.List<?>) {
+                                itemsList = (java.util.List<?>) rootObj;
+                            }
+
+                            if (itemsList != null) {
+                                for (Object it : itemsList) {
+                                    if (it instanceof java.util.Map<?,?> itemMap) {
+                                        Object nombreObj = itemMap.get("nombre");
+                                        if (nombreObj == null) nombreObj = itemMap.get("productoNombre");
+                                        if (nombreObj == null) nombreObj = itemMap.get("producto");
+                                        if (nombreObj == null) nombreObj = itemMap.get("nombreProducto");
+                                        if (nombreObj == null) {
+                                            // Buscar la primera clave tipo String que parezca nombre
+                                            for (var k : itemMap.keySet()) {
+                                                if (!(k instanceof String)) continue;
+                                                String ks = (String) k;
+                                                if (ks.toLowerCase().contains("nombre")) { nombreObj = itemMap.get(k); break; }
+                                                if (ks.toLowerCase().contains("producto")) { nombreObj = itemMap.get(k); break; }
+                                                if (ks.toLowerCase().contains("descripcion")) { nombreObj = itemMap.get(k); break; }
+                                            }
+                                        }
+                                        Object cantObj = itemMap.get("cantidad");
+                                        if (cantObj == null) cantObj = itemMap.get("qty");
+                                        if (cantObj == null) cantObj = itemMap.get("cantidadPedido");
+                                        Object precioObj = itemMap.get("precio");
+                                        if (precioObj == null) precioObj = itemMap.get("precioUnitario");
+                                        if (precioObj == null) precioObj = itemMap.get("precio_unitario");
+                                        if (precioObj == null) precioObj = itemMap.get("valor");
+                                        if (nombreObj != null && cantObj != null) {
+                                            String nom = String.valueOf(nombreObj);
+                                            int cant = (cantObj instanceof Number) ? ((Number)cantObj).intValue() : Integer.parseInt(String.valueOf(cantObj));
+                                            if (cant > 0 && nom != null && !nom.isBlank()) {
+                                                itemsAgregados.merge(nom, cant, Integer::sum);
+                                                if (precioObj != null) {
+                                                    double precio = (precioObj instanceof Number) ? ((Number)precioObj).doubleValue() : Double.parseDouble(String.valueOf(precioObj));
+                                                    if (precio > 0) preciosPorProducto.put(nom, precio);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (comentariosStr != null && !comentariosStr.isBlank()) comentarios.add(comentariosStr);
+                        } catch (Exception ignored) {}
+                        // Fallback adicional: usar servicio para extraer cantidades
+                        if (itemsAgregados.isEmpty()) {
+                            var resumen = pedidoService.extraerCantidadesDesdeOrden(ordenJson);
+                            for (var e : resumen.entrySet()) {
+                                itemsAgregados.merge(e.getKey(), e.getValue(), Integer::sum);
+                            }
+                        }
+                    }
+                    if (ped.getComentariosGenerales() != null && !ped.getComentariosGenerales().isBlank()) {
+                        comentarios.add(ped.getComentariosGenerales());
+                    }
+                }
+
+                java.util.Map<String,Object> detalle = new java.util.HashMap<>();
+                java.util.List<java.util.Map<String,Object>> itemsListOut = new java.util.ArrayList<>();
+                for (var e2 : itemsAgregados.entrySet()) {
+                    String nom = e2.getKey();
+                    int cant = e2.getValue();
+                    double precio = preciosPorProducto.getOrDefault(nom, 0.0);
+                    double subtotal = precio * cant;
+                    java.util.Map<String,Object> itemOut = new java.util.HashMap<>();
+                    itemOut.put("nombre", nom);
+                    itemOut.put("cantidad", cant);
+                    itemOut.put("precio", precio);
+                    itemOut.put("subtotal", subtotal);
+                    itemsListOut.add(itemOut);
+                }
+                detalle.put("items", itemsListOut);
+                detalle.put("comentarios", comentarios);
+                detalle.put("pedidoIds", ids);
+                String detalleJson;
+                try { detalleJson = mapper.writeValueAsString(detalle); }
+                catch (Exception ex) { detalleJson = detalle.toString(); }
+
+                java.util.Map<String, Object> g = new java.util.HashMap<>();
+                g.put("mesaLabel", primero.getLabelMesa());
+                g.put("mesaId", primero.getMesa() != null ? primero.getMesa().getId() : null);
+                g.put("pedidoIds", ids);
+                g.put("total", total);
+                g.put("primerPedidoId", primero.getId());
+                g.put("primerTotal", primero.getTotal());
+                g.put("detalleJson", detalleJson);
+                g.put("fecha", fechaMax);
+                g.put("estado", "COMPLETADO");
+                pagosAgrupados.add(g);
+            }
+
+            // También proveer la lista original por compatibilidad
+            model.addAttribute("pagosPendientes", completados);
+            model.addAttribute("pagosPendientesAgrupados", pagosAgrupados);
             model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
         }
 
@@ -398,21 +567,167 @@ public class CajaController {
     }
 
     @PostMapping("/pagar")
-    public String pagarPedido(@RequestParam("pedidoId") Integer pedidoId,
+    public String pagarPedido(@RequestParam(value = "pedidoId", required = false) Integer pedidoId,
+                              @RequestParam(value = "pedidoIds", required = false) String pedidoIds,
                               @RequestParam(value = "montoRecibido", required = false) Double montoRecibido,
                               @RequestParam(value = "metodoPago", required = false) String metodoPago,
                               @RequestParam(value = "referenciaPago", required = false) String referenciaPago,
                               @RequestParam(value = "clienteId", required = false) Long clienteId,
                               RedirectAttributes ra) {
         try {
-            pedidoService.marcarPedidoComoPagadoConMetodo(pedidoId, metodoPago, montoRecibido, referenciaPago, clienteId);
-            ra.addFlashAttribute("success", "Pago registrado correctamente");
+            if (pedidoIds != null && !pedidoIds.isBlank()) {
+                String[] parts = pedidoIds.split(",");
+                for (String part : parts) {
+                    if (part == null || part.isBlank()) continue;
+                    Integer id = Integer.valueOf(part.trim());
+                    Pedido p = pedidoRepository.findById(id).orElse(null);
+                    Double recibidoPorPedido = null;
+                    if (p != null && "EFECTIVO".equalsIgnoreCase(metodoPago)) {
+                        recibidoPorPedido = p.getTotal();
+                    }
+                    pedidoService.marcarPedidoComoPagadoConMetodo(id, metodoPago, recibidoPorPedido != null ? recibidoPorPedido : montoRecibido, referenciaPago, clienteId);
+                }
+                ra.addFlashAttribute("success", "Pago agrupado registrado correctamente");
+            } else if (pedidoId != null) {
+                pedidoService.marcarPedidoComoPagadoConMetodo(pedidoId, metodoPago, montoRecibido, referenciaPago, clienteId);
+                ra.addFlashAttribute("success", "Pago registrado correctamente");
+            } else {
+                ra.addFlashAttribute("error", "No se especificó pedido a pagar");
+            }
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         } catch (Exception ex) {
             ra.addFlashAttribute("error", "Error al registrar el pago: " + ex.getMessage());
         }
         return "redirect:/caja?section=pagos";
+    }
+
+    @GetMapping("/pagos/detalle")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> obtenerDetalleAgrupado(@RequestParam("ids") String ids) {
+        try {
+            String[] parts = ids.split(",");
+            java.util.List<Integer> idList = new java.util.ArrayList<>();
+            for (String part : parts) {
+                if (part == null || part.isBlank()) continue;
+                idList.add(Integer.valueOf(part.trim()));
+            }
+            java.util.List<com.sena.getback.model.Pedido> lista = new java.util.ArrayList<>();
+            for (Integer id : idList) {
+                pedidoRepository.findById(id).ifPresent(lista::add);
+            }
+            // Reutilizar construcción de detalle
+            java.util.Map<String, Integer> itemsAgregados = new java.util.HashMap<>();
+            java.util.Map<String, Double> preciosPorProducto = new java.util.HashMap<>();
+            java.util.List<String> comentarios = new java.util.ArrayList<>();
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            for (var ped : lista) {
+                String ordenJson = ped.getOrden();
+                if (ordenJson != null && !ordenJson.isBlank()) {
+                    try {
+                        Object rootObj = mapper.readValue(ordenJson, Object.class);
+                        java.util.List<?> itemsList = null;
+                        String comentariosStr = null;
+                        if (rootObj instanceof java.util.Map<?,?> root) {
+                            Object itemsObj = root.get("items");
+                            if (itemsObj == null) itemsObj = root.get("Items");
+                            if (itemsObj instanceof java.util.List<?>) {
+                                itemsList = (java.util.List<?>) itemsObj;
+                            } else if (itemsObj instanceof String sItems) {
+                                Object nested = mapper.readValue(sItems, Object.class);
+                                if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                                else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                                    Object nestedItems = nestedMap.get("items");
+                                    if (nestedItems == null) nestedItems = nestedMap.get("Items");
+                                    if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                                }
+                            } else if (itemsObj instanceof java.util.Map<?,?> itemsMap) {
+                                Object nestedItems = itemsMap.get("items");
+                                if (nestedItems == null) nestedItems = itemsMap.get("Items");
+                                if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                            } else {
+                                Object itemsJsonObj = root.get("itemsJson");
+                                if (itemsJsonObj instanceof String sJson) {
+                                    Object nested = mapper.readValue(sJson, Object.class);
+                                    if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                                    else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                                        Object nestedItems = nestedMap.get("items");
+                                        if (nestedItems == null) nestedItems = nestedMap.get("Items");
+                                        if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                                    }
+                                }
+                            }
+                            Object commRoot = root.get("comentarios");
+                            if (commRoot instanceof String s && !s.isBlank()) comentariosStr = s;
+                        } else if (rootObj instanceof java.util.List<?>) {
+                            itemsList = (java.util.List<?>) rootObj;
+                        }
+                        if (itemsList != null) {
+                            for (Object it : itemsList) {
+                                if (it instanceof java.util.Map<?,?> itemMap) {
+                                    Object nombreObj = itemMap.get("nombre");
+                                    if (nombreObj == null) nombreObj = itemMap.get("productoNombre");
+                                    if (nombreObj == null) nombreObj = itemMap.get("producto");
+                                    if (nombreObj == null) nombreObj = itemMap.get("nombreProducto");
+                                    if (nombreObj == null) {
+                                        for (var k : itemMap.keySet()) {
+                                            if (!(k instanceof String)) continue;
+                                            String ks = (String) k;
+                                            if (ks.toLowerCase().contains("nombre")) { nombreObj = itemMap.get(k); break; }
+                                            if (ks.toLowerCase().contains("producto")) { nombreObj = itemMap.get(k); break; }
+                                            if (ks.toLowerCase().contains("descripcion")) { nombreObj = itemMap.get(k); break; }
+                                        }
+                                    }
+                                    Object cantObj = itemMap.get("cantidad");
+                                    if (cantObj == null) cantObj = itemMap.get("qty");
+                                    if (cantObj == null) cantObj = itemMap.get("cantidadPedido");
+                                    Object precioObj = itemMap.get("precio");
+                                    if (precioObj == null) precioObj = itemMap.get("precioUnitario");
+                                    if (precioObj == null) precioObj = itemMap.get("precio_unitario");
+                                    if (precioObj == null) precioObj = itemMap.get("valor");
+                                    if (nombreObj != null && cantObj != null) {
+                                        String nom = String.valueOf(nombreObj);
+                                        int cant = (cantObj instanceof Number) ? ((Number)cantObj).intValue() : Integer.parseInt(String.valueOf(cantObj));
+                                        if (cant > 0 && nom != null && !nom.isBlank()) {
+                                            itemsAgregados.merge(nom, cant, Integer::sum);
+                                            if (precioObj != null) {
+                                                double precio = (precioObj instanceof Number) ? ((Number)precioObj).doubleValue() : Double.parseDouble(String.valueOf(precioObj));
+                                                if (precio > 0) preciosPorProducto.put(nom, precio);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (comentariosStr != null && !comentariosStr.isBlank()) comentarios.add(comentariosStr);
+                    } catch (Exception ignored) {}
+                }
+                if (ped.getComentariosGenerales() != null && !ped.getComentariosGenerales().isBlank()) {
+                    comentarios.add(ped.getComentariosGenerales());
+                }
+            }
+            java.util.List<java.util.Map<String,Object>> itemsOut = new java.util.ArrayList<>();
+            for (var e : itemsAgregados.entrySet()) {
+                String nom = e.getKey();
+                int cant = e.getValue();
+                double precio = preciosPorProducto.getOrDefault(nom, 0.0);
+                double subtotal = precio * cant;
+                itemsOut.add(java.util.Map.of(
+                        "nombre", nom,
+                        "cantidad", cant,
+                        "precio", precio,
+                        "subtotal", subtotal
+                ));
+            }
+            double total = lista.stream().mapToDouble(x -> x.getTotal() != null ? x.getTotal() : 0.0).sum();
+            Map<String,Object> res = new java.util.HashMap<>();
+            res.put("items", itemsOut);
+            res.put("comentarios", comentarios);
+            res.put("total", total);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/gastos/registrar")
@@ -627,8 +942,7 @@ public class CajaController {
             System.out.println("⚠️ No hay menús disponibles, se dejará menu=null para evitar errores");
         }
 
-	        // 5. Guardar el carrito como JSON en el campo orden
-	        pedido.setOrden(items);
+        pedido.setOrden(items);
 
 	        // 6. Guardar pedido
 	        pedido = pedidoRepository.save(pedido);

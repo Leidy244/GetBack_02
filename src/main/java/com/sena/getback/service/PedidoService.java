@@ -94,22 +94,35 @@ public class PedidoService {
     }
 
     public Pedido crearPedido(Integer mesaId, String itemsJson, String comentarios, Double total, com.sena.getback.model.Usuario usuarioOverride) {
-        // 1) Validar stock a partir de itemsJson antes de crear el pedido
-        validarStockParaItems(itemsJson);
+        // 1) Normalizar itemsJson para garantizar que en BD siempre haya un JSON válido en 'orden'
+        String normalizedItemsJson = itemsJson;
+        try {
+            if (normalizedItemsJson == null || normalizedItemsJson.trim().isEmpty()) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                java.util.Map<String, Object> base = new java.util.HashMap<>();
+                base.put("items", java.util.Collections.emptyList());
+                base.put("total", total != null ? total : 0.0);
+                if (comentarios != null && !comentarios.trim().isEmpty()) {
+                    base.put("comentarios", comentarios.trim());
+                }
+                normalizedItemsJson = mapper.writeValueAsString(base);
+            }
+        } catch (Exception e) {
+            // Fallback muy sencillo en caso de error al serializar
+            String safeComment = (comentarios != null ? comentarios.trim() : "").replace("\"", "\\\"");
+            double t = (total != null) ? total : 0.0;
+            normalizedItemsJson = "{\"items\":[],\"total\":" + t + ",\"comentarios\":\"" + safeComment + "\"}";
+        }
+
+        // 2) Validar stock a partir del JSON normalizado
+        validarStockParaItems(normalizedItemsJson);
 
         Pedido pedido = new Pedido();
 
-        // Guardamos el JSON de items en la columna orden para que la vista pueda
-        // parsearlo
-        // Si hay comentarios generales, los combinamos con el JSON
+        // Guardar la cadena JSON normalizada en el campo 'orden'
+        pedido.setOrden(normalizedItemsJson);
         if (comentarios != null && !comentarios.trim().isEmpty()) {
-            // Crear un objeto que contenga tanto los items como los comentarios
-            String combinedData = "{\"items\":" + itemsJson + ",\"comentarios\":\"" + comentarios.replace("\"", "\\\"")
-                    + "\"}";
-            pedido.setOrden(combinedData);
             pedido.setComentariosGenerales(comentarios.trim());
-        } else {
-            pedido.setOrden(itemsJson);
         }
         // Total del pedido
         pedido.setTotal(total);
@@ -169,10 +182,37 @@ public class PedidoService {
             return;
         }
         try {
-            Map<String, Integer> requeridos = extraerCantidadesPorProducto(itemsJson);
+            // Solo validamos stock para productos del área BAR
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
+            Object itemsObj = root.get("items");
+            if (!(itemsObj instanceof java.util.List<?> itemsList)) {
+                return;
+            }
 
-            // Validar contra inventario
-            for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
+            Map<String, Integer> requeridosBar = new HashMap<>();
+
+            for (Object o : itemsList) {
+                if (!(o instanceof Map<?, ?> itemMap)) continue;
+                Object tipoObj = itemMap.get("tipo");
+                String tipo = tipoObj != null ? String.valueOf(tipoObj).trim().toUpperCase() : "";
+                // Solo contar productos de BAR
+                if (!"BAR".equalsIgnoreCase(tipo)) continue;
+
+                Object nombreObj = itemMap.get("productoNombre");
+                Object cantidadObj = itemMap.get("cantidad");
+                if (nombreObj == null || cantidadObj == null) continue;
+
+                String nombre = String.valueOf(nombreObj);
+                int cant = (cantidadObj instanceof Number)
+                        ? ((Number) cantidadObj).intValue()
+                        : Integer.parseInt(String.valueOf(cantidadObj));
+                if (cant <= 0) continue;
+                requeridosBar.merge(nombre, cant, Integer::sum);
+            }
+
+            // Validar contra inventario solo los productos BAR acumulados
+            for (Map.Entry<String, Integer> entry : requeridosBar.entrySet()) {
                 String nombre = entry.getKey();
                 int solicitado = entry.getValue();
 
@@ -225,6 +265,49 @@ public class PedidoService {
         return requeridos;
     }
 
+    /**
+     * Intenta extraer cantidades desde cualquier forma de JSON almacenada en la columna orden.
+     * Acepta:
+     * - Cadena JSON con raíz { items: [...] }
+     * - Raíz { items: "[...]" }
+     * - Raíz { itemsJson: "[...]" }
+     * - Cadena JSON que ya es directamente { items: [...] }
+     */
+    public Map<String, Integer> extraerCantidadesDesdeOrden(String json) {
+        try {
+            if (json == null || json.isBlank()) return java.util.Collections.emptyMap();
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Object rootObj = mapper.readValue(json, Object.class);
+            Object itemsObj = null;
+            if (rootObj instanceof java.util.Map<?,?> root) {
+                itemsObj = root.get("items");
+                if (itemsObj == null) itemsObj = root.get("itemsJson");
+            }
+            String normalized;
+            if (itemsObj instanceof java.util.List<?>) {
+                normalized = mapper.writeValueAsString(java.util.Map.of("items", itemsObj));
+            } else if (itemsObj instanceof String s) {
+                try {
+                    Object parsed = mapper.readValue(s, Object.class);
+                    if (parsed instanceof java.util.List<?>) {
+                        normalized = mapper.writeValueAsString(java.util.Map.of("items", parsed));
+                    } else if (parsed instanceof java.util.Map<?,?> m && m.get("items") instanceof java.util.List<?>) {
+                        normalized = mapper.writeValueAsString(java.util.Map.of("items", m.get("items")));
+                    } else {
+                        normalized = json; // fallback directo
+                    }
+                } catch (Exception e) {
+                    normalized = json; // fallback
+                }
+            } else {
+                normalized = json; // posiblemente ya es { items: [...] }
+            }
+            return extraerCantidadesPorProducto(normalized);
+        } catch (Exception e) {
+            return java.util.Collections.emptyMap();
+        }
+    }
+
     // Obtener historial por mesa
     public List<Pedido> obtenerHistorialPorMesa(Integer mesaId) {
         return pedidoRepository.findByMesaId(mesaId);
@@ -243,20 +326,35 @@ public class PedidoService {
                 .count();
     }
 
-    // Sincronizar estado de las mesas según si tienen pedidos pendientes
+    // Sincronizar estado de las mesas según si tienen pedidos pendientes o completados
+    // - Si existe al menos un pedido PENDIENTE (id=1) o COMPLETADO (id=3) => mesa OCUPADA
+    // - Si no hay pedidos o todos los pedidos están PAGADOS (id=2) => mesa DISPONIBLE
     public void sincronizarEstadoMesas() {
         mesaRepository.findAll().forEach(mesa -> {
-            boolean hayPendientes = pedidoRepository.findByMesaId(mesa.getId()).stream()
-                    .anyMatch(p -> p.getEstado() != null
-                            && p.getEstado().getId() != null
-                            && p.getEstado().getId() == 1); // 1 = PENDIENTE
+            var pedidosMesa = pedidoRepository.findByMesaId(mesa.getId());
 
-            if (hayPendientes && !"OCUPADA".equalsIgnoreCase(mesa.getEstado())) {
-                mesa.setEstado("OCUPADA");
-                mesaRepository.save(mesa);
-            } else if (!hayPendientes && !"DISPONIBLE".equalsIgnoreCase(mesa.getEstado())) {
-                mesa.setEstado("DISPONIBLE");
-                mesaRepository.save(mesa);
+            boolean hayPendienteOCompletado = pedidosMesa.stream()
+                    .anyMatch(p -> {
+                        Integer id = (p.getEstado() != null) ? p.getEstado().getId() : null;
+                        return id != null && (id == 1 || id == 3); // 1=PENDIENTE, 3=COMPLETADO
+                    });
+
+            boolean soloPagados = !pedidosMesa.isEmpty() && pedidosMesa.stream()
+                    .allMatch(p -> {
+                        Integer id = (p.getEstado() != null) ? p.getEstado().getId() : null;
+                        return id != null && id == 2; // 2=PAGADO
+                    });
+
+            if (hayPendienteOCompletado) {
+                if (!"OCUPADA".equalsIgnoreCase(mesa.getEstado())) {
+                    mesa.setEstado("OCUPADA");
+                    mesaRepository.save(mesa);
+                }
+            } else if (pedidosMesa.isEmpty() || soloPagados) {
+                if (!"DISPONIBLE".equalsIgnoreCase(mesa.getEstado())) {
+                    mesa.setEstado("DISPONIBLE");
+                    mesaRepository.save(mesa);
+                }
             }
         });
     }
@@ -283,6 +381,7 @@ public class PedidoService {
         System.out.println("📊 Total pedidos pendientes encontrados: " + pedidos.size());
         return pedidos;
     }
+
    
 
     // Obtener todos los pedidos con estado de pago PAGADO (historial, ID 2)
@@ -313,6 +412,7 @@ public class PedidoService {
         return obtenerPedidosPendientes();
     }
 
+    // TODOS los pedidos completados (para panel de CAJA: gestión y pagos)
     public List<Pedido> obtenerPedidosCompletados() {
         return pedidoRepository.findAll().stream()
                 .filter(p -> {
@@ -323,6 +423,30 @@ public class PedidoService {
                     return (id != null && id == 3) || (nombre != null && nombre.equalsIgnoreCase("COMPLETADO"));
                 })
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    // Solo completados NO marcados como recogidos (para vista MESERO - campanita)
+    public List<Pedido> obtenerPedidosCompletadosNoRecogidos() {
+        return pedidoRepository.findAll().stream()
+                .filter(p -> {
+                    Integer id = (p.getEstado() != null) ? p.getEstado().getId() : null;
+                    String nombre = (p.getEstado() != null && p.getEstado().getNombreEstado() != null)
+                            ? p.getEstado().getNombreEstado().trim()
+                            : null;
+                    boolean esCompletado = (id != null && id == 3) || (nombre != null && nombre.equalsIgnoreCase("COMPLETADO"));
+                    Boolean recogido = p.getRecogido();
+                    boolean yaRecogido = (recogido != null && recogido.booleanValue());
+                    return esCompletado && !yaRecogido;
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void marcarPedidoComoRecogido(Integer pedidoId) {
+        if (pedidoId == null) return;
+        Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
+        if (pedido == null) return;
+        pedido.setRecogido(true);
+        pedidoRepository.save(pedido);
     }
 
     // Marcar pedido como COMPLETADO (estado id=3) para flujo de BAR/CAJA

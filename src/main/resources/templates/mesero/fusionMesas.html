@@ -114,11 +114,16 @@
         <div th:each="mesa : ${mesas}" class="mesa-card"
              th:data-ubicacion="${mesa.ubicacion?.nombre ?: 'general'}"
              th:data-estado="${mesa.estado?.toLowerCase()}"
+             th:data-id="${mesa.id}"
+             th:data-ready-pedido-id="${pedidoListoPorMesa != null ? pedidoListoPorMesa[mesa.id] : null}"
              th:onclick="|redirectMesa(${mesa.id}, this)|"
              th:classappend="${mesa.estado == 'OCUPADA'} ? 'mesa-ocupada' : 'mesa-disponible'">
           <div class="mesa-header">
             <div class="mesa-numero" th:text="${'Mesa ' + mesa.numero}">Mesa #</div>
             <div class="mesa-indicador" th:classappend="${mesa.estado == 'DISPONIBLE'} ? 'indicador-disponible' : 'indicador-ocupada'"></div>
+            <div class="mesa-ready-badge" th:if="${mesasConPedidoListo != null and mesasConPedidoListo.contains(mesa.id)}" title="Pedido listo para recoger">
+              <i class="fas fa-bell"></i>
+            </div>
           </div>
           <div class="mesa-content">
             <div class="mesa-info">
@@ -157,11 +162,16 @@
         <div th:each="mesa : ${mesas}" th:if="${mesa.ubicacion?.id == ubicacion.id}" class="mesa-card"
              th:data-ubicacion="${ubicacion.nombre}"
              th:data-estado="${mesa.estado?.toLowerCase()}"
+             th:data-id="${mesa.id}"
+             th:data-ready-pedido-id="${pedidoListoPorMesa != null ? pedidoListoPorMesa[mesa.id] : null}"
              th:onclick="|redirectMesa(${mesa.id}, this)|"
              th:classappend="${mesa.estado == 'OCUPADA'} ? 'mesa-ocupada' : 'mesa-disponible'">
           <div class="mesa-header">
             <div class="mesa-numero" th:text="${'Mesa ' + mesa.numero}"></div>
             <div class="mesa-indicador" th:classappend="${mesa.estado == 'DISPONIBLE'} ? 'indicador-disponible' : 'indicador-ocupada'"></div>
+            <div class="mesa-ready-badge" th:if="${mesasConPedidoListo != null and mesasConPedidoListo.contains(mesa.id)}" title="Pedido listo para recoger">
+              <i class="fas fa-bell"></i>
+            </div>
           </div>
           <div class="mesa-content">
             <div class="mesa-info">
@@ -203,6 +213,9 @@
       </div>
     </div>
     <div class="modal-pedido-footer">
+      <button type="button" id="btn-pedido-recogido" class="btn-pedido-recogido" title="Marcar pedido como recogido">
+        <i class="fas fa-hand-holding"></i> Pedido recogido
+      </button>
       <form id="form-editar-pedido" th:action="@{/pedidos/editar}" method="post">
         <input type="hidden" name="mesaId" id="modal-mesa-id" />
         <button type="submit" class="btn-agregar-productos">
@@ -271,6 +284,7 @@
     const resumenDiv = document.getElementById('modal-pedido-resumen');
     const mesaIdInput = document.getElementById('modal-mesa-id');
     const btnClose = document.getElementById('modal-pedido-close');
+    const btnRecogido = document.getElementById('btn-pedido-recogido');
 
     if (!modal || !resumenDiv || !mesaIdInput) {
       showNotification(`${numeroMesa} está ocupada, pero no se pudo abrir el detalle.`, 'error');
@@ -294,6 +308,47 @@
         modal.style.display = 'none';
       }
     };
+
+    if (btnRecogido) {
+      btnRecogido.onclick = () => {
+        const readyPedidoId = element.getAttribute('data-ready-pedido-id');
+        if (!readyPedidoId) {
+          showNotification('No se encontró un pedido listo para esta mesa.', 'warning');
+          return;
+        }
+
+        const mesaIdAttr = element.getAttribute('data-id');
+
+        fetch('/mesero/pedido/recogido', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `pedidoId=${encodeURIComponent(readyPedidoId)}`
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (data && data.success) {
+              // Quitar la campanita en todas las vistas de la misma mesa
+              if (mesaIdAttr) {
+                document.querySelectorAll(`.mesa-card[data-id="${mesaIdAttr}"]`).forEach(card => {
+                  const badge = card.querySelector('.mesa-ready-badge');
+                  if (badge) badge.remove();
+                });
+              } else {
+                const badge = element.querySelector('.mesa-ready-badge');
+                if (badge) badge.remove();
+              }
+
+              showNotification(`Pedido de ${numeroMesa} marcado como recogido`, 'success');
+              modal.style.display = 'none';
+            } else {
+              showNotification('No se pudo marcar el pedido como recogido.', 'error');
+            }
+          })
+          .catch(() => {
+            showNotification('Error al marcar el pedido como recogido.', 'error');
+          });
+      };
+    }
 
     fetch(`/mesero/pedido/resumen?mesaId=${mesaId}`)
       .then(r => r.json())
@@ -448,6 +503,20 @@
         }, 5000);
       }
     }
+
+    // Ocultar campanas si el pedido COMPLETADO actual ya fue marcado como "recogido" en este navegador
+    try {
+      const recogidos = JSON.parse(localStorage.getItem('pedidosRecogidos')) || [];
+      if (Array.isArray(recogidos) && recogidos.length > 0) {
+        document.querySelectorAll('.mesa-card').forEach(card => {
+          const readyId = card.getAttribute('data-ready-pedido-id');
+          if (readyId && recogidos.includes(String(readyId))) {
+            const badge = card.querySelector('.mesa-ready-badge');
+            if (badge) badge.remove();
+          }
+        });
+      }
+    } catch (e) {}
 
     initFilters();
 

@@ -20,6 +20,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -52,33 +56,48 @@ public class MeseroController {
 		this.inventarioService = inventarioService;
 	}
 
-	@GetMapping("/mesero")
-	public String mesas(Model model, HttpSession session) {
-		try {
-			// Sincronizar estados de las mesas con los pedidos pendientes/pagados
-			pedidoService.sincronizarEstadoMesas();
+    @GetMapping("/mesero")
+    public String mesas(Model model, HttpSession session) {
+        try {
+            // Sincronizar estados de las mesas con los pedidos pendientes/pagados
+            pedidoService.sincronizarEstadoMesas();
 
-			var mesas = mesaService.findAll();
-			var ubicaciones = locationService.findAll(); // ← AÑADIDO: Carga las ubicaciones
-			
-			model.addAttribute("mesas", mesas);
-			model.addAttribute("ubicaciones", ubicaciones); // ← AÑADIDO: Añade al modelo
-			model.addAttribute("totalMesas", mesas.size());
-			model.addAttribute("mesasDisponibles", mesas.stream().filter(m -> "DISPONIBLE".equals(m.getEstado())).count());
-			model.addAttribute("mesasOcupadas", mesas.stream().filter(m -> "OCUPADA".equals(m.getEstado())).count());
-			
-			Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-			boolean esAdmin = usuario != null && usuario.getRol() != null && usuario.getRol().getNombre() != null
-					&& "ADMIN".equalsIgnoreCase(usuario.getRol().getNombre());
-			model.addAttribute("esAdmin", esAdmin);
-			
-			// limpiar borrador al regresar a la vista de mesas
-			clearDraft(session);
-		} catch (Exception e) {
-			model.addAttribute("error", "Error al cargar las mesas: " + e.getMessage());
-		}
-		return "mesero/fusionMesas";
-	}
+            var mesas = mesaService.findAll();
+            var ubicaciones = locationService.findAll(); // ← AÑADIDO: Carga las ubicaciones
+            
+            model.addAttribute("mesas", mesas);
+            model.addAttribute("ubicaciones", ubicaciones); // ← AÑADIDO: Añade al modelo
+            model.addAttribute("totalMesas", mesas.size());
+            model.addAttribute("mesasDisponibles", mesas.stream().filter(m -> "DISPONIBLE".equals(m.getEstado())).count());
+            model.addAttribute("mesasOcupadas", mesas.stream().filter(m -> "OCUPADA".equals(m.getEstado())).count());
+            // Mesas con pedido COMPLETADO (listo para recoger) y no pagado
+            // Usamos solo los completados NO marcados como recogidos, para no afectar la vista de caja
+            try {
+                var completados = pedidoService.obtenerPedidosCompletadosNoRecogidos();
+                java.util.Set<Integer> mesasConPedidoListo = new java.util.HashSet<>();
+                java.util.Map<Integer, Integer> pedidoListoPorMesa = new java.util.HashMap<>();
+                for (var p : completados) {
+                    if (p.getMesa() != null && p.getMesa().getId() != null && p.getId() != null) {
+                        mesasConPedidoListo.add(p.getMesa().getId());
+                        pedidoListoPorMesa.put(p.getMesa().getId(), p.getId());
+                    }
+                }
+                model.addAttribute("mesasConPedidoListo", mesasConPedidoListo);
+                model.addAttribute("pedidoListoPorMesa", pedidoListoPorMesa);
+            } catch (Exception ignored) {}
+            
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            boolean esAdmin = usuario != null && usuario.getRol() != null && usuario.getRol().getNombre() != null
+                    && "ADMIN".equalsIgnoreCase(usuario.getRol().getNombre());
+            model.addAttribute("esAdmin", esAdmin);
+            
+            // limpiar borrador al regresar a la vista de mesas
+            clearDraft(session);
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar las mesas: " + e.getMessage());
+        }
+        return "mesero/fusionMesas";
+    }
 
 
 	@GetMapping("/mesero/menu")
@@ -265,7 +284,10 @@ public class MeseroController {
                                   @RequestParam(required = false) String comentarios,
                                   @RequestParam(required = false) Double total) {
         if (mesaId == null) mesaId = (Integer) session.getAttribute("draftMesaId");
-        if (itemsJson == null) itemsJson = (String) session.getAttribute("draftItemsJson");
+        // Si itemsJson llega nulo O vacío desde el formulario, reutilizar el borrador en sesión
+        if (itemsJson == null || itemsJson.trim().isEmpty()) {
+            itemsJson = (String) session.getAttribute("draftItemsJson");
+        }
         if (comentarios == null) comentarios = (String) session.getAttribute("draftComentarios");
         if (total == null) total = (Double) session.getAttribute("draftTotal");
 
@@ -275,8 +297,11 @@ public class MeseroController {
         System.out.println("Comentarios: " + comentarios);
         System.out.println("Total: " + total);
 
-        if (mesaId == null || itemsJson == null || total == null) {
-            System.out.println("ERROR: Datos incompletos en sesión");
+        // Validar datos críticos mínimos antes de crear el pedido
+        // Solo mesaId y total son estrictamente obligatorios; itemsJson puede ser null y
+        // PedidoService.crearPedido se encargará de normalizarlo si llega vacío.
+        if (mesaId == null || total == null) {
+            System.out.println("ERROR: Datos incompletos en sesión (mesaId o total nulos)");
             return "redirect:/mesero/menu?mesa=" + (mesaId != null ? mesaId : 1) + "&error=Borrador incompleto";
         }
 
@@ -295,6 +320,20 @@ public class MeseroController {
             e.printStackTrace();
             return "redirect:/mesero/menu?mesa=" + mesaId + "&error=" + e.getMessage();
         }
+    }
+
+    @PostMapping("/mesero/pedido/recogido")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> marcarPedidoRecogido(@RequestParam Integer pedidoId) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            pedidoService.marcarPedidoComoRecogido(pedidoId);
+            resp.put("success", true);
+        } catch (Exception e) {
+            resp.put("success", false);
+            resp.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(resp);
     }
 
     // Cargar un pedido existente como borrador para editarlo en fusionMesero

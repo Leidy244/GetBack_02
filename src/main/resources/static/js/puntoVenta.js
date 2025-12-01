@@ -219,17 +219,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========== PAGOS: CONECTAR BOTONES "COBRAR" ==========
     document.querySelectorAll('.btn-abrir-modal-pago').forEach(button => {
         button.addEventListener('click', function() {
+            const idsAttr = this.getAttribute('data-pedido-ids');
             const pedidoId = this.getAttribute('data-pedido-id');
             const mesa = this.getAttribute('data-mesa');
             const total = parseFloat(this.getAttribute('data-total'));
             const detalle = this.getAttribute('data-detalle');
-            
-            abrirModalPago(pedidoId, mesa, total, detalle);
+
+            if (idsAttr && idsAttr.length > 0) {
+                const ids = idsAttr.split(',').map(s => s.trim()).filter(Boolean);
+                abrirModalPagoGrupo(ids, mesa, total, detalle);
+            } else {
+                abrirModalPago(pedidoId, mesa, total, detalle);
+            }
         });
     });
 
 	// ========== PAGOS: ABRIR MODAL DE PAGO ==========
-	function abrirModalPago(pedidoId, mesa, total, detalle) {
+function abrirModalPago(pedidoId, mesa, total, detalle) {
 	    pedidoActual = {
 	        id: pedidoId,
 	        mesa: mesa,
@@ -260,7 +266,117 @@ document.addEventListener('DOMContentLoaded', function () {
 	    // Mostrar modal
 	    modalPagoInstance = new bootstrap.Modal(modalPago);
 	    modalPagoInstance.show();
-	}
+}
+
+    // ========== PAGOS: ABRIR MODAL DE PAGO AGRUPADO ==========
+    function abrirModalPagoGrupo(pedidoIds, mesa, total, detalleJson) {
+        pedidoActual = {
+            ids: pedidoIds,
+            mesa: mesa,
+            total: total,
+            detalle: null
+        };
+
+        const pedidoIdLabel = document.getElementById('modal-pedido-id');
+        if (pedidoIdLabel) pedidoIdLabel.textContent = `Grupo (${pedidoIds.length})`;
+        document.getElementById('modal-mesa-info').textContent = mesa;
+        modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
+        const idsSpan = document.getElementById('modal-ids');
+        if (idsSpan) idsSpan.textContent = pedidoIds.join(', ');
+
+        const hiddenIds = document.getElementById('input-pedido-ids');
+        if (hiddenIds) hiddenIds.value = pedidoIds.join(',');
+        const hiddenId = document.getElementById('input-pedido-id');
+        if (hiddenId) hiddenId.value = pedidoIds[0] || '';
+
+        const contenedor = detalleCarritoModal;
+        if (detalleJson) {
+            try {
+                const safeJson = detalleJson.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+                const d = JSON.parse(safeJson);
+                const items = Array.isArray(d.items) ? d.items : [];
+                const comentarios = Array.isArray(d.comentarios) ? d.comentarios : [];
+                let html = `
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <div><strong>${pedidoIds.length}</strong> pedidos agrupados</div>
+                        <div>IDs: ${pedidoIds.join(', ')}</div>
+                    </div>
+                `;
+                if (items.length > 0) {
+                    html += `<div class="mb-2"><strong>Productos:</strong></div>`;
+                    items.forEach(it => {
+                        const nom = it.nombre || '-';
+                        const cant = Number(it.cantidad || 0);
+                        const precio = Number(it.precio || 0);
+                        const subtotal = Number(it.subtotal || (precio * cant));
+                        html += `
+                            <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                <div><strong>${cant}x</strong> ${nom}</div>
+                                <div>$ ${subtotal.toLocaleString('es-CO')}</div>
+                            </div>
+                        `;
+                    });
+                    html += `<div class="text-end fw-bold mt-2">Total combinado: $ ${Number(total).toLocaleString('es-CO')}</div>`;
+                }
+                if (comentarios.length > 0) {
+                    html += `<hr><div class="mb-2"><strong>Comentarios:</strong></div>`;
+                    comentarios.forEach((c, idx) => {
+                        html += `<div class="text-muted">• ${String(c)}</div>`;
+                    });
+                }
+                contenedor.innerHTML = html;
+                // Si no hay items en d, intentar obtenerlos vía API
+                if (!items || items.length === 0) {
+                    fetch(`/caja/pagos/detalle?ids=${encodeURIComponent(pedidoIds.join(','))}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => {
+                            if (!data || !Array.isArray(data.items)) return;
+                            let html2 = `
+                                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                    <div><strong>${pedidoIds.length}</strong> pedidos agrupados</div>
+                                    <div>IDs: ${pedidoIds.join(', ')}</div>
+                                </div>
+                                <div class="mb-2"><strong>Productos:</strong></div>
+                            `;
+                            data.items.forEach(it => {
+                                const nom = it.nombre || '-';
+                                const cant = Number(it.cantidad || 0);
+                                const subtotal = Number(it.subtotal || 0);
+                                html2 += `
+                                    <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                        <div><strong>${cant}x</strong> ${nom}</div>
+                                        <div>$ ${subtotal.toLocaleString('es-CO')}</div>
+                                    </div>
+                                `;
+                            });
+                            html2 += `<div class="text-end fw-bold mt-2">Total combinado: $ ${Number(data.total || total).toLocaleString('es-CO')}</div>`;
+                            if (Array.isArray(data.comentarios) && data.comentarios.length > 0) {
+                                html2 += `<hr><div class="mb-2"><strong>Comentarios:</strong></div>`;
+                                data.comentarios.forEach(c => { html2 += `<div class="text-muted">• ${String(c)}</div>`; });
+                            }
+                            contenedor.innerHTML = html2;
+                        }).catch(() => {});
+                }
+            } catch (e) {
+                contenedor.innerHTML = `<div class="text-muted">No se pudo cargar el detalle agrupado</div>`;
+            }
+        } else {
+            contenedor.innerHTML = `
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                    <div><strong>${pedidoIds.length}</strong> pedidos agrupados</div>
+                    <div>IDs: ${pedidoIds.join(', ')}</div>
+                </div>
+            `;
+        }
+
+        modalRecibido.value = '';
+        modalCambio.value = '$0';
+        document.getElementById('modal-error').style.display = 'none';
+        document.getElementById('modal-info').style.display = 'block';
+
+        modalPagoInstance = new bootstrap.Modal(modalPago);
+        modalPagoInstance.show();
+    }
 
 	// ========== PAGOS: MANEJAR ENVÍO DEL FORMULARIO ==========
 	formConfirmarPago?.addEventListener('submit', function(e) {
@@ -356,33 +472,41 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========== PAGOS: MANEJAR ENVÍO DEL FORMULARIO ==========
     formConfirmarPago?.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         if (!pedidoActual) {
             alert('Error: No hay pedido seleccionado');
             return;
         }
-        
+
         const recibido = parseFloat(modalRecibido.value) || 0;
         const total = pedidoActual.total;
-        
-        // Validaciones
-        if (recibido <= 0) {
-            alert('Ingrese el monto recibido');
-            return;
+
+        const metodoSel = document.getElementById('metodo-pago');
+        const metodo = (metodoSel ? metodoSel.value : 'EFECTIVO').toUpperCase();
+
+        if (metodo === 'EFECTIVO' || metodo === 'MIXTO') {
+            if (recibido <= 0) {
+                alert('Ingrese el monto recibido');
+                return;
+            }
+            if (recibido < total) {
+                alert('El monto recibido es insuficiente');
+                return;
+            }
         }
-        
-        if (recibido < total) {
-            alert('El monto recibido es insuficiente');
-            return;
+
+        document.getElementById('input-monto-recibido').value = recibido;
+        document.getElementById('input-metodo-pago').value = metodo;
+
+        if (pedidoActual.ids) {
+            const hiddenIds = document.getElementById('input-pedido-ids');
+            if (hiddenIds) hiddenIds.value = pedidoActual.ids.join(',');
         }
-        
-        // Mostrar loading
+
         const submitBtn = document.getElementById('btn-confirmar-pago');
-        const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
         submitBtn.disabled = true;
-        
-        // Enviar formulario
+
         this.submit();
     });
 

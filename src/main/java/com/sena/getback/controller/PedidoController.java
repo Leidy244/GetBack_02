@@ -3,9 +3,12 @@ package com.sena.getback.controller;
 import com.sena.getback.model.*;
 import com.sena.getback.repository.*;
 import com.sena.getback.service.PedidoService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/pedidos")
@@ -43,9 +46,53 @@ public class PedidoController {
             pedido = new Pedido();
         }
 
-        // En este flujo de administración usamos el campo "orden" para guardar un comentario simple
+        // En este flujo de administración, si hay comentario, lo integramos en un JSON estándar
+        // para el campo "orden" con la estructura { "items": [...], "total": ..., "comentarios": "..." }
         if (comentario != null && !comentario.isBlank()) {
-            pedido.setOrden(comentario.trim());
+            String trimmed = comentario.trim();
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> data;
+
+                // Si ya existe un JSON en orden (por ejemplo creado desde el flujo de mesero),
+                // lo reutilizamos y solo añadimos/actualizamos la clave "comentarios".
+                if (pedido.getOrden() != null && !pedido.getOrden().isBlank()) {
+                    Object root = mapper.readValue(pedido.getOrden(), Object.class);
+                    if (root instanceof Map<?, ?> rootMap) {
+                        data = new HashMap<>();
+                        for (Map.Entry<?, ?> e : rootMap.entrySet()) {
+                            if (e.getKey() != null) {
+                                data.put(String.valueOf(e.getKey()), e.getValue());
+                            }
+                        }
+                    } else {
+                        data = new HashMap<>();
+                        data.put("items", root);
+                    }
+                } else {
+                    data = new HashMap<>();
+                }
+
+                // Asegurar estructura mínima
+                if (!data.containsKey("items")) {
+                    data.put("items", java.util.Collections.emptyList());
+                }
+                if (!data.containsKey("total")) {
+                    data.put("total", 0);
+                }
+
+                data.put("comentarios", trimmed);
+                String ordenJson = mapper.writeValueAsString(data);
+                pedido.setOrden(ordenJson);
+            } catch (Exception e) {
+                // Fallback sencillo en caso de error al parsear/serializar
+                String safeComment = trimmed.replace("\"", "\\\"");
+                String fallbackJson = "{\"items\":[],\"total\":0,\"comentarios\":\"" + safeComment + "\"}";
+                pedido.setOrden(fallbackJson);
+            }
+
+            // También reflejamos el comentario en el campo dedicado de la entidad
+            pedido.setComentariosGenerales(trimmed);
         }
 
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);

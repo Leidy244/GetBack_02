@@ -44,40 +44,40 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr th:each="pago, iStat : ${pagosPendientes}" data-row="pago">
+            <tbody th:if="${pagosPendientesAgrupados != null}">
+                <tr th:each="grupo, iStat : ${pagosPendientesAgrupados}" data-row="pago-grupo"
+                    th:attr="data-pedido-ids=${#strings.listJoin(grupo['pedidoIds'], ',')}, data-mesa-id=${grupo['mesaId']}">
                     <td th:text="${iStat.index + 1}">1</td>
                     <td>
-                        <strong th:text="${pago.labelMesa}">Mesa</strong>
+                        <strong th:text="${grupo['mesaLabel']}">Mesa</strong>
                         <br>
-                        <small th:text="${#temporals.format(pago.fechaCreacion, 'dd/MM/yyyy HH:mm')}">28/11/2025 21:30</small>
+                        <small th:text="${grupo['fecha'] != null ? #temporals.format(grupo['fecha'], 'dd/MM/yyyy HH:mm') : ''}">28/11/2025 21:30</small>
                     </td>
                     <td>
                         <button type="button" class="btn btn-link btn-sm ver-detalle-pago"
-                                th:attr="data-pedido-id=${pago.id}, 
-                                         data-mesa=${pago.labelMesa},
-                                         data-total=${pago.total},
-                                         data-detalle=${pago.orden}"
+                                th:attr="data-pedido-ids=${#strings.listJoin(grupo['pedidoIds'], ',')}, 
+                                         data-mesa=${grupo['mesaLabel']},
+                                         data-total=${grupo['total']},
+                                         data-detalle=${grupo['detalleJson']}"
                                 title="Ver detalle del pedido">
                             <span class="d-inline-block text-truncate detalle-resumen-text" style="max-width: 320px;">
-                                Ver detalle del pedido
+                                Ver detalle agrupado (mesa)
                             </span>
                         </button>
                     </td>
-                    <!-- CORRECCIÓN: Formato de números MÁS SIMPLE -->
                     <td class="fw-bold text-success">
-                        $<span th:text="${pago.total}">0</span>
+                        $<span th:text="${grupo['total']}">0</span>
                     </td>
                     <td>
-                        <span class="badge bg-warning"
-                              th:text="${pago.estado != null ? pago.estado.nombreEstado : 'PENDIENTE'}">PENDIENTE</span>
+                        <span class="badge bg-warning">COMPLETADO</span>
                     </td>
                     <td>
                         <button type="button" class="btn btn-success btn-sm btn-abrir-modal-pago"
-                                th:attr="data-pedido-id=${pago.id}, 
-                                         data-mesa=${pago.labelMesa},
-                                         data-total=${pago.total},
-                                         data-detalle=${pago.orden}">
+                                th:attr="data-pedido-id=${grupo['primerPedidoId']},
+                                         data-pedido-ids=${#strings.listJoin(grupo['pedidoIds'], ',')}, 
+                                         data-mesa=${grupo['mesaLabel']},
+                                         data-total=${grupo['total']},
+                                         data-detalle=${grupo['detalleJson']}">
                             <i class="fas fa-money-bill-wave"></i> Cobrar
                         </button>
                     </td>
@@ -113,6 +113,7 @@
                                     <hr>
                                     <p><strong>Detalle:</strong></p>
                                     <div id="detalle-carrito-modal" class="mb-3"></div>
+                                    <p class="mb-1"><strong>IDs:</strong> <span id="modal-ids" class="text-muted">—</span></p>
                                     <hr>
                                     <h5 class="text-primary"><strong>Total a pagar: <span
                                                 id="modal-total">$0.00</span></strong></h5>
@@ -189,6 +190,7 @@
                         <button type="submit" class="btn btn-success btn-lg" id="btn-confirmar-pago">
                             <i class="fas fa-check"></i> Confirmar Pago
                         </button>
+                        <input type="hidden" name="pedidoIds" id="input-pedido-ids" value="" />
                     </form>
                 </div>
             </div>

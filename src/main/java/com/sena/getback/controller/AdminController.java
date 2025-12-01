@@ -314,26 +314,18 @@ public class AdminController {
 
 			// PRODUCTOS
             if ("products".equals(section)) {
-                java.util.List<com.sena.getback.model.Menu> productosBar = menuRepository.findAll().stream()
-                        .filter(m -> {
-                            var cat = m.getCategoria();
-                            String area = cat != null ? cat.getArea() : null;
-                            String nombreCat = cat != null ? cat.getNombre() : null;
-                            boolean areaBar = area != null && area.trim().equalsIgnoreCase("Bar");
-                            boolean nombreBarHeur = nombreCat != null && nombreCat.toLowerCase().matches(".*(bebida|bar|licor).*");
-                            return areaBar || (area == null && nombreBarHeur);
-                        })
-                        .toList();
-                model.addAttribute("products", productosBar);
-                model.addAttribute("newProduct", new Menu());
-                java.util.List<com.sena.getback.model.Categoria> categoriasBar = categoriaRepository.findAll().stream()
-                        .filter(c -> c.getArea() != null && c.getArea().trim().equalsIgnoreCase("Bar"))
-                        .toList();
-                model.addAttribute("categorias", categoriasBar.isEmpty() ? categoriaRepository.findAll() : categoriasBar);
-                model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
-                model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
-                // Umbral para badges de stock en productos (solo BAR)
-                model.addAttribute("stockThreshold", 5);
+                // Mostrar TODOS los productos del menú (Cocina y Bar)
+				java.util.List<com.sena.getback.model.Menu> productos = menuRepository.findAll();
+				model.addAttribute("products", productos);
+				model.addAttribute("newProduct", new Menu());
+				// Proveer TODAS las categorías para el select del formulario (no solo Bar)
+				java.util.List<com.sena.getback.model.Categoria> categorias = categoriaRepository.findAll();
+				model.addAttribute("categorias", categorias);
+				// Stock calculado (seguimos usándolo para el badge, principalmente para productos de Bar)
+				model.addAttribute("stockPorProducto", inventarioService.calcularStockPorProducto());
+				model.addAttribute("nombresInventario", inventarioService.listarNombresProductosInventario());
+				// Umbral para badges de stock
+				model.addAttribute("stockThreshold", 5);
 
 				// Para la sección products, mostrar SOLO los nombres del menú (no incluir nombres desde inventario)
 				java.util.List<String> menuNombres = new java.util.ArrayList<>();
