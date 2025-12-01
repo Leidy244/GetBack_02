@@ -254,8 +254,16 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
     const hiddenId = document.getElementById('input-pedido-id');
     if (hiddenId) hiddenId.value = String(pedidoId);
 	    
-	    // Parsear y mostrar detalles del pedido
-	    mostrarDetallesPedido(detalle);
+    	// Parsear y mostrar detalles del pedido
+    	mostrarDetallesPedido(detalle);
+    	try {
+    	    const parsed = JSON.parse(detalle);
+    	    pedidoActual.items = Array.isArray(parsed) ? parsed.map(it => ({
+    	        nombre: it.nombre || it.productoNombre || 'Item',
+    	        cantidad: Number(it.cantidad || 1),
+    	        precio: Number(it.precio || 0)
+    	    })) : [];
+    	} catch(_) { pedidoActual.items = []; }
 	    
 	    // Resetear campos
 	    modalRecibido.value = '';
@@ -295,6 +303,11 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
                 const safeJson = detalleJson.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
                 const d = JSON.parse(safeJson);
                 const items = Array.isArray(d.items) ? d.items : [];
+                pedidoActual.items = items.map(it => ({
+                    nombre: it.nombre || it.productoNombre || 'Item',
+                    cantidad: Number(it.cantidad || 1),
+                    precio: Number(it.precio || 0)
+                }));
                 const comentarios = Array.isArray(d.comentarios) ? d.comentarios : [];
                 let html = `
                     <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
@@ -469,6 +482,264 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
         }
     });
 
+    // ========== PAGOS: IMPRIMIR FACTURA ==========
+	document.getElementById('btn-imprimir-pago')?.addEventListener('click', () => {
+	    if (!pedidoActual) return;
+	    const items = Array.isArray(pedidoActual.items) ? pedidoActual.items : [];
+	    const ctx = {
+	        fecha: new Date().toLocaleString('es-CO'),
+	        mesa: document.getElementById('modal-mesa-info')?.textContent || '',
+	        total: pedidoActual.total || 0,
+	        items: items
+	    };
+	    imprimirTicketPago(ctx);
+	});
+
+	function imprimirTicketPago(ctx) {
+	    // Crear ventana de impresión
+	    const w = window.open('', '_blank');
+	    if (!w) {
+	        console.error('No se pudo abrir ventana de impresión');
+	        return;
+	    }
+	    
+	    // Construir HTML del ticket
+	    const html = construirHTMLTicket(ctx);
+	    
+	    // Escribir en la ventana
+	    w.document.open();
+	    w.document.write(html);
+	    w.document.close();
+	}
+
+	function construirHTMLTicket(ctx) {
+	    // Generar filas de productos
+	    const filas = (ctx.items || []).map(it => {
+	        const nombre = String(it.nombre || 'Item').trim();
+	        const cant = Number(it.cantidad || 1);
+	        const precioUnitario = Number(it.precio || 0);
+	        const subtotal = precioUnitario * cant;
+	        
+	        // Formato: cantidad y nombre juntos en una celda
+	        return `<tr>
+	            <td class="item-detalle">
+	                <span class="cantidad">${cant}x</span> ${nombre}
+	            </td>
+	            <td class="item-precio text-end">$${subtotal.toLocaleString('es-CO')}</td>
+	        </tr>`;
+	    }).join('');
+	    
+	    // Obtener total formateado
+	    const totalFormateado = Number(ctx.total || 0).toLocaleString('es-CO');
+	    
+	    // Devolver HTML completo con CSS embebido
+	    return `<!doctype html>
+	<html lang="es">
+	<head>
+	    ${getTicketStyles()}
+	</head>
+	<body>
+	    ${getTicketHeader(ctx)}
+	    ${getTicketItems(filas)}
+	    ${getTicketFooter(totalFormateado)}
+	    ${getTicketScripts()}
+	</body>
+	</html>`;
+	}
+
+	function getTicketStyles() {
+	    return `
+	    <meta charset="utf-8">
+	    <title>Factura GET BACK</title>
+	    <style>
+	        /* Configuración de página para impresión térmica */
+	        @page {
+	            size: 58mm auto;
+	            margin: 0;
+	        }
+	        
+	        /* Estilos generales */
+	        body {
+	            font-family: 'Courier New', monospace;
+	            width: 58mm;
+	            margin: 4mm auto;
+	            font-size: 20px;
+	            font-weight: 700;
+	            line-height: 1.2;
+	        }
+	        
+	        /* Encabezado */
+	        .header {
+	            text-align: center;
+	            margin-bottom: 6px;
+	        }
+	        
+	        .titulo {
+	            margin: 0 0 6px 0;
+	            font-size: 22px;
+	            text-align: center;
+	        }
+	        
+	        .subtitulo {
+	            color: #666;
+	            font-size: 16px;
+	            font-weight: 700;
+	            margin-bottom: 8px;
+	        }
+	        
+	        /* Información de mesa y fecha */
+	        .info-mesa {
+	            color: #666;
+	            font-size: 16px;
+	            font-weight: 700;
+	            margin-bottom: 10px;
+	        }
+	        
+	        /* Tabla de productos */
+	        table {
+	            width: 100%;
+	            border-collapse: collapse;
+	            margin: 8px 0;
+	        }
+	        
+	        th, td {
+	            padding: 6px 0;
+	            border-bottom: 1px dashed #ccc;
+	            font-size: 20px;
+	            font-weight: 700;
+	            vertical-align: top;
+	        }
+	        
+	        .text-end {
+	            text-align: right;
+	        }
+	        
+	        /* Detalles del producto */
+	        .item-detalle {
+	            width: 70%;
+	            padding-right: 5px;
+	        }
+	        
+	        .item-precio {
+	            width: 30%;
+	            padding-left: 5px;
+	        }
+	        
+	        .cantidad {
+	            font-weight: 700;
+	            margin-right: 8px;
+	            display: inline-block;
+	            min-width: 25px;
+	        }
+	        
+	        /* Separadores */
+	        hr {
+	            border: none;
+	            border-top: 1px dashed #ccc;
+	            margin: 10px 0;
+	        }
+	        
+	        /* Total */
+	        .total {
+	            text-align: right;
+	            margin: 10px 0;
+	            font-size: 22px;
+	        }
+	        
+	        /* Pie de página */
+	        .footer {
+	            text-align: center;
+	            color: #666;
+	            font-size: 16px;
+	            font-weight: 700;
+	            margin-top: 15px;
+	            padding-top: 10px;
+	            border-top: 1px dashed #ccc;
+	        }
+	    </style>
+	    `;
+	}
+
+	function getTicketHeader(ctx) {
+	    return `
+	    <div class="header">
+	        <h1 class="titulo">GET BACK</h1>
+	        <div class="subtitulo">Factura</div>
+	    </div>
+	    <div class="info-mesa">
+	        <div>Mesa: ${ctx.mesa || '—'}</div>
+	        <div>${ctx.fecha}</div>
+	    </div>
+	    <hr/>
+	    `;
+	}
+
+	function getTicketItems(filas) {
+	    return `
+	    <table>
+	        <thead>
+	            <tr>
+	                <th>Detalle</th>
+	                <th class="text-end">Subtotal</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            ${filas}
+	        </tbody>
+	    </table>
+	    <hr/>
+	    `;
+	}
+
+	function getTicketFooter(totalFormateado) {
+	    return `
+	    <div class="total">
+	        <strong>Total: $${totalFormateado}</strong>
+	    </div>
+	    <div class="footer">
+	        Gracias por su compra
+	    </div>
+	    `;
+	}
+
+	function getTicketScripts() {
+	    return `
+	    <script>
+	        // Configurar para impresión automática
+	        document.title = 'Factura GET BACK';
+	        
+	        window.onload = function() {
+	            try {
+	                // Pequeño delay para asegurar que todo esté cargado
+	                setTimeout(() => {
+	                    window.print();
+	                }, 200);
+	            } catch(e) {
+	                console.error('Error al imprimir:', e);
+	            }
+	        };
+	        
+	        window.onafterprint = function() {
+	            try {
+	                // Cerrar ventana después de imprimir
+	                setTimeout(() => {
+	                    window.close();
+	                }, 500);
+	            } catch(e) {
+	                console.error('Error al cerrar ventana:', e);
+	            }
+	        };
+	    </script>
+	    `;
+	}
+
+	// Función auxiliar para formatear moneda (opcional)
+	function formatearMoneda(valor) {
+	    return new Intl.NumberFormat('es-CO', {
+	        minimumFractionDigits: 0,
+	        maximumFractionDigits: 0
+	    }).format(valor);
+	}
     // ========== PAGOS: MANEJAR ENVÍO DEL FORMULARIO ==========
     formConfirmarPago?.addEventListener('submit', function(e) {
         e.preventDefault();

@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const pedidoTotalValue = document.getElementById('pedido-total-value');
     let totalOrder = 0;
     let orderItems = [];
+    let isPreparing = false;
+    let preparingOverlay = null;
 
     // Helper: formatear montos sin .00, con separador de miles usando punto
     const formatMonto = (valor) => {
@@ -81,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
+            if (isPreparing) return;
+            confirmBtn.disabled = true;
             sendOrder();
         });
     }
@@ -477,6 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function sendOrder() {
+        if (isPreparing) return;
         // Antes de enviar, reconstruir la lista de items desde el DOM para asegurar coherencia
         rebuildOrderItemsFromDom();
 
@@ -505,37 +510,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const itemsJson = JSON.stringify(itemsData);
 
-        const formData = new URLSearchParams();
-        formData.append('mesaId', parseInt(mesaId));
-        formData.append('itemsJson', itemsJson);
-        formData.append('comentarios', comments);
-        formData.append('total', totalOrder);
-
-        fetch('/pedidos/preparar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
-                    orderModal.style.display = 'none';
-                    resetOrder();
-                    setTimeout(() => {
-                        const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
-                        window.location.href = redirectUrl;
-                    }, 800);
-                } else {
-                    showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
-                }
+        const proceed = () => {
+            const controller = new AbortController();
+            const t = setTimeout(() => { try{ controller.abort(); }catch(e){} }, 15000);
+            if (!preparingOverlay) {
+                preparingOverlay = document.createElement('div');
+                preparingOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:10000';
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#111;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;color:#fff;text-align:center;min-width:280px';
+                const txt = document.createElement('div');
+                txt.textContent = 'Preparando pedido...';
+                txt.style.cssText = 'margin-bottom:10px';
+                const spinner = document.createElement('div');
+                spinner.style.cssText = 'width:24px;height:24px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;margin:0 auto;animation:spin .8s linear infinite';
+                box.appendChild(txt); box.appendChild(spinner); preparingOverlay.appendChild(box);
+                const style = document.createElement('style');
+                style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+                preparingOverlay.appendChild(style);
+                document.body.appendChild(preparingOverlay);
+            }
+            const formData = new URLSearchParams();
+            formData.append('mesaId', parseInt(mesaId));
+            formData.append('itemsJson', itemsJson);
+            formData.append('comentarios', comments);
+            formData.append('total', totalOrder);
+            fetch('/pedidos/preparar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData,
+                signal: controller.signal
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('❌ Error de conexión', 'error');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    clearTimeout(t);
+                    if (data.success) {
+                        showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
+                        if (preparingOverlay) { try{ document.body.removeChild(preparingOverlay); }catch(e){} preparingOverlay = null; }
+                        orderModal.style.display = 'none';
+                        resetOrder();
+                        setTimeout(() => {
+                            const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
+                            window.location.href = redirectUrl;
+                        }, 800);
+                    } else {
+                        showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(t);
+                    console.error('Error:', error);
+                    showNotification('❌ Error de conexión', 'error');
+                })
+                .finally(() => {
+                    isPreparing = false;
+                    if (confirmBtn) confirmBtn.disabled = false;
+                    if (preparingOverlay) { try{ document.body.removeChild(preparingOverlay); }catch(e){} preparingOverlay = null; }
+                });
+        };
+        isPreparing = true;
+        proceed();
     }
 
     function resetOrder() {

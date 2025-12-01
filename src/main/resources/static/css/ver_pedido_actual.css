@@ -354,6 +354,8 @@ body {
     box-shadow: 0 2px 8px rgba(156, 77, 255, 0.3);
 }
 
+/* estilos del botón cocina eliminados */
+
 .btn-cobrar {
     background-color: var(--success);
     color: #002411;

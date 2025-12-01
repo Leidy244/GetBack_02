@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" th:href="@{/css/ver_pedido_actual.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -128,13 +128,13 @@
         // La acción de editar ahora se maneja vía POST /pedidos/editar en el backend
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Establecer fecha y hora actual del equipo en el resumen del pedido
             const fechaSpan = document.getElementById('fechaHoraPedido');
             if (fechaSpan) {
                 const ahora = new Date();
                 const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
                 fechaSpan.textContent = ahora.toLocaleString('es-CO', opciones);
             }
+
         });
     </script>
 </body>
