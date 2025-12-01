@@ -138,10 +138,9 @@ class PanelCaja {
             btnHistorial.addEventListener('click', () => {
                 if (monthInput && !monthInput.value) {
                     const hoy = new Date();
-                    hoy.setMonth(hoy.getMonth() - 1);
                     const y = hoy.getFullYear();
                     const m = String(hoy.getMonth() + 1).padStart(2, '0');
-                    monthInput.value = `${y}-${m}`;
+                    monthInput.value = `${y}-${m}`; // mes actual por defecto
                 }
                 render();
                 const modal = new bootstrap.Modal(document.getElementById('modalGastosHistorial'));
