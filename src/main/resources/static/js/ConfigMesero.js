@@ -242,30 +242,34 @@ const btnCancelFoto = document.getElementById("cancelFoto");
 
 // Función para mostrar/ocultar formularios
 function toggleForm(formToShow, formToHide) {
+	if (!formToShow || !formToHide) return;
 	if (formToHide.style.display === "block") {
 		formToHide.style.display = "none";
 	}
 	formToShow.style.display = formToShow.style.display === "block" ? "none" : "block";
 }
 
-// --- Abrir Formulario de Edición ---
-btnEditProfile.addEventListener("click", () => {
-	toggleForm(formEditar, formFoto);
-});
+// Solo configurar listeners de perfil si existen los elementos (páginas de configuración)
+if (btnEditProfile && btnChangePhoto && btnCancelEdit && formEditar && formFoto) {
+	// --- Abrir Formulario de Edición ---
+	btnEditProfile.addEventListener("click", () => {
+		toggleForm(formEditar, formFoto);
+	});
 
-// --- Abrir Formulario de Foto ---
-btnChangePhoto.addEventListener("click", () => {
-	toggleForm(formFoto, formEditar);
-});
+	// --- Abrir Formulario de Foto ---
+	btnChangePhoto.addEventListener("click", () => {
+		toggleForm(formFoto, formEditar);
+	});
 
-// --- Cerrar formularios ---
-btnCancelEdit.addEventListener("click", () => {
-	formEditar.style.display = "none";
-});
+	// --- Cerrar formularios ---
+	btnCancelEdit.addEventListener("click", () => {
+		formEditar.style.display = "none";
+	});
 
-btnCancelFoto?.addEventListener("click", () => {
-	formFoto.style.display = "none";
-});
+	btnCancelFoto?.addEventListener("click", () => {
+		formFoto.style.display = "none";
+	});
+}
 
 // --- Nombre de la imagen seleccionada ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -281,15 +285,17 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Cerrar formularios al hacer clic fuera de ellos
-	document.addEventListener("click", (e) => {
-		if (!formEditar.contains(e.target) && !btnEditProfile.contains(e.target) && formEditar.style.display === "block") {
-			formEditar.style.display = "none";
-		}
-		if (!formFoto.contains(e.target) && !btnChangePhoto.contains(e.target) && formFoto.style.display === "block") {
-			formFoto.style.display = "none";
-		}
-	});
+	// Cerrar formularios al hacer clic fuera de ellos (solo si existen)
+	if (formEditar && formFoto && btnEditProfile && btnChangePhoto) {
+		document.addEventListener("click", (e) => {
+			if (!formEditar.contains(e.target) && !btnEditProfile.contains(e.target) && formEditar.style.display === "block") {
+				formEditar.style.display = "none";
+			}
+			if (!formFoto.contains(e.target) && !btnChangePhoto.contains(e.target) && formFoto.style.display === "block") {
+				formFoto.style.display = "none";
+			}
+		});
+	}
 });
 
 // Validación básica del formulario
@@ -350,12 +356,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const hamburger = document.getElementById("hamburger"); // Botón hamburguesa
   const navMenu = document.getElementById("navMenu"); // Menú de navegación
 
-  // Cuando se hace clic en el botón hamburguesa
-  hamburger.addEventListener("click", () => {
-    // Alterna la clase "active" para mostrar/ocultar el menú
-    navMenu.classList.toggle("active");
+  if (hamburger && navMenu) {
+    // Cuando se hace clic en el botón hamburguesa
+    hamburger.addEventListener("click", () => {
+      // Alterna la clase "active" para mostrar/ocultar el menú
+      navMenu.classList.toggle("active");
 
-    // También cambia el estilo del botón (opcional)
-    hamburger.classList.toggle("open");
-  });
+      // También cambia el estilo del botón (opcional)
+      hamburger.classList.toggle("open");
+    });
+  }
 });

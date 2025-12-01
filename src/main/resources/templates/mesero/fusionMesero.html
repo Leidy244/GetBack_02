@@ -114,6 +114,23 @@
 		</div>
 	</div>
 
+	<!-- Modal de comentarios -->
+	<div id="commentsModal" class="modal" aria-hidden="true">
+		<div class="modal-content">
+			<span class="close-modal">&times;</span>
+			<div class="modal-header">
+				<h2>Comentarios del pedido</h2>
+			</div>
+			<div class="modal-body">
+				<textarea id="order-comments" placeholder="Agregar comentarios al pedido..." rows="5" style="width: 100%;"></textarea>
+			</div>
+			<div class="modal-footer">
+				<button class="btn-modal btn-cancel">Cancelar</button>
+				<button class="btn-modal btn-save" id="btn-save-comments" type="button">Guardar</button>
+			</div>
+		</div>
+	</div>
+
 	<!-- Navegación inferior -->
 	<nav class="bottom-nav" aria-label="Navegación inferior">
 		<div class="order-summary-mobile">
@@ -127,9 +144,6 @@
 				<button class="btn-comments" id="btn-comments">
 					<i class="fas fa-edit"></i> Comentarios
 				</button>
-				<div class="comments-container" id="comments-container">
-					<textarea id="order-comments" placeholder="Agregar comentarios al pedido..."></textarea>
-				</div>
 			</div>
 
 			<!-- Botón Enviar Pedido: en escritorio flotante abajo derecha, en móvil debajo de Comentarios -->

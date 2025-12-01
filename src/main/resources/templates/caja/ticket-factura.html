@@ -1,69 +1,185 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="${'Ticket ' + factura.numeroFactura}">Ticket</title>
+    <meta charset="utf-8">
+    <title>Factura GET BACK</title>
     <style>
-        @page { size: 58mm auto; margin: 5mm; }
+        /* Configuración de página para impresión térmica */
+        @page {
+            size: 58mm auto;
+            margin: 0;
+        }
+        
+        /* Estilos generales */
         body {
             font-family: 'Courier New', monospace;
             width: 58mm;
-            margin: 0 auto;
-            font-size: 11px;
+            margin: 4mm auto;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.2;
         }
-        h2 { margin: 0 0 4px 0; font-size: 14px; text-align: center; }
-        .muted { color: #666; font-size: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 3px 0; border-bottom: 1px dashed #ccc; font-size: 11px; }
-        .text-end { text-align: right; }
-        .text-center { text-align: center; }
-        hr { border: none; border-top: 1px dashed #ccc; margin: 6px 0; }
+        
+        /* Encabezado */
+        .header {
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        
+        .titulo {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            text-align: center;
+        }
+        
+        .subtitulo {
+            color: #666;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        /* Información de mesa y fecha */
+        .info-mesa {
+            color: #666;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        /* Tabla de productos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+        }
+        
+        th, td {
+            padding: 6px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 20px;
+            font-weight: 700;
+            vertical-align: top;
+        }
+        
+        .text-end {
+            text-align: right;
+        }
+        
+        /* Detalles del producto */
+        .item-detalle {
+            width: 70%;
+            padding-right: 5px;
+        }
+        
+        .item-precio {
+            width: 30%;
+            padding-left: 5px;
+        }
+        
+        .cantidad {
+            font-weight: 700;
+            margin-right: 8px;
+            display: inline-block;
+            min-width: 25px;
+        }
+        
+        /* Separadores */
+        hr {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: 10px 0;
+        }
+        
+        /* Total */
+        .total {
+            text-align: right;
+            margin: 10px 0;
+            font-size: 22px;
+        }
+        
+        /* Pie de página */
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
     </style>
 </head>
-<body onload="window.print()">
-<div style="text-align:center; margin-bottom:6px;">
-    <h2>GET BACK</h2>
-    <div class="muted">Ticket de Venta</div>
-</div>
-<div class="muted">
-    <div>
-        <span>Factura: </span><span th:text="${factura.numeroFactura}">FAC-0001</span>
-        <span th:if="${pedido != null}"> | Mesa: <span th:text="${pedido.mesa != null ? pedido.mesa.numero : '-'}">1</span></span>
-    </div>
-    <div>
-        <span th:text="${#temporals.format(factura.fechaEmision, 'dd/MM/yyyy HH:mm')}">01/01/2025 12:00</span>
-    </div>
-    <div>
-        Cliente: <span th:text="${factura.clienteNombre != null ? factura.clienteNombre : '—'}">Cliente</span>
-    </div>
-    <div>
-        Pago: <span th:text="${factura.metodoPago}">EFECTIVO</span>
-        | Estado: <span th:text="${factura.estadoPago}">PAGADO</span>
-    </div>
-</div>
-<hr/>
-
-<!-- Resumen de importes -->
-<table>
-    <tbody>
-    <tr>
-        <td>Subtotal</td>
-        <td class="text-end" th:text="${#numbers.formatDecimal(factura.subtotal, 0, 2)}">0.00</td>
-    </tr>
-    <tr>
-        <td>Descuento</td>
-        <td class="text-end" th:text="${#numbers.formatDecimal(factura.valorDescuento, 0, 2)}">0.00</td>
-    </tr>
-    <tr>
-        <td><strong>Total</strong></td>
-        <td class="text-end"><strong th:text="${#numbers.formatDecimal(factura.totalPagar, 0, 2)}">0.00</strong></td>
-    </tr>
-    </tbody>
-</table>
-
-<hr/>
-<div class="text-center muted">
-    Gracias por su compra
-</div>
+<body>
+    <!-- El contenido se insertará dinámicamente con JavaScript -->
+    <div id="ticket-content"></div>
+    
+    <script>
+        // Función para generar el contenido del ticket
+        function generarTicket(data) {
+            const filas = data.items.map(item => {
+                const subtotal = (item.precio || 0) * (item.cantidad || 1);
+                return `
+                <tr>
+                    <td class="item-detalle">
+                        <span class="cantidad">${item.cantidad || 1}x</span> ${item.nombre || 'Item'}
+                    </td>
+                    <td class="item-precio text-end">$${subtotal.toLocaleString('es-CO')}</td>
+                </tr>`;
+            }).join('');
+            
+            const contenido = `
+            <div class="header">
+                <h1 class="titulo">GET BACK</h1>
+                <div class="subtitulo">Factura</div>
+            </div>
+            <div class="info-mesa">
+                <div>Mesa: ${data.mesa || '—'}</div>
+                <div>${data.fecha}</div>
+            </div>
+            <hr/>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Detalle</th>
+                        <th class="text-end">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+            <hr/>
+            <div class="total">
+                <strong>Total: $${Number(data.total || 0).toLocaleString('es-CO')}</strong>
+            </div>
+            <div class="footer">
+                Gracias por su compra
+            </div>`;
+            
+            document.getElementById('ticket-content').innerHTML = contenido;
+        }
+        
+        // Imprimir automáticamente
+        window.onload = function() {
+            // Obtener datos de la URL o localStorage
+            const ticketData = JSON.parse(localStorage.getItem('ticketData') || '{}');
+            
+            if (ticketData.items) {
+                generarTicket(ticketData);
+                
+                // Pequeño delay antes de imprimir
+                setTimeout(() => {
+                    window.print();
+                }, 200);
+            }
+        };
+        
+        // Cerrar después de imprimir
+        window.onafterprint = function() {
+            setTimeout(() => {
+                window.close();
+                localStorage.removeItem('ticketData');
+            }, 500);
+        };
+    </script>
 </body>
 </html>

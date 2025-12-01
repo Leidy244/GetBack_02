@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const pedidoTotalValue = document.getElementById('pedido-total-value');
     let totalOrder = 0;
     let orderItems = [];
+    let isPreparing = false;
+    let preparingOverlay = null;
 
     // Helper: formatear montos sin .00, con separador de miles usando punto
     const formatMonto = (valor) => {
@@ -45,6 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const entero = Math.round(numero);
         return entero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
+
+    const escapeHtml = (s) => String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
     // ✅ DECLARAR updateTotal ANTES de cualquier uso
     const updateTotal = () => {
@@ -74,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
+            if (isPreparing) return;
+            confirmBtn.disabled = true;
             sendOrder();
         });
     }
@@ -88,6 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const orderComments = document.getElementById('order-comments');
+    const commentsModal = document.getElementById('commentsModal');
+    const commentsCloseBtn = commentsModal?.querySelector('.close-modal');
+    const commentsCancelBtn = commentsModal?.querySelector('.btn-cancel');
+    const commentsSaveBtn = commentsModal?.querySelector('.btn-save');
 
     // Inicializar desde borrador (flujo de "Editar") si existe
     try {
@@ -264,15 +279,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 orderItems[existingItemIndex].quantity = quantity;
                 orderItems[existingItemIndex].subtotal = price * quantity;
             } else {
+                const el = document.querySelector(`.product-item[data-producto-id="${productId}"]`);
+                const area = el ? (el.getAttribute('data-area') || '') : '';
                 orderItems.push({
                     id: productId,
                     name: productName,
                     price: price,
                     quantity: quantity,
-                    subtotal: price * quantity
+                    subtotal: price * quantity,
+                    area: area
                 });
             }
         }
+    }
+
+    // Reconstruye la lista de items directamente desde el DOM según las cantidades seleccionadas
+    function rebuildOrderItemsFromDom() {
+        const newItems = [];
+        const products = document.querySelectorAll('.product-item');
+        products.forEach(product => {
+            const quantityInput = product.querySelector('.quantity-input');
+            const quantity = quantityInput ? parseInt(quantityInput.value) || 0 : 0;
+            if (quantity > 0) {
+                const productId = product.getAttribute('data-producto-id');
+                const productName = product.getAttribute('data-producto-nombre') ||
+                    (product.querySelector('.product-name')?.textContent || 'Producto');
+                const price = parseFloat(product.getAttribute('data-precio')) ||
+                    parseFloat(product.querySelector('.product-price')?.textContent.replace('$', '').replace('.', '').replace(',', '.') || '0');
+                const area = product.getAttribute('data-area') || '';
+                newItems.push({
+                    id: String(productId),
+                    name: productName,
+                    price: price,
+                    quantity: quantity,
+                    subtotal: price * quantity,
+                    area: area
+                });
+            }
+        });
+        orderItems = newItems;
+        totalOrder = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+        updateTotal();
     }
 
     // ❌ ELIMINAR esta declaración duplicada de updateTotal (está en las líneas ~250-256)
@@ -345,19 +392,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Comments functionality
+    // Comments modal functionality
     const commentsBtn = document.getElementById('btn-comments');
-    const commentsContainer = document.getElementById('comments-container');
-
-    if (commentsBtn && commentsContainer) {
+    if (commentsBtn && commentsModal) {
         commentsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            commentsContainer.classList.toggle('active');
+            e.preventDefault();
+            commentsModal.style.display = 'flex';
         });
 
-        document.addEventListener('click', (e) => {
-            if (!commentsContainer.contains(e.target) && e.target !== commentsBtn) {
-                commentsContainer.classList.remove('active');
+        if (commentsCloseBtn) {
+            commentsCloseBtn.addEventListener('click', () => {
+                commentsModal.style.display = 'none';
+            });
+        }
+
+        if (commentsCancelBtn) {
+            commentsCancelBtn.addEventListener('click', () => {
+                commentsModal.style.display = 'none';
+            });
+        }
+
+        if (commentsSaveBtn) {
+            commentsSaveBtn.addEventListener('click', () => {
+                commentsModal.style.display = 'none';
+                showNotification('✅ Comentario guardado');
+            });
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === commentsModal) {
+                commentsModal.style.display = 'none';
             }
         });
     }
@@ -371,6 +435,8 @@ document.addEventListener('DOMContentLoaded', () => {
             orderSummary.innerHTML = '<p class="no-items">No hay productos en el pedido</p>';
             return;
         }
+
+        const commentText = orderComments ? orderComments.value.trim() : '';
 
         let summaryHTML = `
             <div class="order-items">
@@ -387,7 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         });
 
-        summaryHTML += `
+        const commentSection = commentText ? `
+                </div>
+                <div class="order-comment-modal">
+                    <strong>Comentarios:</strong>
+                    <div class="comment-text">${escapeHtml(commentText)}</div>
+                </div>
+        ` : `
                 </div>
                 <div class="order-total-modal">
                     <strong>Total: $${formatMonto(totalOrder)}</strong>
@@ -395,10 +467,24 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        summaryHTML += commentSection;
+
+        if (commentText) {
+            summaryHTML += `
+                <div class="order-total-modal">
+                    <strong>Total: $${formatMonto(totalOrder)}</strong>
+                </div>
+            `;
+        }
+
         orderSummary.innerHTML = summaryHTML;
     }
 
     function sendOrder() {
+        if (isPreparing) return;
+        // Antes de enviar, reconstruir la lista de items desde el DOM para asegurar coherencia
+        rebuildOrderItemsFromDom();
+
         if (orderItems.length === 0) {
             showNotification('❌ No hay productos en el pedido', 'error');
             return;
@@ -416,44 +502,73 @@ document.addEventListener('DOMContentLoaded', () => {
                 cantidad: item.quantity,
                 precio: item.price,
                 subtotal: item.price * item.quantity,
-                comentarios: ''
+                comentarios: '',
+                tipo: (item.area || '').toUpperCase()
             })),
             total: totalOrder
         };
 
         const itemsJson = JSON.stringify(itemsData);
 
-        const formData = new URLSearchParams();
-        formData.append('mesaId', parseInt(mesaId));
-        formData.append('itemsJson', itemsJson);
-        formData.append('comentarios', comments);
-        formData.append('total', totalOrder);
-
-        fetch('/pedidos/preparar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
-                    orderModal.style.display = 'none';
-                    resetOrder();
-                    setTimeout(() => {
-                        const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
-                        window.location.href = redirectUrl;
-                    }, 800);
-                } else {
-                    showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
-                }
+        const proceed = () => {
+            const controller = new AbortController();
+            const t = setTimeout(() => { try{ controller.abort(); }catch(e){} }, 15000);
+            if (!preparingOverlay) {
+                preparingOverlay = document.createElement('div');
+                preparingOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:10000';
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#111;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;color:#fff;text-align:center;min-width:280px';
+                const txt = document.createElement('div');
+                txt.textContent = 'Preparando pedido...';
+                txt.style.cssText = 'margin-bottom:10px';
+                const spinner = document.createElement('div');
+                spinner.style.cssText = 'width:24px;height:24px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;margin:0 auto;animation:spin .8s linear infinite';
+                box.appendChild(txt); box.appendChild(spinner); preparingOverlay.appendChild(box);
+                const style = document.createElement('style');
+                style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+                preparingOverlay.appendChild(style);
+                document.body.appendChild(preparingOverlay);
+            }
+            const formData = new URLSearchParams();
+            formData.append('mesaId', parseInt(mesaId));
+            formData.append('itemsJson', itemsJson);
+            formData.append('comentarios', comments);
+            formData.append('total', totalOrder);
+            fetch('/pedidos/preparar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData,
+                signal: controller.signal
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('❌ Error de conexión', 'error');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    clearTimeout(t);
+                    if (data.success) {
+                        showNotification('✅ Pedido preparado. Redirigiendo a vista de confirmación...');
+                        if (preparingOverlay) { try{ document.body.removeChild(preparingOverlay); }catch(e){} preparingOverlay = null; }
+                        orderModal.style.display = 'none';
+                        resetOrder();
+                        setTimeout(() => {
+                            const redirectUrl = data.redirect || ('/verpedido?mesa=' + mesaId);
+                            window.location.href = redirectUrl;
+                        }, 800);
+                    } else {
+                        showNotification('❌ Error al preparar pedido: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(t);
+                    console.error('Error:', error);
+                    showNotification('❌ Error de conexión', 'error');
+                })
+                .finally(() => {
+                    isPreparing = false;
+                    if (confirmBtn) confirmBtn.disabled = false;
+                    if (preparingOverlay) { try{ document.body.removeChild(preparingOverlay); }catch(e){} preparingOverlay = null; }
+                });
+        };
+        isPreparing = true;
+        proceed();
     }
 
     function resetOrder() {
@@ -467,8 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (orderComments) orderComments.value = '';
-
-        if (commentsContainer) commentsContainer.classList.remove('active');
+        if (commentsModal) commentsModal.style.display = 'none';
     }
 
     // Notification system
@@ -530,6 +644,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .item-name { flex: 2; }
         .item-subtotal { flex: 1; text-align: right; font-weight: bold; }
         .order-total-modal { margin-top: 15px; padding-top: 10px; border-top: 2px solid var(--primary); text-align: center; font-size: 1.2em; }
+        .order-comment-modal { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); }
+        .order-comment-modal strong { display: block; margin-bottom: 6px; color: var(--accent); }
+        .comment-text { background: rgba(0,0,0,0.2); border: 1px solid var(--primary-light); border-radius: 8px; padding: 8px; color: var(--text-primary); white-space: pre-wrap; }
     `;
     document.head.appendChild(style);
 

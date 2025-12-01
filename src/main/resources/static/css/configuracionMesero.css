@@ -270,15 +270,15 @@ body {
 }
 
 .content-card {
-	width: 100%;
-	max-width: 900px;
-	padding: 3rem;
-	background: var(--fondo-card);
-	backdrop-filter: blur(14px);
-	border-radius: var(--radius);
-	box-shadow: var(--sombra);
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	transition: var(--transicion);
+    width: 100%;
+    max-width: 1100px;
+    padding: 3rem;
+    background: var(--fondo-card);
+    backdrop-filter: blur(14px);
+    border-radius: var(--radius);
+    box-shadow: var(--sombra);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--transicion);
 }
 
 .content-card:hover {
@@ -1400,21 +1400,6 @@ html[style*="font-size: 14px"] #formFoto input {
 		transition-duration: 0.01ms !important;
 	}
 
-		/* ==== ESTILOS GENERALES PARA ESTADÍSTICAS (estadisticas.html) ==== */
-		.stats-container {
-			display: flex;
-			flex-direction: column;
-			gap: 16px;
-		}
-
-		.stats-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			color: #fff;
-			margin-bottom: 10px;
-		}
-
 	.nav-btn,
 	.btn,
 	.dropdown-item {
@@ -1435,190 +1420,4 @@ html[style*="font-size: 14px"] #formFoto input {
 		/* Reducimos la sombra, pero no la eliminamos del todo para no romper la estética de los temas */
 		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
 	}
-	
-	.historial-header {
-	            display: flex;
-	            justify-content: space-between;
-	            align-items: center;
-	            margin-bottom: 15px;
-	            color: #fff;
-	        }
-
-	        .historial-header h3 {
-	            font-size: 1.3rem;
-	            display: flex;
-	            align-items: center;
-	            gap: 8px;
-	        }
-
-	        .historial-header i {
-	            color: #fff;
-	        }
-
-	        .historial-filtros {
-	            display: grid;
-	            grid-template-columns: 1.2fr 1fr 1fr 1fr 1.4fr auto;
-	            gap: 8px;
-	            margin-bottom: 12px;
-	            font-size: 0.85rem;
-	        }
-
-	        .historial-filtros input,
-	        .historial-filtros select {
-	            padding: 4px 6px;
-	            border-radius: 4px;
-	            border: 1px solid #555;
-	            background-color: #1e1e1e;
-	            color: #f0f0f0;
-	        }
-
-	        .historial-filtros button {
-	            padding: 4px 10px;
-	            border-radius: 4px;
-	            border: none;
-	            background: linear-gradient(90deg, #7b2ff7, #00c6ff);
-	            color: #fff;
-	            cursor: pointer;
-	            font-weight: 500;
-	        }
-
-	        .historial-filtros button:hover {
-	            opacity: 0.9;
-	        }
-
-	        .historial-tabla-wrapper {
-	            margin-top: 5px;
-	            border-radius: 12px;
-	            overflow: hidden;
-	            background: #111;
-	            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
-	        }
-
-	        .historial-tabla {
-	            width: 100%;
-	            border-collapse: collapse;
-	            font-size: 0.85rem;
-	            color: #f5f5f5;
-	        }
-
-	        .historial-tabla thead {
-	            background: linear-gradient(90deg, #7b2ff7, #00c6ff);
-	        }
-
-	        .historial-tabla thead th {
-	            padding: 8px 10px;
-	            text-align: left;
-	            font-weight: 600;
-	            white-space: nowrap;
-	        }
-
-	        .historial-tabla tbody tr:nth-child(even) {
-	            background-color: #181818;
-	        }
-
-	        .historial-tabla tbody tr:nth-child(odd) {
-	            background-color: #141414;
-	        }
-
-	        .historial-tabla td {
-	            padding: 6px 10px;
-	            border-bottom: 1px solid #222;
-	            white-space: nowrap;
-	        }
-
-	        .historial-tabla td:nth-child(1) {
-	            width: 40px;
-	        }
-
-	        .historial-tabla td:nth-child(4) {
-	            text-align: right;
-	        }
-
-	        .historial-paginacion {
-	            display: flex;
-	            justify-content: flex-end;
-	            align-items: center;
-	            gap: 12px;
-	            margin-top: 10px;
-	            font-size: 0.8rem;
-	            color: #f0f0f0;
-	        }
-
-	        .historial-paginacion .page-info {
-	            opacity: 0.9;
-	        }
-
-	        .historial-paginacion a {
-	            color: #00c6ff;
-	            text-decoration: none;
-	            font-weight: 500;
-	            padding: 4px 10px;
-	            border-radius: 999px;
-	            border: 1px solid rgba(0, 198, 255, 0.4);
-	            background: rgba(0, 0, 0, 0.3);
-	        }
-
-	        .historial-paginacion a:hover {
-	            background: linear-gradient(90deg, #7b2ff7, #00c6ff);
-	            color: #fff;
-	        }
-
-	        @media (max-width: 768px) {
-	            .historial-filtros {
-	                grid-template-columns: 1fr 1fr;
-	            }
-	        }
-			.stats-container {
-			         display: flex;
-			         flex-direction: column;
-			         gap: 16px;
-			     }
-			     .stats-header {
-			         display: flex;
-			         justify-content: space-between;
-			         align-items: center;
-			         color: #fff;
-			         margin-bottom: 10px;
-			     }
-			     .stats-header h3 {
-			         display: flex;
-			         align-items: center;
-			         gap: 8px;
-			     }
-			     .chart-wrapper {
-			         background: #111;
-			         border-radius: 16px;
-			         padding: 16px;
-			         box-shadow: 0 8px 18px rgba(0,0,0,0.5);
-			         min-height: 360px;
-			         display: flex;
-			         align-items: center;
-			         justify-content: center;
-			     }
-			     #chart-loading {
-			         color: #f0f0f0;
-			         text-align: center;
-			     }
-			     #chart-loading .spinner {
-			         width: 32px;
-			         height: 32px;
-			         border-radius: 50%;
-			         border: 3px solid rgba(255,255,255,0.2);
-			         border-top-color: #00c6ff;
-			         animation: spin 1s linear infinite;
-			         margin: 0 auto 10px;
-			     }
-			     @keyframes spin {
-			         to { transform: rotate(360deg); }
-			     }
-			     #chart-image {
-			         max-width: 100%;
-			         height: auto;
-			         display: none;
-			     }
-			     .chart-error {
-			         color: #ff6b6b;
-			         font-size: 0.9rem;
-			     }
-	
 }
