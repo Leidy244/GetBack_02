@@ -518,6 +518,19 @@
       }
     } catch (e) {}
 
+    // Fallback: asegurar que la campana se vea en mesas con pedido listo
+    document.querySelectorAll('.mesa-card').forEach(card => {
+      const readyId = card.getAttribute('data-ready-pedido-id');
+      if (readyId && !card.querySelector('.mesa-ready-badge')) {
+        const header = card.querySelector('.mesa-header') || card;
+        const badge = document.createElement('div');
+        badge.className = 'mesa-ready-badge';
+        badge.title = 'Pedido listo para recoger';
+        badge.innerHTML = '<i class="fas fa-bell"></i>';
+        header.appendChild(badge);
+      }
+    });
+
     initFilters();
 
     // Dropdown de usuario (Mesero / Admin / Caja / Cerrar sesión)
