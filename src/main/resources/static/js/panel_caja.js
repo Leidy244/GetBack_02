@@ -435,8 +435,14 @@ class PanelCaja {
                 // Asegurar que el botón de confirmar sea visible en modo cobro
             btnConfirmarPago.style.display = 'inline-block';
 
-            // Abrir modal
-            const modal = new bootstrap.Modal(document.getElementById('modalPago'));
+            // Abrir modal y asegurar limpieza al cerrar
+            const modalEl = document.getElementById('modalPago');
+            const modal = new bootstrap.Modal(modalEl);
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+            }, { once: true });
             modal.show();
 
             if (metodoPagoSelect) {
