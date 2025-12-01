@@ -60,15 +60,15 @@
 	<div class="content-col">
 		<div class="content-card">
 			<div class="card-body">
-				<div class="account-info">
+				<div class="account-info" th:if="${session.usuarioLogueado != null}">
 					<div class="user-display">
 						<!-- FOTO -->
 						<div class="avatar" id="avatar">
-							<img th:if="${session.usuarioLogueado.foto != null}"
+							<img th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}"
 								th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
-							<div th:if="${session.usuarioLogueado.foto == null}" class="avatar-placeholder">
+							<div th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto == null}" class="avatar-placeholder">
 								<span th:text="${#strings.substring(session.usuarioLogueado.nombre,0,1) + 
-											#strings.substring(session.usuarioLogueado.apellido,0,1)}">AD</span>
+										#strings.substring(session.usuarioLogueado.apellido,0,1)}">AD</span>
 							</div>
 						</div>
 

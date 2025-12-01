@@ -410,7 +410,7 @@ public class MeseroController {
     @GetMapping("/historial")
     public String mostrarHistorialPedidos(
 	        @RequestParam(name = "page", defaultValue = "0") int page,
-	        @RequestParam(name = "size", defaultValue = "10") int size,
+	        @RequestParam(name = "size", defaultValue = "5") int size,
 	        @RequestParam(name = "mesa", required = false) String mesa,
 	        @RequestParam(name = "estado", required = false) String estado,
 	        @RequestParam(name = "meseroId", required = false) Long meseroId,

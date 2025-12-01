@@ -643,7 +643,7 @@ public class PedidoService {
                                                  int size) {
 
         int pageNumber = Math.max(page, 0);
-        int pageSize = size > 0 ? size : 10;
+        int pageSize = size > 0 ? size : 5;
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize,
                 Sort.by(Sort.Direction.DESC, "fechaCreacion"));
