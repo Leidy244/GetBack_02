@@ -195,7 +195,7 @@ class PanelCaja {
         const renderPager = (pages) => {
             if (!pagerTop) return;
             pagerTop.innerHTML = '';
-            const maxButtons = 7;
+            const maxButtons = 3;
             const makeBtn = (label, cls, disabled, click) => {
                 const b = document.createElement('button');
                 b.type = 'button'; b.className = 'btn ' + cls + ' rounded-pill'; b.textContent = label;
@@ -743,7 +743,7 @@ class PanelCaja {
                 const build = (target) => {
                     if (!target) return;
                     target.innerHTML = '';
-                    const maxButtons = 7;
+                    const maxButtons = 3;
                     const makeBtn = (label, cls, disabled, click) => {
                         const b = document.createElement('button');
                         b.type = 'button'; b.className = 'btn ' + cls + ' rounded-pill'; b.textContent = label;
@@ -827,7 +827,7 @@ class PanelCaja {
             const renderPager = (pages) => {
                 if (!pager) return;
                 pager.innerHTML = '';
-                const maxButtons = 7;
+                const maxButtons = 3;
                 const makeBtn = (label, cls, disabled, click) => {
                     const b = document.createElement('button');
                     b.type = 'button'; b.className = 'btn ' + cls + ' rounded-pill'; b.textContent = label;
@@ -1161,6 +1161,7 @@ class PanelCaja {
                 icon.title = "Activar modo oscuro";
             }
             localStorage.setItem("caja-theme", "light");
+            localStorage.setItem("theme", "light");
             this.actualizarSelectTema('claro');
         } else {
             root.setAttribute("data-theme", "dark");
@@ -1169,6 +1170,7 @@ class PanelCaja {
                 icon.title = "Activar modo claro";
             }
             localStorage.setItem("caja-theme", "dark");
+            localStorage.setItem("theme", "dark");
             this.actualizarSelectTema('oscuro');
         }
         
@@ -1187,6 +1189,7 @@ class PanelCaja {
                 icon.title = "Activar modo claro";
             }
             localStorage.setItem("caja-theme", "dark");
+            localStorage.setItem("theme", "dark");
         } else {
             root.removeAttribute("data-theme");
             if (icon) {
@@ -1194,6 +1197,7 @@ class PanelCaja {
                 icon.title = "Activar modo oscuro";
             }
             localStorage.setItem("caja-theme", "light");
+            localStorage.setItem("theme", "light");
         }
         
         this.forceStyleUpdate();
@@ -1207,7 +1211,7 @@ class PanelCaja {
     }
 
     restoreTheme() {
-        const savedTheme = localStorage.getItem("caja-theme");
+        const savedTheme = localStorage.getItem("theme") || localStorage.getItem("caja-theme");
         const icon = document.querySelector("#darkModeToggle i");
         
         if (savedTheme === "dark") {

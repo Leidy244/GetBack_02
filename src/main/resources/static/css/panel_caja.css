@@ -140,19 +140,71 @@
 }
 
 [data-theme="dark"] .table th {
-	background: var(--primary-dark);
-	color: #fff;
-	border-bottom: 1px solid var(--border-color);
+    background: var(--primary-dark);
+    color: #fff;
+    border-bottom: 1px solid var(--border-color);
 }
 
 [data-theme="dark"] .table td {
-	background: var(--bg-secondary);
-	border-bottom: 1px solid var(--border-color);
-	color: var(--text-primary);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 [data-theme="dark"] .table tr:hover td {
-	background: var(--bg-tertiary);
+    background: var(--bg-tertiary);
+}
+
+/* Ajustes de alta especificidad para tablas Bootstrap en modo oscuro */
+[data-theme="dark"] .table > :not(caption) > * > * {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+[data-theme="dark"] .table thead > tr > th {
+    background-color: var(--primary-dark);
+    color: #fff;
+}
+[data-theme="dark"] .gastos-table-wrapper,
+[data-theme="dark"] .table-responsive {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+}
+
+/* Panel Principal: tarjeta de Gastos en modo oscuro */
+[data-theme="dark"] .gastos-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color) !important;
+}
+[data-theme="dark"] .gastos-card .card-body {
+    background: var(--bg-primary);
+}
+
+/* Panel Principal: tabla de Últimos gastos en modo oscuro */
+[data-theme="dark"] .gastos-table thead {
+    background: var(--primary-dark);
+}
+[data-theme="dark"] .gastos-table thead th {
+    color: #fff;
+    border-bottom: 1px solid var(--border-color);
+}
+[data-theme="dark"] .gastos-table tbody tr {
+    background: var(--bg-secondary);
+}
+[data-theme="dark"] .gastos-table tbody tr:nth-child(even) {
+    background: var(--bg-secondary);
+}
+[data-theme="dark"] .gastos-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+[data-theme="dark"] .gastos-table td,
+[data-theme="dark"] .gastos-table th {
+    color: var(--text-primary);
 }
 
 [data-theme="dark"] .form-control,
