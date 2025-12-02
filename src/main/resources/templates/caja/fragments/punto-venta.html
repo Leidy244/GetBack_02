@@ -23,12 +23,15 @@
                         </div>
                     </div>
 
-                    <div class="pos-filtros btn-group mb-3" role="group" aria-label="Filtros">
-                        <a th:href="@{/caja(section='punto-venta', categoria='todos')}" class="btn btn-outline-primary rounded-pill">Todos</a>
-                        <a th:each="cat : ${categorias}" th:text="${cat.nombre}"
-                           th:href="@{/caja(section='punto-venta', categoria=${cat.nombre})}"
-                           class="btn btn-outline-primary rounded-pill"></a>
-                    </div>
+					<div class="pos-filtros d-flex flex-wrap gap-2 mb-3">
+					    <a th:href="@{/caja(section='punto-venta', categoria='todos')}" 
+					       class="btn btn-outline-primary rounded-pill px-3 py-2">Todos</a>
+					    <a th:each="cat : ${categorias}" 
+					       th:text="${cat.nombre}"
+					       th:href="@{/caja(section='punto-venta', categoria=${cat.nombre})}"
+					       class="btn btn-outline-primary rounded-pill px-3 py-2">
+					    </a>
+					</div>
 
                     <div class="grid-productos">
                         <div th:each="menu : ${menus}" class="producto-card" th:data-id="${menu.id}"
@@ -67,7 +70,7 @@
 			<!-- Los campos se agregan dinámicamente -->
 		</form>
 
-		<!-- Modal Confirmar Venta CORREGIDO -->
+		<!-- Modal Confirmar Venta-->
         <div class="modal fade" id="modalConfirmarVenta" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -76,13 +79,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 		            <div class="modal-body">
-		                <!-- Selector de Mesa CORREGIDO -->
+		                <!-- Selector de Mesa -->
 		                <div class="mb-4">
 		                    <label class="form-label fw-bold"> Seleccionar Mesa</label>
 		                    <select class="form-select" id="select-mesa-venta" name="mesaId">
 		                        <option value="">-- Barra (Mostrador) --</option>
-		                        <!-- CORRECCIÓN: Agregar th:text para mostrar el texto -->
-								<!-- OPCIÓN ROBUSTA: Usar th:with para manejar nulls -->
 								<option th:each="mesa : ${mesas}"
 								        th:value="${mesa.id}"
 								        th:with="desc=${mesa.descripcion != null ? mesa.descripcion : ''}"

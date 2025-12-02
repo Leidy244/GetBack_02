@@ -261,10 +261,9 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 }
 
 .user-display {
-  display: grid;
-  grid-template-columns: auto 1fr 420px;
-  align-items: center;
-  gap: 2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
   padding-left: 1.25rem;
 }
 
@@ -272,34 +271,23 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 .avatar {
   flex-shrink: 0;
   position: relative;
-  width: 128px;
-  height: 128px;
   border-radius: 50%;
-  padding: 4px;
   background: var(--primary-gradient);
   box-shadow: var(--shadow-md);
   margin-left: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1; /* Forzar proporción cuadrada perfecta */
 }
 
-.avatar img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  box-shadow: var(--shadow-md);
-  transition: var(--transition);
-}
 
-.avatar img:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-lg);
-}
-
+/* Placeholder también circular */
 .avatar-placeholder {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 120px !important;
+  height: 120px !important;
+  border-radius: 50% !important;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   display: flex;
   align-items: center;
@@ -307,8 +295,7 @@ html[data-theme="dark"][data-admin-contrast="2"] {
   font-size: 2.5rem;
   color: white;
   font-weight: 700;
-  border: 4px solid var(--primary-color);
-  box-shadow: var(--shadow-md);
+  border: 4px solid var(--bg-primary);
 }
 
 /* Datos de usuario */
@@ -369,11 +356,10 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 /* Botones Editar / Cambiar foto */
 .account-actions {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  min-width: 200px;
-  align-items: flex-start;
-  margin-top: 0.75rem;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
 }
 
 .account-actions .btn,
@@ -449,11 +435,6 @@ html[data-theme="dark"][data-admin-contrast="2"] {
   #btnEditProfile, #btnChangePhoto { width: 100%; }
 }
 
-/* Formularios internos */
-#editar-perfil,
-#cambiar-foto {
-  /* ocultos por defecto desde el HTML con style="display:none;" */
-}
 
 .mb-2 {
   margin-bottom: 0.75rem;

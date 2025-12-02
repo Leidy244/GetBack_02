@@ -1,5 +1,4 @@
 // panel_caja.js - Funcionalidades para el panel de caja
-
 class PanelCaja {
     constructor() {
         this.carrito = [];
@@ -171,10 +170,17 @@ class PanelCaja {
     // Ordenar historial de pagos (más reciente / más viejo)
     setupHistorialOrden() {
         const selectOrden = document.getElementById('historial-orden');
+        const selectFiltro = document.getElementById('historial-filtro');
         const tabla = document.getElementById('tabla-historial-pagos');
         const inputBusqueda = document.getElementById('historialBusqueda');
         const pagerTop = document.getElementById('historialPagination');
         const info = document.getElementById('historialInfo');
+        if (selectFiltro) {
+            selectFiltro.addEventListener('change', () => {
+                const form = selectFiltro.closest('form');
+                if (form) form.submit();
+            });
+        }
         if (!selectOrden || !tabla) return;
 
         const cuerpo = tabla.querySelector('tbody');
@@ -898,12 +904,13 @@ class PanelCaja {
 
         if (!inputBase || !inputRetiro || !btnCalcular) return;
 
+        const fmtMoney0 = (v) => new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number(v || 0));
         const calcular = () => {
             const baseSiguiente = parseFloat(inputBase.value) || 0;
             const efectivoEnCaja = baseApertura + efectivoGeneradoDia;
             let retiro = efectivoEnCaja - baseSiguiente;
             if (retiro < 0) retiro = 0;
-            inputRetiro.value = retiro.toFixed(2);
+            inputRetiro.value = fmtMoney0(retiro);
         };
 
         btnCalcular.addEventListener('click', calcular);
@@ -1001,7 +1008,11 @@ class PanelCaja {
         };
 
         const cerrarCaja = async () => {
-            const retiro = parseFloat(inputRetiro.value) || 0;
+            const parseMoney = (s) => {
+                const cleaned = String(s || '').replace(/\$/g, '').replace(/\./g, '').replace(/\s+/g, '');
+                return parseFloat(cleaned.replace(',', '.')) || 0;
+            };
+            const retiro = parseMoney(inputRetiro.value);
             const baseSig = parseFloat(inputBase.value) || 0;
             // Limpiar tabla de "Últimos gastos" en UI al cerrar
             const tableBody = document.querySelector('.gastos-table tbody');
@@ -1455,6 +1466,8 @@ class PanelCaja {
         if (montoRecibidoInput) montoRecibidoInput.value = '';
         
         this.calcularCambio();
+        // Redirigir a la sección de pedidos
+        try { window.location.href = '/caja?section=pedidos'; } catch (e) {}
     }
 
     imprimirTicket() {

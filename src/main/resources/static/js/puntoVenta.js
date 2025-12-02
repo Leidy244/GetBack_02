@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     // ========== VARIABLES GLOBALES ==========
-    let carrito = JSON.parse(localStorage.getItem('carritoPOS') || '[]');
+    // Vaciar carrito al recargar la página
+    localStorage.removeItem('carritoPOS');
+    let carrito = [];
     let totalGlobal = 0;
     let pedidoActual = null;
 
@@ -130,42 +132,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ========== PUNTO DE VENTA: FINALIZAR VENTA → ABRIR MODAL ==========
+    // ========== PUNTO DE VENTA: FINALIZAR VENTA → REDIRIGIR A PEDIDOS ==========
     btnFinalizarVenta?.addEventListener('click', function (e) {
-        // Evitar conflicto con otros listeners que también están enlazados al mismo botón
-        // (por ejemplo, panel_caja.js). Asegura que solo este flujo de Punto de Venta se ejecute.
         try { e.preventDefault(); e.stopImmediatePropagation(); } catch (ignored) {}
-
         if (carrito.length === 0) {
             cajaAlert('warning', 'Atención', 'El carrito está vacío');
             return;
         }
-
-        totalGlobal = 0;
-        carrito.forEach(item => totalGlobal += item.precio * item.cantidad);
-
-        // Actualizar detalles del pedido
-        tbodyDetalle.innerHTML = '';
-        carrito.forEach(item => {
-            const subtotal = item.precio * item.cantidad;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="text-center fw-bold">${item.cantidad}</td>
-                <td>${item.nombre}</td>
-                <td class="text-end">$ ${item.precio.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
-                <td class="text-end text-success fw-bold">$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
-            `;
-            tbodyDetalle.appendChild(tr);
-        });
-
-        totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        // Verificar que Bootstrap esté disponible y el modal exista
-        if (typeof bootstrap !== 'undefined' && modalConfirmarVenta) {
-            modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
-            modalPuntoVentaInstance.show();
-        } else {
-            cajaAlert('error', 'Ocurrió un error', 'No se pudo abrir el modal de confirmación. Verifica la carga de Bootstrap.');
-        }
+        // Vaciar carrito y redirigir a Pedidos
+        carrito = [];
+        localStorage.removeItem('carritoPOS');
+        renderCarrito();
+        window.location.href = '/caja?section=pedidos';
     });
 
     // ========== ENVIAR VENTA A PENDIENTES ==========

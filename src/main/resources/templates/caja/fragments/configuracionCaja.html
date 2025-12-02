@@ -25,15 +25,20 @@
                 <div class="card-body">
                     <!-- Solo mostrar el contenido si existe usuarioLogueado en sesión -->
                     <div class="account-info" th:if="${session.usuarioLogueado != null}">
-                        <div class="user-display">
+                        <div class="user-display row" style="gap:16px;">
                             <!-- FOTO -->
-                            <div class="avatar col-auto" id="avatar">
-                                <img th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}"
-                                    th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" alt="Foto de perfil" />
-                                <div th:if="${session.usuarioLogueado == null or session.usuarioLogueado.foto == null}" class="avatar-placeholder">
-                                    <span th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}">AD</span>
-                                </div>
-                            </div>
+							<div class="avatar col-auto" id="avatar">
+							    <img th:if="${session.usuarioLogueado != null and session.usuarioLogueado.foto != null}"
+							         th:src="@{'/images/' + ${session.usuarioLogueado.foto}}" 
+							         alt="Foto de perfil"
+							         style="border-radius: 50%; object-fit: cover; width: 120px; height: 120px;" />
+							    <div th:if="${session.usuarioLogueado == null or session.usuarioLogueado.foto == null}" 
+							         class="avatar-placeholder">
+							        <span th:text="${session.usuarioLogueado != null ? #strings.substring(session.usuarioLogueado.nombre,0,1) + #strings.substring(session.usuarioLogueado.apellido,0,1) : 'AD'}">
+							            AD
+							        </span>
+							    </div>
+							</div>
 
                             <!-- DATOS -->
                             <div class="user-details col-lg-5 col-md-6 col-12">
@@ -66,8 +71,8 @@
 									</div>
 								</div>
 								
-                                <small><span>Último acceso:</span> <span id="ultimo-acceso">Hoy</span></small>
-                                <div class="account-actions">
+                                <small>Último acceso: <span id="ultimo-acceso">Hoy</span></small>
+                                <div class="account-actions" style="display:flex; gap:10px; margin-left:auto;">
                                     <button type="button" id="btnEditProfile" class="btn btn-primary btn-sm">
                                         <i class="fas fa-user-edit"></i> <span>Editar Perfil</span>
                                     </button>
@@ -77,7 +82,7 @@
                                 </div>
                             </div>
                             <!-- FORMULARIO EDITAR (columna derecha) -->
-                            <div id="formEditar" style="display:none;">
+                            <div id="formEditar" class="col-lg-4 col-md-6 col-12" style="display:none;">
                                 <div class="content-card">
                                     <div class="card-header"><i class="fas fa-user-edit"></i> Editar perfil</div>
                                     <div class="card-body">
@@ -117,7 +122,7 @@
                             </div>
 
                             <!-- FORMULARIO FOTO (columna derecha) -->
-                            <div id="formFoto" style="display:none; margin-top:20px;">
+                            <div id="formFoto" class="col-lg-4 col-md-6 col-12" style="display:none; margin-top:20px;">
                                 <div class="content-card">
                                     <div class="card-header"><i class="fas fa-camera"></i> Cambiar foto</div>
                                     <div class="card-body">
@@ -199,5 +204,4 @@
 
 	</section>
 </body>
-
 </html>
