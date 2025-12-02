@@ -375,7 +375,7 @@
                   return `<li>
                     <span class="prod-nombre">${nombre}</span>
                     <span class="prod-cant">x${cant}</span>
-                    <span class="prod-subtotal">$${subtotal.toFixed(2)}</span>
+                    <span class="prod-subtotal">$${Number(subtotal).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                   </li>`;
                 }).join('');
               }
@@ -396,7 +396,7 @@
             <div class="pedido-activo-resumen">
               <h3>Pedido activo</h3>
               <p><strong>ID:</strong> ${data.pedidoActivoId}</p>
-              <p><strong>Total:</strong> $${data.total != null ? data.total.toFixed(2) : '0.00'}</p>
+              <p><strong>Total:</strong> $${data.total != null ? Number(data.total).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}</p>
               <p><strong>Creado:</strong> ${fecha}</p>
               ${productosSection}
             </div>

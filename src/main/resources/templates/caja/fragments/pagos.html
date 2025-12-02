@@ -19,18 +19,9 @@
         <div id="pagosPagination" class="btn-group" role="group" aria-label="Paginación"></div>
     </div>
 
-    <!-- Mensajes flash -->
-    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle"></i> 
-        <span th:text="${success}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-
-    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-triangle"></i> 
-        <span th:text="${error}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <!-- Mensajes flash (SweetAlert2) -->
+    <div id="flash-success" th:if="${success}" th:data-message="${success}" style="display:none"></div>
+    <div id="flash-error" th:if="${error}" th:data-message="${error}" style="display:none"></div>
 
     <div class="table-container table-scroll mb-4">
         <table class="table table-striped" id="tabla-pagos-pendientes">
@@ -66,13 +57,13 @@
                         </button>
                     </td>
                     <td class="fw-bold text-success">
-                        $<span th:text="${grupo['total']}">0</span>
+                        <span th:text="'$' + ${#numbers.formatDecimal(grupo['total'], 1, 'POINT', 0, 'POINT')}">$0</span>
                     </td>
                     <td>
                         <span class="badge bg-warning">COMPLETADO</span>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-success btn-sm btn-abrir-modal-pago"
+                        <button type="button" class="btn btn-primary btn-sm btn-abrir-modal-pago"
                                 th:attr="data-pedido-id=${grupo['primerPedidoId']},
                                          data-pedido-ids=${#strings.listJoin(grupo['pedidoIds'], ',')}, 
                                          data-mesa=${grupo['mesaLabel']},
@@ -94,7 +85,7 @@
     <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
+                <div class="modal-header">
                     <h5 class="modal-title" id="modalPagoLabel">
                         <i class="fas fa-credit-card"></i> Procesar Pago
                     </h5>
@@ -116,7 +107,7 @@
                                     <p class="mb-1"><strong>IDs:</strong> <span id="modal-ids" class="text-muted">—</span></p>
                                     <hr>
                                     <h5 class="text-primary"><strong>Total a pagar: <span
-                                                id="modal-total">$0.00</span></strong></h5>
+                                                id="modal-total">$0</span></strong></h5>
                                 </div>
                             </div>
                         </div>
@@ -197,7 +188,7 @@
                         <button type="button" class="btn btn-outline-secondary btn-lg me-2" id="btn-imprimir-pago" title="Imprimir factura">
                             <i class="fas fa-print"></i>
                         </button>
-                        <button type="submit" class="btn btn-success btn-lg" id="btn-confirmar-pago">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btn-confirmar-pago">
                             <i class="fas fa-check"></i> Confirmar Pago
                         </button>
                         <input type="hidden" name="pedidoIds" id="input-pedido-ids" value="" />

@@ -124,7 +124,7 @@
                     <td class="item-detalle">
                         <span class="cantidad">${item.cantidad || 1}x</span> ${item.nombre || 'Item'}
                     </td>
-                    <td class="item-precio text-end">$${subtotal.toLocaleString('es-CO')}</td>
+                    <td class="item-precio text-end">$${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
                 </tr>`;
             }).join('');
             
@@ -149,7 +149,7 @@
             </table>
             <hr/>
             <div class="total">
-                <strong>Total: $${Number(data.total || 0).toLocaleString('es-CO')}</strong>
+                <strong>Total: $${Number(data.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong>
             </div>
             <div class="footer">
                 Gracias por su compra

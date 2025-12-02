@@ -1147,7 +1147,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const pageLabel = document.getElementById('activityPageLabel');
   let activityPage = 0;
   const activitySize = 6;
-  function fmtDate(iso){ try{ const d = new Date(iso); return d.toLocaleString(); } catch(_){ return iso || ''; } }
+  function fmtDate(iso){ try{ const d = new Date(iso); return d.toLocaleString('es-CO'); } catch(_){ return iso || ''; } }
+  function fmtCOP0(v){ try{ const n = Number(String(v).replace(/[^0-9.,-]/g,'').replace(/\./g,'').replace(/,/g,'.')); return new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number.isFinite(n)?n:0); } catch(_){ return String(v); } }
+  function normalizeMoneyMessage(msg){
+    if (!msg) return '';
+    let s = String(msg);
+    s = s.replace(/(\b(por|total|cambio|subtotal|descuento|precio)\s)(\d[\d.,]*)/gi, (m, pre, _kw, num) => pre + '$' + fmtCOP0(num));
+    s = s.replace(/\$(\d[\d.,]*)/g, (m, num) => '$' + fmtCOP0(num));
+    return s;
+  }
   function typeIcon(type){
     const t = (type||'').toUpperCase();
     if (t==='PRODUCT') return 'fa-box';
@@ -1175,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="activity-item ${a.type ? 'activity-'+a.type.toLowerCase() : ''}">
         <div class="activity-icon"><i class="fas ${typeIcon(a.type)}"></i></div>
         <div class="activity-content">
-          <div class="activity-title"><strong>${a.type || 'Evento'}</strong> — ${a.message || ''}</div>
+          <div class="activity-title"><strong>${a.type || 'Evento'}</strong> — ${normalizeMoneyMessage(a.message || '')}</div>
           <div class="activity-meta">
             <span class="activity-time"><i class="far fa-clock"></i> ${fmtDate(a.timestamp)}</span>
             ${showUser(a.username)}
@@ -1228,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="activity-item ${a.type ? 'activity-'+String(a.type).toLowerCase() : ''}">
         <div class="activity-icon"><i class="fas ${typeIcon(a.type)}"></i></div>
         <div class="activity-content">
-          <div class="activity-title"><strong>${a.type || 'Evento'}</strong> — ${a.message || ''}</div>
+          <div class="activity-title"><strong>${a.type || 'Evento'}</strong> — ${normalizeMoneyMessage(a.message || '')}</div>
           <div class="activity-meta">
             <span class="activity-time"><i class="far fa-clock"></i> ${fmtDate(a.timestamp)}</span>
             ${a.username ? `<span><i class="fas fa-user"></i> ${a.username}</span>` : ''}
@@ -1468,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', function(){
     // Helpers
     const fmt = (n) => {
         const x = Number(n ?? 0);
-        return x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(x);
     };
     const parseMoney = (raw) => {
         if (raw == null) return 0;
@@ -1730,9 +1738,9 @@ document.addEventListener('DOMContentLoaded', function(){
             y += 4;
 
             // Línea de cantidad, precio e importe (importe a la derecha)
-            const linea = `x${cantidad} @ $${precio.toFixed(2)}`;
+            const linea = `x${cantidad} @ $${Number(precio).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
             doc.text(linea, 2, y);
-            const importeStr = `$${importe.toFixed(2)}`;
+            const importeStr = `$${Number(importe).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
             const iw = doc.getTextWidth(importeStr);
             doc.text(importeStr, 2 + maxW - iw, y);
             y += 4;

@@ -55,7 +55,7 @@
                             <div class="stat-info">
                                 <div class="stat-value" id="ventasHoyDashboard" th:text="${ventasHoy}">0</div>
                                 <div class="stat-label">Ventas Hoy</div>
-                                <div class="stat-description" id="ingresosHoyDashboard" th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                                <div class="stat-description" id="ingresosHoyDashboard" th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'POINT', 0, 'POINT')}">$0</div>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                         <div class="stat-content">
                             <div class="stat-icon income"><i class="fas fa-chart-line"></i></div>
                             <div class="stat-info">
-                                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+                                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(ingresosTotales, 1, 'POINT', 0, 'POINT')}">$0</div>
                                 <div class="stat-label">Ingresos Totales</div>
                                 <div class="stat-description" th:text="${totalVentas} + ' ventas'">0 ventas</div>
                             </div>

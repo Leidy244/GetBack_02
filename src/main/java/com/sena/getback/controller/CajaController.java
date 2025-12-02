@@ -587,10 +587,10 @@ public class CajaController {
                     }
                     pedidoService.marcarPedidoComoPagadoConMetodo(id, metodoPago, recibidoPorPedido != null ? recibidoPorPedido : montoRecibido, referenciaPago, clienteId);
                 }
-                ra.addFlashAttribute("success", "Pago agrupado registrado correctamente");
+                ra.addFlashAttribute("success", "Venta exitosa");
             } else if (pedidoId != null) {
                 pedidoService.marcarPedidoComoPagadoConMetodo(pedidoId, metodoPago, montoRecibido, referenciaPago, clienteId);
-                ra.addFlashAttribute("success", "Pago registrado correctamente");
+                ra.addFlashAttribute("success", "Venta exitosa");
             } else {
                 ra.addFlashAttribute("error", "No se especificó pedido a pagar");
             }
@@ -859,7 +859,7 @@ public class CajaController {
 
 	        System.out.println("✅ Pedido pendiente creado con ID: " + pedido.getId());
 
-	        return ResponseEntity.ok(Map.of("success", true, "mensaje", "Pedido creado exitosamente"));
+            return ResponseEntity.ok(Map.of("success", true, "mensaje", "Venta exitosa"));
 
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -952,7 +952,7 @@ public class CajaController {
 	        System.out.println("🍽️  Items: " + items);
 
 	        // 7. Limpiar carrito del localStorage (se hará en el frontend al recargar)
-	        ra.addFlashAttribute("success", "✅ Pedido creado exitosamente. Ahora aparece en 'Pagos de Pedidos'.");
+        ra.addFlashAttribute("success", "Venta exitosa");
 	        return "redirect:/caja?section=pagos";
 
 	    } catch (Exception e) {

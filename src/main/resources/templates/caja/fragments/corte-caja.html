@@ -25,7 +25,7 @@
             <div class="stat-card">
                 <div class="stat-icon bg-success"><i class="fas fa-money-bill-wave"></i></div>
                 <div class="stat-info">
-                    <h3 id="ingresosEfectivoLabel" th:text="'$' + ${#numbers.formatDecimal(ingresosEfectivoDia, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <h3 id="ingresosEfectivoLabel" th:text="'$' + ${#numbers.formatDecimal(ingresosEfectivoDia, 1, 'POINT', 0, 'POINT')}">$0</h3>
                     <p>Ingresos del día (efectivo)</p>
                     <small id="ventasDiaLabel" th:text="${ventasDia} + ' ventas pagadas'">0 ventas pagadas</small>
                 </div>
@@ -34,7 +34,7 @@
             <div class="stat-card">
                 <div class="stat-icon bg-danger"><i class="fas fa-wallet"></i></div>
                 <div class="stat-info">
-                    <h3 id="gastosEfectivoLabel" th:text="'$' + ${#numbers.formatDecimal(gastosEfectivoDia, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <h3 id="gastosEfectivoLabel" th:text="'$' + ${#numbers.formatDecimal(gastosEfectivoDia, 1, 'POINT', 0, 'POINT')}">$0</h3>
                     <p>Gastos del día (efectivo)</p>
                     <small>Registrados en caja</small>
                 </div>
@@ -115,12 +115,12 @@
                                         <tfoot>
                                             <tr id="historialTablaFoot">
                                                 <th>Totales</th>
-                                                <th id="histTotalIngresos">$0.00</th>
-                                                <th id="histTotalGastos">$0.00</th>
+                                                <th id="histTotalIngresos">$0</th>
+                                                <th id="histTotalGastos">$0</th>
                                                 <th id="histTotalVentas">0</th>
-                                                <th id="histTotalBaseApertura">$0.00</th>
-                                                <th id="histTotalBaseSiguiente">$0.00</th>
-                                                <th id="histTotalRetiro">$0.00</th>
+                                                <th id="histTotalBaseApertura">$0</th>
+                                                <th id="histTotalBaseSiguiente">$0</th>
+                                                <th id="histTotalRetiro">$0</th>
                                             </tr>
                                         </tfoot>
                                     </table>

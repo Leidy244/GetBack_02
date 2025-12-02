@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <button class="btn btn-sm btn-outline-secondary btn-restar" data-index="${index}">−</button>
                     <span class="fw-bold">${item.cantidad}</span>
                     <button class="btn btn-sm btn-outline-secondary btn-sumar" data-index="${index}">+</button>
-                    <strong class="text-success ms-2">$ ${subtotal.toLocaleString('es-CO')}</strong>
+                    <strong class="text-success ms-2">$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong>
                     <button class="btn btn-danger btn-sm ms-2 btn-eliminar" data-index="${index}">×</button>
                 </div>
             `;
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (totalCarritoEl) {
-            totalCarritoEl.textContent = '$' + totalGlobal.toLocaleString('es-CO');
+            totalCarritoEl.textContent = '$' + totalGlobal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
         localStorage.setItem('carritoPOS', JSON.stringify(carrito));
     }
@@ -90,7 +90,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========== VACIAR CARRITO ==========
     btnVaciarCarrito?.addEventListener('click', () => {
         if (carrito.length === 0) return;
-        if (confirm('¿Vaciar el carrito?')) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'question', title: 'Confirmar', text: '¿Vaciar el carrito?', showCancelButton: true, confirmButtonText: 'Sí, vaciar', cancelButtonText: 'Cancelar', buttonsStyling: false, customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-secondary' } }).then(res => {
+                if (res.isConfirmed) {
+                    carrito = [];
+                    totalGlobal = 0;
+                    localStorage.removeItem('carritoPOS');
+                    renderCarrito();
+                }
+            });
+        } else if (confirm('¿Vaciar el carrito?')) {
             carrito = [];
             totalGlobal = 0;
             localStorage.removeItem('carritoPOS');
@@ -107,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const precio = parseFloat(card.dataset.precio);
 
             if (!id || !nombre || isNaN(precio) || precio <= 0) {
-                alert('Error al agregar el producto');
+                cajaAlert('error', 'Ocurrió un error', 'Error al agregar el producto');
                 return;
             }
 
@@ -128,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try { e.preventDefault(); e.stopImmediatePropagation(); } catch (ignored) {}
 
         if (carrito.length === 0) {
-            alert('El carrito está vacío');
+            cajaAlert('warning', 'Atención', 'El carrito está vacío');
             return;
         }
 
@@ -143,77 +152,65 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.innerHTML = `
                 <td class="text-center fw-bold">${item.cantidad}</td>
                 <td>${item.nombre}</td>
-                <td class="text-end">$ ${item.precio.toLocaleString('es-CO')}</td>
-                <td class="text-end text-success fw-bold">$ ${subtotal.toLocaleString('es-CO')}</td>
+                <td class="text-end">$ ${item.precio.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                <td class="text-end text-success fw-bold">$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
             `;
             tbodyDetalle.appendChild(tr);
         });
 
-        totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO');
+        totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         // Verificar que Bootstrap esté disponible y el modal exista
         if (typeof bootstrap !== 'undefined' && modalConfirmarVenta) {
             modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
             modalPuntoVentaInstance.show();
         } else {
-            alert('No se pudo abrir el modal de confirmación. Verifica la carga de Bootstrap.');
+            cajaAlert('error', 'Ocurrió un error', 'No se pudo abrir el modal de confirmación. Verifica la carga de Bootstrap.');
         }
     });
 
     // ========== ENVIAR VENTA A PENDIENTES ==========
     btnConfirmarVentaReal?.addEventListener('click', function () {
         if (carrito.length === 0) {
-            alert('El carrito está vacío');
+            cajaAlert('warning', 'Atención', 'El carrito está vacío');
             return;
         }
 
-        if (!confirm(`¿Enviar esta venta por $${totalGlobal.toLocaleString('es-CO')} a la lista de pendientes?`)) {
+        const ejecutar = () => {
+            const mesaId = selectMesaVenta ? selectMesaVenta.value : '';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/caja/crear-pedido-pendiente-form';
+            form.style.display = 'none';
+            const itemsInput = document.createElement('input');
+            itemsInput.type = 'hidden';
+            itemsInput.name = 'items';
+            itemsInput.value = JSON.stringify(carrito);
+            const totalInput = document.createElement('input');
+            totalInput.type = 'hidden';
+            totalInput.name = 'total';
+            totalInput.value = totalGlobal;
+            if (mesaId) {
+                const mesaInput = document.createElement('input');
+                mesaInput.type = 'hidden';
+                mesaInput.name = 'mesaId';
+                mesaInput.value = mesaId;
+                form.appendChild(mesaInput);
+            }
+            form.appendChild(itemsInput);
+            form.appendChild(totalInput);
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando pedido...';
+            this.disabled = true;
+            setTimeout(() => { document.body.appendChild(form); form.submit(); }, 500);
+        };
+
+        const mensaje = `¿Enviar esta venta por $${totalGlobal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} a la lista de pendientes?`;
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'question', title: 'Confirmar', text: mensaje, showCancelButton: true, confirmButtonText: 'Sí, enviar', cancelButtonText: 'Cancelar', buttonsStyling: false, customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-secondary' } }).then(r => { if (r.isConfirmed) ejecutar(); });
             return;
         }
-
-        // Obtener mesa seleccionada
-        const mesaId = selectMesaVenta ? selectMesaVenta.value : '';
-
-        // Crear formulario dinámicamente
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/caja/crear-pedido-pendiente-form';
-        form.style.display = 'none';
-
-        // Campo items
-        const itemsInput = document.createElement('input');
-        itemsInput.type = 'hidden';
-        itemsInput.name = 'items';
-        itemsInput.value = JSON.stringify(carrito);
-
-        // Campo total
-        const totalInput = document.createElement('input');
-        totalInput.type = 'hidden';
-        totalInput.name = 'total';
-        totalInput.value = totalGlobal;
-
-        // Campo mesa (opcional)
-        if (mesaId) {
-            const mesaInput = document.createElement('input');
-            mesaInput.type = 'hidden';
-            mesaInput.name = 'mesaId';
-            mesaInput.value = mesaId;
-            form.appendChild(mesaInput);
-        }
-
-        // Agregar campos al formulario
-        form.appendChild(itemsInput);
-        form.appendChild(totalInput);
-
-        // Mostrar loading en el botón
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando pedido...';
-        this.disabled = true;
-
-        // Agregar formulario al body y enviar después de un breve delay para mostrar el loading
-        setTimeout(() => {
-            document.body.appendChild(form);
-            form.submit();
-        }, 500);
+        if (!confirm(mensaje)) return;
+        ejecutar();
     });
 
     // ========== PAGOS: CONECTAR BOTONES "COBRAR" ==========
@@ -247,8 +244,8 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
 	    
 	    // Llenar datos en el modal
 	    document.getElementById('modal-pedido-id').textContent = pedidoId;
-	    document.getElementById('modal-mesa-info').textContent = mesa;
-	    modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
+    document.getElementById('modal-mesa-info').textContent = mesa;
+    modalTotalPago.textContent = '$' + total.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 	    
     // Llenar campos del formulario (solo los existentes)
     const hiddenId = document.getElementById('input-pedido-id');
@@ -288,7 +285,7 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
         const pedidoIdLabel = document.getElementById('modal-pedido-id');
         if (pedidoIdLabel) pedidoIdLabel.textContent = `Grupo (${pedidoIds.length})`;
         document.getElementById('modal-mesa-info').textContent = mesa;
-        modalTotalPago.textContent = '$' + total.toLocaleString('es-CO');
+        modalTotalPago.textContent = '$' + total.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         const idsSpan = document.getElementById('modal-ids');
         if (idsSpan) idsSpan.textContent = pedidoIds.join(', ');
 
@@ -325,11 +322,11 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
                         html += `
                             <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
                                 <div><strong>${cant}x</strong> ${nom}</div>
-                                <div>$ ${subtotal.toLocaleString('es-CO')}</div>
+                                <div>$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                             </div>
                         `;
                     });
-                    html += `<div class="text-end fw-bold mt-2">Total combinado: $ ${Number(total).toLocaleString('es-CO')}</div>`;
+                    html += `<div class="text-end fw-bold mt-2">Total combinado: $ ${Number(total).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>`;
                 }
                 if (comentarios.length > 0) {
                     html += `<hr><div class="mb-2"><strong>Comentarios:</strong></div>`;
@@ -358,11 +355,11 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
                                 html2 += `
                                     <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
                                         <div><strong>${cant}x</strong> ${nom}</div>
-                                        <div>$ ${subtotal.toLocaleString('es-CO')}</div>
+                                        <div>$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                                     </div>
                                 `;
                             });
-                            html2 += `<div class="text-end fw-bold mt-2">Total combinado: $ ${Number(data.total || total).toLocaleString('es-CO')}</div>`;
+                html2 += `<div class="text-end fw-bold mt-2">Total combinado: $ ${Number(data.total || total).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>`;
                             if (Array.isArray(data.comentarios) && data.comentarios.length > 0) {
                                 html2 += `<hr><div class="mb-2"><strong>Comentarios:</strong></div>`;
                                 data.comentarios.forEach(c => { html2 += `<div class="text-muted">• ${String(c)}</div>`; });
@@ -395,10 +392,10 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
 	formConfirmarPago?.addEventListener('submit', function(e) {
 	    e.preventDefault();
 	    
-	    if (!pedidoActual) {
-	        alert('Error: No hay pedido seleccionado');
-	        return;
-	    }
+    if (!pedidoActual) {
+        cajaAlert('error', 'Ocurrió un error', 'No hay pedido seleccionado');
+        return;
+    }
 	    
     const recibido = parseFloat(modalRecibido.value) || 0;
     const total = pedidoActual.total;
@@ -409,11 +406,11 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
     // Validaciones
     if (metodo === 'EFECTIVO') {
         if (recibido <= 0) {
-            alert('Ingrese el monto recibido');
+            cajaAlert('warning', 'Atención', 'Ingrese el monto recibido');
             return;
         }
         if (recibido < total) {
-            alert('El monto recibido es insuficiente');
+            cajaAlert('warning', 'Atención', 'El monto recibido es insuficiente');
             return;
         }
     } else if (metodo === 'MIXTO') {
@@ -421,11 +418,11 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
         const electronico = elecInput ? (parseFloat(elecInput.value) || 0) : 0;
         const sum = recibido + electronico;
         if (sum <= 0) {
-            alert('Ingrese montos de efectivo y/o transferencia');
+            cajaAlert('warning', 'Atención', 'Ingrese montos de efectivo y/o transferencia');
             return;
         }
         if (sum < total) {
-            alert('El total recibido es insuficiente');
+            cajaAlert('warning', 'Atención', 'El total recibido es insuficiente');
             return;
         }
         const hiddenRecibido = document.getElementById('input-monto-recibido');
@@ -464,7 +461,7 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
                         <div>
                             <strong>${item.cantidad}x</strong> ${item.nombre}
                         </div>
-                        <div>$ ${subtotal.toLocaleString('es-CO')}</div>
+                        <div>$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                     </div>
                 `;
             });
@@ -497,7 +494,7 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
     const cambio = sum - total;
         
         if (cambio >= 0) {
-            modalCambio.value = '$' + cambio.toLocaleString('es-CO');
+            modalCambio.value = '$' + cambio.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
             document.getElementById('input-monto-recibido').value = sum;
             document.getElementById('modal-error').style.display = 'none';
             document.getElementById('modal-info').style.display = 'block';
@@ -552,12 +549,12 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
 	            <td class="item-detalle">
 	                <span class="cantidad">${cant}x</span> ${nombre}
 	            </td>
-	            <td class="item-precio text-end">$${subtotal.toLocaleString('es-CO')}</td>
+            <td class="item-precio text-end">$${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
 	        </tr>`;
 	    }).join('');
 	    
 	    // Obtener total formateado
-	    const totalFormateado = Number(ctx.total || 0).toLocaleString('es-CO');
+            const totalFormateado = Number(ctx.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 	    
 	    // Devolver HTML completo con CSS embebido
 	    return `<!doctype html>
@@ -772,7 +769,7 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
         e.preventDefault();
 
         if (!pedidoActual) {
-            alert('Error: No hay pedido seleccionado');
+            cajaAlert('error', 'Ocurrió un error', 'No hay pedido seleccionado');
             return;
         }
 
@@ -786,11 +783,11 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
         if (metodo === 'EFECTIVO') {
 
             if (recibido <= 0) {
-                alert('Ingrese el monto recibido');
+                cajaAlert('warning', 'Atención', 'Ingrese el monto recibido');
                 return;
             }
             if (recibido < total) {
-                alert('El monto recibido es insuficiente');
+                cajaAlert('warning', 'Atención', 'El monto recibido es insuficiente');
                 return;
             }
 s
@@ -799,11 +796,11 @@ s
             const electronico = elecInput ? (parseFloat(elecInput.value) || 0) : 0;
             const sum = recibido + electronico;
             if (sum <= 0) {
-                alert('Ingrese montos de efectivo y/o transferencia');
+                cajaAlert('warning', 'Atención', 'Ingrese montos de efectivo y/o transferencia');
                 return;
             }
             if (sum < total) {
-                alert('El total recibido es insuficiente');
+                cajaAlert('warning', 'Atención', 'El total recibido es insuficiente');
                 return;
             }
             const hiddenRecibido = document.getElementById('input-monto-recibido');
@@ -935,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (montoElement.textContent === '****') {
                 // Mostrar monto real
-                montoElement.textContent = '$' + parseFloat(montoReal).toLocaleString('es-CO');
+                montoElement.textContent = '$' + parseFloat(montoReal).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                 btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
                 btn.title = "Ocultar monto";
                 

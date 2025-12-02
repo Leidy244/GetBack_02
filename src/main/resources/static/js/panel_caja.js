@@ -108,7 +108,7 @@ class PanelCaja {
         const totalEl = document.getElementById('gastosHistorialTotal');
         const exportBtn = document.getElementById('gastosHistorialExport');
 
-        const fmt = (v) => '$' + Number(v || 0).toFixed(2);
+        const fmt = (v) => '$' + new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number(v || 0));
         const render = async () => {
             const mes = monthInput && monthInput.value ? monthInput.value : '';
             const url = '/caja/gastos/historial' + (mes ? ('?mes=' + encodeURIComponent(mes)) : '');
@@ -189,20 +189,30 @@ class PanelCaja {
         const renderPager = (pages) => {
             if (!pagerTop) return;
             pagerTop.innerHTML = '';
-            const prevBtn = document.createElement('button');
-            prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary rounded-pill'; prevBtn.textContent = '«';
-            prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page = Math.max(1, page-1); render(); };
-            pagerTop.appendChild(prevBtn);
-            for (let i=1;i<=pages;i++){
+            const maxButtons = 7;
+            const makeBtn = (label, cls, disabled, click) => {
                 const b = document.createElement('button');
-                b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary') + ' rounded-pill';
-                b.textContent = i; b.onclick = () => { page = i; render(); };
-                pagerTop.appendChild(b);
+                b.type = 'button'; b.className = 'btn ' + cls + ' rounded-pill'; b.textContent = label;
+                b.disabled = !!disabled; if (click) b.onclick = click; return b;
+            };
+            pagerTop.appendChild(makeBtn('«','btn-outline-secondary', page<=1, ()=>{ page=Math.max(1,page-1); render(); }));
+            if (pages <= maxButtons) {
+                for (let i=1;i<=pages;i++) pagerTop.appendChild(makeBtn(String(i), i===page?'btn-primary':'btn-outline-secondary', false, ()=>{ page=i; render(); }));
+            } else {
+                let start = Math.max(1, page - Math.floor((maxButtons-1)/2));
+                let end = Math.min(pages, start + maxButtons - 1);
+                if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+                if (start > 1) {
+                    pagerTop.appendChild(makeBtn('1', 'btn-outline-secondary', false, ()=>{ page=1; render(); }));
+                    pagerTop.appendChild(makeBtn('…', 'btn-outline-secondary', true));
+                }
+                for (let i=start;i<=end;i++) pagerTop.appendChild(makeBtn(String(i), i===page?'btn-primary':'btn-outline-secondary', false, ()=>{ page=i; render(); }));
+                if (end < pages) {
+                    pagerTop.appendChild(makeBtn('…', 'btn-outline-secondary', true));
+                    pagerTop.appendChild(makeBtn(String(pages), 'btn-outline-secondary', false, ()=>{ page=pages; render(); }));
+                }
             }
-            const nextBtn = document.createElement('button');
-            nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary rounded-pill'; nextBtn.textContent = '»';
-            nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page = Math.min(pages, page+1); render(); };
-            pagerTop.appendChild(nextBtn);
+            pagerTop.appendChild(makeBtn('»','btn-outline-secondary', page>=pages, ()=>{ page=Math.min(pages,page+1); render(); }));
         };
 
         const render = () => {
@@ -535,12 +545,12 @@ class PanelCaja {
                             modalError.style.display = 'none';
                             btnConfirmarPago.disabled = false;
                         } else {
-                            modalCambio.value = '$0.00';
+                            modalCambio.value = '$0';
                             modalError.style.display = 'block';
                             btnConfirmarPago.disabled = true;
                         }
                     } else {
-                        modalCambio.value = '$0.00';
+                        modalCambio.value = '$0';
                         modalInfo.style.display = 'block';
                         modalError.style.display = 'none';
                         btnConfirmarPago.disabled = true;
@@ -561,12 +571,12 @@ class PanelCaja {
                         const hiddenRecibido = document.getElementById('input-monto-recibido');
                         if (hiddenRecibido) hiddenRecibido.value = recibido.toFixed(2);
                     } else {
-                        modalCambio.value = '$0.00';
+                        modalCambio.value = '$0';
                         modalError.style.display = 'block';
                         btnConfirmarPago.disabled = true;
                     }
                 } else {
-                    modalCambio.value = '$0.00';
+                    modalCambio.value = '$0';
                     modalInfo.style.display = 'block';
                     modalError.style.display = 'none';
                     btnConfirmarPago.disabled = true;
@@ -596,12 +606,12 @@ class PanelCaja {
                             modalError.style.display = 'none';
                             btnConfirmarPago.disabled = false;
                         } else {
-                            modalCambio.value = '$0.00';
+                            modalCambio.value = '$0';
                             modalError.style.display = 'block';
                             btnConfirmarPago.disabled = true;
                         }
                     } else {
-                        modalCambio.value = '$0.00';
+                        modalCambio.value = '$0';
                         modalInfo.style.display = 'block';
                         modalError.style.display = 'none';
                         btnConfirmarPago.disabled = true;
@@ -727,20 +737,30 @@ class PanelCaja {
                 const build = (target) => {
                     if (!target) return;
                     target.innerHTML = '';
-                    const prevBtn = document.createElement('button');
-                    prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary rounded-pill'; prevBtn.textContent = '«';
-                    prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page = Math.max(1, page-1); render(); };
-                    target.appendChild(prevBtn);
-                    for (let i=1;i<=pages;i++){
+                    const maxButtons = 7;
+                    const makeBtn = (label, cls, disabled, click) => {
                         const b = document.createElement('button');
-                        b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary') + ' rounded-pill';
-                        b.textContent = i; b.onclick = () => { page = i; render(); };
-                        target.appendChild(b);
+                        b.type = 'button'; b.className = 'btn ' + cls + ' rounded-pill'; b.textContent = label;
+                        b.disabled = !!disabled; if (click) b.onclick = click; return b;
+                    };
+                    target.appendChild(makeBtn('«','btn-outline-secondary', page<=1, ()=>{ page=Math.max(1,page-1); render(); }));
+                    if (pages <= maxButtons) {
+                        for (let i=1;i<=pages;i++) target.appendChild(makeBtn(String(i), i===page?'btn-primary':'btn-outline-secondary', false, ()=>{ page=i; render(); }));
+                    } else {
+                        let start = Math.max(1, page - Math.floor((maxButtons-1)/2));
+                        let end = Math.min(pages, start + maxButtons - 1);
+                        if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+                        if (start > 1) {
+                            target.appendChild(makeBtn('1', 'btn-outline-secondary', false, ()=>{ page=1; render(); }));
+                            target.appendChild(makeBtn('…', 'btn-outline-secondary', true));
+                        }
+                        for (let i=start;i<=end;i++) target.appendChild(makeBtn(String(i), i===page?'btn-primary':'btn-outline-secondary', false, ()=>{ page=i; render(); }));
+                        if (end < pages) {
+                            target.appendChild(makeBtn('…', 'btn-outline-secondary', true));
+                            target.appendChild(makeBtn(String(pages), 'btn-outline-secondary', false, ()=>{ page=pages; render(); }));
+                        }
                     }
-                    const nextBtn = document.createElement('button');
-                    nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary rounded-pill'; nextBtn.textContent = '»';
-                    nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page = Math.min(pages, page+1); render(); };
-                    target.appendChild(nextBtn);
+                    target.appendChild(makeBtn('»','btn-outline-secondary', page>=pages, ()=>{ page=Math.min(pages,page+1); render(); }));
                 };
                 build(pagerTop);
                 build(pagerBottom);
@@ -801,20 +821,30 @@ class PanelCaja {
             const renderPager = (pages) => {
                 if (!pager) return;
                 pager.innerHTML = '';
-                const prevBtn = document.createElement('button');
-                prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary rounded-pill'; prevBtn.textContent = '«';
-                prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page = Math.max(1, page-1); render(); };
-                pager.appendChild(prevBtn);
-                for (let i=1;i<=pages;i++){
+                const maxButtons = 7;
+                const makeBtn = (label, cls, disabled, click) => {
                     const b = document.createElement('button');
-                    b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary') + ' rounded-pill';
-                    b.textContent = i; b.onclick = () => { page = i; render(); };
-                    pager.appendChild(b);
+                    b.type = 'button'; b.className = 'btn ' + cls + ' rounded-pill'; b.textContent = label;
+                    b.disabled = !!disabled; if (click) b.onclick = click; return b;
+                };
+                pager.appendChild(makeBtn('«','btn-outline-secondary', page<=1, ()=>{ page=Math.max(1,page-1); render(); }));
+                if (pages <= maxButtons) {
+                    for (let i=1;i<=pages;i++) pager.appendChild(makeBtn(String(i), i===page?'btn-primary':'btn-outline-secondary', false, ()=>{ page=i; render(); }));
+                } else {
+                    let start = Math.max(1, page - Math.floor((maxButtons-1)/2));
+                    let end = Math.min(pages, start + maxButtons - 1);
+                    if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+                    if (start > 1) {
+                        pager.appendChild(makeBtn('1', 'btn-outline-secondary', false, ()=>{ page=1; render(); }));
+                        pager.appendChild(makeBtn('…', 'btn-outline-secondary', true));
+                    }
+                    for (let i=start;i<=end;i++) pager.appendChild(makeBtn(String(i), i===page?'btn-primary':'btn-outline-secondary', false, ()=>{ page=i; render(); }));
+                    if (end < pages) {
+                        pager.appendChild(makeBtn('…', 'btn-outline-secondary', true));
+                        pager.appendChild(makeBtn(String(pages), 'btn-outline-secondary', false, ()=>{ page=pages; render(); }));
+                    }
                 }
-                const nextBtn = document.createElement('button');
-                nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary rounded-pill'; nextBtn.textContent = '»';
-                nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page = Math.min(pages, page+1); render(); };
-                pager.appendChild(nextBtn);
+                pager.appendChild(makeBtn('»','btn-outline-secondary', page>=pages, ()=>{ page=Math.min(pages,page+1); render(); }));
             };
 
             const render = () => {
@@ -937,7 +967,7 @@ class PanelCaja {
             const abierta = !!(estado && estado.abierta);
             if (estadoTexto) {
                 estadoTexto.textContent = abierta
-                    ? `Estado: abierta desde ${new Date(estado.fechaApertura).toLocaleString()} (base $${Number(estado.base || 0).toFixed(2)})`
+                    ? `Estado: abierta desde ${new Date(estado.fechaApertura).toLocaleString()} (base $${Number(estado.base || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })})`
                     : 'Estado: cerrada';
             }
             if (btnAbrir && btnCerrar) {
@@ -1009,8 +1039,8 @@ class PanelCaja {
             const ingresosEl = document.getElementById('ingresosEfectivoLabel');
             const gastosEl = document.getElementById('gastosEfectivoLabel');
             const ventasEl = document.getElementById('ventasDiaLabel');
-            ingresosEl && (ingresosEl.textContent = '$0.00');
-            gastosEl && (gastosEl.textContent = '$0.00');
+            ingresosEl && (ingresosEl.textContent = '$0');
+            gastosEl && (gastosEl.textContent = '$0');
             ventasEl && (ventasEl.textContent = '0 ventas pagadas');
             const container = document.querySelector('.form-container.mt-4');
             if (container) container.setAttribute('data-ingresos-dia', '0');
@@ -1031,12 +1061,12 @@ class PanelCaja {
                 if (Array.isArray(lista) && tbody) {
                     tbody.innerHTML = lista.map(item => {
                         const fecha = item.fecha;
-                        const ingresos = (item.ingresosEfectivo || 0).toFixed(2);
-                        const gastos = (item.gastosEfectivo || 0).toFixed(2);
+                        const ingresos = Number(item.ingresosEfectivo || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                        const gastos = Number(item.gastosEfectivo || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                         const ventas = item.ventasDia || 0;
-                        const baseApertura = (item.baseApertura || 0).toFixed(2);
-                        const baseSiguiente = (item.baseSiguiente || 0).toFixed(2);
-                        const retiro = (item.retiro || 0).toFixed(2);
+                        const baseApertura = Number(item.baseApertura || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                        const baseSiguiente = Number(item.baseSiguiente || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                        const retiro = Number(item.retiro || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                         return `<tr>
                             <td>${fecha}</td>
                             <td>$${ingresos}</td>
@@ -1058,7 +1088,7 @@ class PanelCaja {
                         acc.retiro += (it.retiro || 0);
                         return acc;
                     }, { ingresos:0, gastos:0, ventas:0, baseApertura:0, baseSiguiente:0, retiro:0 });
-                    const fmt = v => '$' + (v || 0).toFixed(2);
+                    const fmt = v => '$' + new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number(v || 0));
                     const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
                     setText('histTotalIngresos', fmt(totals.ingresos));
                     setText('histTotalGastos', fmt(totals.gastos));
@@ -1205,35 +1235,18 @@ class PanelCaja {
                     return;
                 }
             }
-        } catch (e) {
-            console.error("No se pudo leer configuración de notificaciones de caja", e);
+        } catch (_) {}
+
+        if (typeof Swal !== 'undefined') {
+            const icon = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+            const opts = { icon, title: icon === 'success' ? 'Venta exitosa' : icon === 'error' ? 'Ocurrió un error' : icon === 'warning' ? 'Atención' : 'Información', confirmButtonText: 'Entendido', buttonsStyling: false, customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-secondary' } };
+            if (icon !== 'success' && message) { opts.text = String(message); }
+            if (icon === 'success') { opts.showConfirmButton = false; opts.timer = 1500; }
+            Swal.fire(opts);
+            return;
         }
 
-        // Crear notificación temporal
-        const notification = document.createElement("div");
-        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
-        notification.style.cssText = `
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-            animation: slideInRight 0.3s ease;
-        `;
-        
-        notification.innerHTML = `
-            <strong>${type === 'success' ? 'Éxito' : type === 'error' ? 'Error' : 'Info'}</strong> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Auto-remover después de 3 segundos
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 3000);
+        alert(String(message || ''));
     }
 
     hidePreloader() {
@@ -1302,7 +1315,7 @@ class PanelCaja {
             grid.innerHTML = productos.map(producto => `
                 <div class="tarjeta-producto" data-id="${producto.id}" data-categoria="${producto.categoria}">
                     <div class="nombre-producto">${producto.nombre}</div>
-                    <div class="precio-producto">$${producto.precio.toFixed(2)}</div>
+                    <div class="precio-producto">$${Number(producto.precio).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                     <div class="stock-producto">Disponible: ${producto.stock}</div>
                 </div>
             `).join('');
@@ -1352,12 +1365,12 @@ class PanelCaja {
                         <span>${item.cantidad}</span>
                         <button class="boton-cantidad" data-action="increment">+</button>
                     </div>
-                    <div class="precio-item">$${(item.precio * item.cantidad).toFixed(2)}</div>
+                    <div class="precio-item">$${Number(item.precio * item.cantidad).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                     <button class="boton-eliminar"><i class="fas fa-trash"></i></button>
                 </div>
             `).join('');
 
-            totalElement.textContent = `$${this.total.toFixed(2)}`;
+            totalElement.textContent = `$${Number(this.total).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
             // Agregar event listeners a los botones del carrito
             itemsContainer.querySelectorAll('.boton-cantidad').forEach(boton => {
@@ -1434,7 +1447,7 @@ class PanelCaja {
         }
 
         // Simular proceso de venta
-        this.showNotification(`Venta realizada exitosamente! Total: $${this.total.toFixed(2)}`, "success");
+        this.showNotification(`Venta realizada exitosamente! Total: $${Number(this.total).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` , "success");
         this.carrito = [];
         this.actualizarCarrito();
         
@@ -1488,7 +1501,7 @@ class PanelCaja {
             ticket += `
                 <div class="ticket-item">
                     <span>${item.nombre} x${item.cantidad}</span>
-                    <span>$${(item.precio * item.cantidad).toFixed(2)}</span>
+                    <span>$${Number(item.precio * item.cantidad).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                 </div>
             `;
         });
@@ -1496,7 +1509,7 @@ class PanelCaja {
         ticket += `
             <div class="ticket-total">
                 <span>Total:</span>
-                <span>$${this.total.toFixed(2)}</span>
+                <span>$${Number(this.total).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
             </div>
             <div style="text-align: center; margin-top: 20px;">
                 <p>¡Gracias por su compra!</p>
@@ -1575,9 +1588,9 @@ class PanelCaja {
         
         if (!isNaN(montoRecibido) && montoRecibido >= this.total) {
             const cambio = montoRecibido - this.total;
-            cambioElement.value = `$${cambio.toFixed(2)}`;
+            cambioElement.value = `$${Number(cambio).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
         } else {
-            cambioElement.value = '$0.00';
+            cambioElement.value = '$0';
         }
     }
 
@@ -1591,7 +1604,7 @@ class PanelCaja {
         }
         
         // Simular inicio de caja
-        this.showNotification(`Caja iniciada exitosamente. Efectivo inicial: $${efectivoInicial.toFixed(2)}`, "success");
+        this.showNotification(`Caja iniciada exitosamente. Efectivo inicial: $${Number(efectivoInicial).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` , "success");
         document.getElementById('form-inicio-caja').reset();
     }
 }
@@ -1599,6 +1612,31 @@ class PanelCaja {
 // Inicializar la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.panelCaja = new PanelCaja();
+    window.cajaAlert = function(type, title, text){
+        const icon = String(type || 'info');
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon, title: String(title || ''), text: String(text || ''), confirmButtonText: 'Entendido' });
+        } else {
+            alert(String(title || '') + (text ? ('\n' + String(text)) : ''));
+        }
+    };
+
+    // Flash messages para Caja (SweetAlert2)
+    try {
+        const s = document.getElementById('flash-success');
+        if (s) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: 'Venta exitosa', showConfirmButton: false, timer: 1500, buttonsStyling: false, customClass: { confirmButton: 'btn btn-primary' } });
+            }
+        }
+        const e = document.getElementById('flash-error');
+        if (e) {
+            const msg = e.getAttribute('data-message') || e.textContent || '';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Ocurrió un error', text: msg, confirmButtonText: 'Entendido' });
+            }
+        }
+    } catch(_) {}
 });
 
 // Manejo del logout

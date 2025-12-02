@@ -2999,3 +2999,17 @@ body[data-admin-theme="gris"] {
 .gestion-pedidos-row .pedidos-section-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .gestion-pedidos-row .input-group { max-width: 360px; }
 .gestion-pedidos-row .border-bottom { border-bottom: 1px solid var(--border-color) !important; }
+.pedido-comentario {
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .pedido-comentario {
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .modal-content .form-text,
+[data-theme="dark"] .modal-content .text-muted {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .modal-content .form-label {
+    color: var(--text-primary);
+}

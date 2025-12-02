@@ -88,7 +88,7 @@
                                                 <td th:text="${g.metodo}">EFECTIVO</td>
                                                 <td th:text="${g.nota}">—</td>
                                                 <td class="text-end">
-                                                    <span class="monto-badge" th:text="'$' + ${#numbers.formatDecimal(g.monto,1,'COMMA',2,'POINT')}">$0.00</span>
+                                                    <span class="monto-badge" th:text="'$' + ${#numbers.formatDecimal(g.monto, 1, 'POINT', 0, 'POINT')}">$0</span>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -98,21 +98,21 @@
                                                 <td>Hoy</td>
                                                 <td>EFECTIVO</td>
                                                 <td>—</td>
-                                                <td class="text-end"><span class="monto-badge">$0.00</span></td>
+                                                <td class="text-end"><span class="monto-badge">$0</span></td>
                                             </tr>
                                             <tr>
                                                 <td><i class="fas fa-receipt me-2"></i> Transporte</td>
                                                 <td>Ayer</td>
                                                 <td>TARJETA</td>
                                                 <td>—</td>
-                                                <td class="text-end"><span class="monto-badge">$0.00</span></td>
+                                                <td class="text-end"><span class="monto-badge">$0</span></td>
                                             </tr>
                                             <tr>
                                                 <td><i class="fas fa-receipt me-2"></i> Otros</td>
                                                 <td>Esta semana</td>
                                                 <td>TRANSFERENCIA</td>
                                                 <td>—</td>
-                                                <td class="text-end"><span class="monto-badge">$0.00</span></td>
+                                                <td class="text-end"><span class="monto-badge">$0</span></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -129,7 +129,7 @@
             <a th:href="@{/caja(section='historial-pagos')}" class="stat-card stat-card-link" title="Ver historial de pagos">
                 <div class="stat-icon bg-primary"><i class="fas fa-dollar-sign"></i></div>
                 <div class="stat-info">
-                    <h3 th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    <h3 th:text="'$' + ${#numbers.formatDecimal(ingresosHoy, 1, 'POINT', 0, 'POINT')}">$0</h3>
                     <p>Ventas Hoy</p>
                     <small th:text="${ventasHoy} + ' ventas'">0 ventas</small>
                 </div>

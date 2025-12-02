@@ -42,6 +42,11 @@
                                     <span class="detalle-resumen-text">Ver detalle del pedido</span>
                                 </button>
                             </div>
+                            <div class="pedido-comentario small mt-1"
+                                 th:if="${pago.comentariosGenerales != null and !#strings.isEmpty(pago.comentariosGenerales)}">
+                                <i class="fas fa-sticky-note me-1"></i>
+                                <span th:text="${pago.comentariosGenerales}">Comentario del pedido</span>
+                            </div>
                             <div class="pedido-acciones">
                                 <span class="badge bg-warning"
                                       th:text="${pago.estado != null ? pago.estado.nombreEstado : 'PENDIENTE'}">PENDIENTE</span>
@@ -95,6 +100,11 @@
                                                  data-detalle=${pago.orden}">
                                     <span class="detalle-resumen-text">Ver detalle del pedido</span>
                                 </button>
+                            </div>
+                            <div class="pedido-comentario small mt-1"
+                                 th:if="${pago.comentariosGenerales != null and !#strings.isEmpty(pago.comentariosGenerales)}">
+                                <i class="fas fa-sticky-note me-1"></i>
+                                <span th:text="${pago.comentariosGenerales}">Comentario del pedido</span>
                             </div>
                             <div class="pedido-acciones">
                                 <span class="badge bg-success"
