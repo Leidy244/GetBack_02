@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Controller
@@ -98,13 +99,16 @@ public class LoginController {
 		if (usuarioOpt.isPresent()) {
 			Usuario usuario = usuarioOpt.get();
 			if ("ACTIVO".equalsIgnoreCase(usuario.getEstado())) {
-			
 				String resetToken = generateResetToken();
 				
+				// Establecer el token y su tiempo de expiración (10 minutos)
+                usuario.setResetPasswordToken(resetToken);
+                usuario.setResetPasswordExpires(LocalDateTime.now().plusMinutes(10));
+                usuarioService.saveUser(usuario);
 				
 				try {
 					emailService.enviarCorreoRecuperacion(correo, resetToken);
-					redirectAttributes.addFlashAttribute("message", "Se ha enviado un enlace de recuperación a tu correo.");
+					redirectAttributes.addFlashAttribute("message", "Se ha enviado un enlace de recuperación a tu correo. El enlace expirará en 10 minutos.");
 				} catch (Exception e) {
 					model.addAttribute("error", "Error al enviar el correo. Por favor intenta más tarde.");
 					return "login/forgot-password";
@@ -126,7 +130,19 @@ public class LoginController {
 	                                  @RequestParam(value = "token", required = false) String token,
 	                                  Model model) {
 		if (correo == null || token == null || correo.isEmpty() || token.isEmpty()) {
-			return "redirect:/reset-password";
+			model.addAttribute("error", "Enlace de restablecimiento inválido.");
+			return "login/forgot-password";
+		}
+		
+		Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
+		
+		if (!usuarioOpt.isPresent() || 
+		    !token.equals(usuarioOpt.get().getResetPasswordToken()) || 
+		    usuarioOpt.get().getResetPasswordExpires() == null || 
+		    LocalDateTime.now().isAfter(usuarioOpt.get().getResetPasswordExpires())) {
+			
+			model.addAttribute("error", "El enlace de restablecimiento es inválido o ha expirado. Por favor, solicita uno nuevo.");
+			return "login/forgot-password";
 		}
 		
 		model.addAttribute("correo", correo);
@@ -142,6 +158,18 @@ public class LoginController {
 	                                   Model model,
 	                                   RedirectAttributes redirectAttributes) {
 		
+		Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
+		
+		// Validar token y expiración
+		if (!usuarioOpt.isPresent() || 
+		    !token.equals(usuarioOpt.get().getResetPasswordToken()) || 
+		    usuarioOpt.get().getResetPasswordExpires() == null || 
+		    LocalDateTime.now().isAfter(usuarioOpt.get().getResetPasswordExpires())) {
+			
+			model.addAttribute("error", "El enlace de restablecimiento es inválido o ha expirado. Por favor, solicita uno nuevo.");
+			return "login/forgot-password";
+		}
+		
 		if (!nuevaPassword.equals(confirmarPassword)) {
 			model.addAttribute("error", "Las contraseñas no coinciden.");
 			model.addAttribute("correo", correo);
@@ -149,7 +177,6 @@ public class LoginController {
 			return "login/reset-password";
 		}
 		
-		// Validar longitud mínima
 		if (nuevaPassword.length() < 6) {
 			model.addAttribute("error", "La contraseña debe tener al menos 6 caracteres.");
 			model.addAttribute("correo", correo);
@@ -157,20 +184,16 @@ public class LoginController {
 			return "login/reset-password";
 		}
 		
-		Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
+		Usuario usuario = usuarioOpt.get();
+		usuario.setClave(passwordEncoder.encode(nuevaPassword));
+		// Limpiar el token y la fecha de expiración
+		usuario.setResetPasswordToken(null);
+		usuario.setResetPasswordExpires(null);
 		
-		if (usuarioOpt.isPresent()) {
-			Usuario usuario = usuarioOpt.get();
-			usuario.setClave(nuevaPassword);
-			
-			usuarioService.saveUser(usuario);
-			
-			redirectAttributes.addFlashAttribute("success", "Contraseña actualizada correctamente. Por favor inicia sesión.");
-			return "redirect:/login";
-		} else {
-			model.addAttribute("error", "Usuario no encontrado.");
-			return "login/reset-password";
-		}
+		usuarioService.saveUser(usuario);
+		
+		redirectAttributes.addFlashAttribute("success", "Contraseña actualizada correctamente. Por favor inicia sesión.");
+		return "redirect:/login";
 	}
 
 	private String generateResetToken() {

@@ -1,6 +1,7 @@
 package com.sena.getback.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import jakarta.persistence.*;
@@ -23,6 +24,12 @@ public class Usuario {
 	private LocalTime horaFin;
 	private LocalDate fecha;
 	private String estado = "ACTIVO";
+
+	@Column(name = "reset_password_token")
+	private String resetPasswordToken;
+
+	@Column(name = "reset_password_expires")
+	private LocalDateTime resetPasswordExpires;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "rol_id")
@@ -155,12 +162,28 @@ public class Usuario {
 		this.rol = rol;
 	}
 
+	public String getResetPasswordToken() {
+		return resetPasswordToken;
+	}
+
+	public void setResetPasswordToken(String resetPasswordToken) {
+		this.resetPasswordToken = resetPasswordToken;
+	}
+
+	public LocalDateTime getResetPasswordExpires() {
+		return resetPasswordExpires;
+	}
+
+	public void setResetPasswordExpires(LocalDateTime resetPasswordExpires) {
+		this.resetPasswordExpires = resetPasswordExpires;
+	}
+
 	@Override
 	public String toString() {
 		return "Usuario [id=" + id + ", nombre=" + nombre + ", apellido=" + apellido + ", telefono=" + telefono
 				+ ", direccion=" + direccion + ", correo=" + correo + ", clave=" + clave + ", foto=" + foto
 				+ ", horaInicio=" + horaInicio + ", horaFin=" + horaFin + ", fecha=" + fecha + ", estado=" + estado
-				+ "]";
+				+ ", resetPasswordToken=" + resetPasswordToken + ", resetPasswordExpires=" + resetPasswordExpires + "]";
 	}
 
 }

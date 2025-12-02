@@ -17,7 +17,7 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String remitente;
 
-    @Value("${server.port:57675}")
+    @Value("${server.port:58340}")
     private String serverPort;
  
     @Override
