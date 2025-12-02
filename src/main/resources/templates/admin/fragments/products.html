@@ -17,14 +17,10 @@
             Lista de Productos
             <span class="badge bg-primary" th:text="${#lists.size(products)}"></span>
         </h4>
-        <div class="d-flex gap-2">
-            <button class="btn btn-success rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#importProductsModal" title="Sube un archivo para agregar o actualizar varios productos a la vez">
-                <i class="fas fa-cloud-upload-alt me-2"></i>Subir lista (Excel/CSV)
-            </button>
             <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#nuevoProductoModal">
                 <i class="fas fa-plus me-2"></i>Nuevo Producto
             </button>
-        </div>
+		
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
@@ -230,31 +226,7 @@
         </div>
     </div>
 
-    <!-- Modal Carga Masiva Productos -->
-    <div class="modal fade" id="importProductsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form th:action="@{/admin/menu/productos/import}" method="post" enctype="multipart/form-data" class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-list-ul me-2"></i>Subir lista de productos</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="mb-2">Sube tu archivo para agregar o actualizar varios productos.</p>
-                    <div class="mb-3">
-                        <label class="form-label">Selecciona tu archivo</label>
-                        <input type="file" name="file" class="form-control" accept=".csv" required>
-                        <div class="form-text">Puedes usar nuestra plantilla y guardarla como CSV (separador ";" recomendado).</div>
-                    </div>
-                    <a th:href="@{/admin/menu/productos/import/template}" class="btn btn-link p-0 mt-1"><i class="fas fa-download me-1"></i>Descargar plantilla</a>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i>Subir</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    
     <!-- Datalist compartido: sugerencias tomadas del inventario y del menú -->
     <datalist id="inventarioNombres">
         <option th:each="n : ${inventarioNombres}" th:value="${n}"></option>
