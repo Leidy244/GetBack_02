@@ -1457,16 +1457,34 @@ document.addEventListener('DOMContentLoaded', function(){
     function renderVentasPagination(totalPages){
         if (!ventasPagination) return;
         ventasPagination.innerHTML = '';
-        const createBtn = (idx) => {
+        const maxButtons = 7;
+        const makeBtn = (label, active, disabled, click) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn btn-outline-primary btn-sm';
-            btn.textContent = String(idx+1);
-            if (idx === ventasPage) btn.classList.add('active');
-            btn.addEventListener('click', (e)=>{ e.preventDefault(); ventasPage = idx; aplicarPaginacion(); });
+            btn.textContent = label;
+            if (active) btn.classList.add('active');
+            btn.disabled = !!disabled; if (click) btn.addEventListener('click', (e)=>{ e.preventDefault(); click(); });
             return btn;
         };
-        for (let i=0; i<totalPages; i++){ ventasPagination.appendChild(createBtn(i)); }
+        ventasPagination.appendChild(makeBtn('«', false, ventasPage<=0, ()=>{ ventasPage = Math.max(0, ventasPage-1); aplicarPaginacion(); }));
+        if (totalPages <= maxButtons) {
+            for (let i=0; i<totalPages; i++) ventasPagination.appendChild(makeBtn(String(i+1), i===ventasPage, false, ()=>{ ventasPage = i; aplicarPaginacion(); }));
+        } else {
+            let start = Math.max(0, ventasPage - Math.floor((maxButtons-1)/2));
+            let end = Math.min(totalPages-1, start + maxButtons - 1);
+            if (end - start + 1 < maxButtons) start = Math.max(0, end - maxButtons + 1);
+            if (start > 0) {
+                ventasPagination.appendChild(makeBtn('1', false, false, ()=>{ ventasPage = 0; aplicarPaginacion(); }));
+                ventasPagination.appendChild(makeBtn('…', false, true));
+            }
+            for (let i=start; i<=end; i++) ventasPagination.appendChild(makeBtn(String(i+1), i===ventasPage, false, ()=>{ ventasPage = i; aplicarPaginacion(); }));
+            if (end < totalPages-1) {
+                ventasPagination.appendChild(makeBtn('…', false, true));
+                ventasPagination.appendChild(makeBtn(String(totalPages), false, false, ()=>{ ventasPage = totalPages-1; aplicarPaginacion(); }));
+            }
+        }
+        ventasPagination.appendChild(makeBtn('»', false, ventasPage>=totalPages-1, ()=>{ ventasPage = Math.min(totalPages-1, ventasPage+1); aplicarPaginacion(); }));
     }
 
     // Inicial
