@@ -356,9 +356,35 @@
 }
 
 [data-theme="dark"] .modal-content .card-body {
-	background: var(--bg-primary);
-	color: var(--text-primary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
+[data-theme="dark"] #modalPago .card,
+[data-theme="dark"] #modalPago .card-header,
+[data-theme="dark"] #modalPago .card-body {
+    background: #000000;
+    border-color: #333333;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] #modalPago .card-header.bg-light {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] #modalPago .alert {
+    background: #000000;
+    border-color: #333333;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] #modalPago .form-control,
+[data-theme="dark"] #modalPago .form-select {
+    background: #000000;
+    border: 1px solid #333333;
+    color: #FFFFFF;
+}
+
 
 [data-theme="dark"] .modal-content .alert-info {
 	background-color: rgba(66, 153, 225, 0.15);
@@ -370,6 +396,12 @@
 	background-color: rgba(229, 62, 62, 0.15);
 	border-color: rgba(229, 62, 62, 0.4);
 	color: var(--text-primary);
+}
+
+[data-theme="dark"] #modalPago .input-group-text {
+    background: #000000;
+    border: 1px solid #333333;
+    color: #FFFFFF;
 }
 
 /* ===== BOTONES PESTAÑA PAGO EN MODO OSCURO ===== */

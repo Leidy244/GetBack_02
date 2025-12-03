@@ -1,5 +1,7 @@
 <section th:fragment="pedidos" class="content-section">
     <div class="dashboard-container">
+        <div id="flash-success" th:if="${success}" th:data-message="${success}" style="display:none"></div>
+        <div id="flash-error" th:if="${error}" th:data-message="${error}" style="display:none"></div>
         <div class="section-header caja-dashboard-header">
             <div class="caja-dashboard-left">
                 <h2><i class="fas fa-list-alt"></i> Gestión de pedidos</h2>

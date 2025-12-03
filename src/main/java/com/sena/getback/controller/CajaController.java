@@ -953,7 +953,7 @@ public class CajaController {
 
 	        // 7. Limpiar carrito del localStorage (se hará en el frontend al recargar)
         ra.addFlashAttribute("success", "Venta exitosa");
-	        return "redirect:/caja?section=pagos";
+            return "redirect:/caja?section=pedidos";
 
 	    } catch (Exception e) {
 	        System.err.println("❌ Error al crear pedido: " + e.getMessage());

@@ -132,18 +132,42 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ========== PUNTO DE VENTA: FINALIZAR VENTA → REDIRIGIR A PEDIDOS ==========
+    // ========== PUNTO DE VENTA: FINALIZAR VENTA → ABRIR MODAL ==========
     btnFinalizarVenta?.addEventListener('click', function (e) {
-        try { e.preventDefault(); e.stopImmediatePropagation(); } catch (ignored) {}
+        try { e.preventDefault(); } catch (ignored) {}
         if (carrito.length === 0) {
             cajaAlert('warning', 'Atención', 'El carrito está vacío');
             return;
         }
-        // Vaciar carrito y redirigir a Pedidos
-        carrito = [];
-        localStorage.removeItem('carritoPOS');
-        renderCarrito();
-        window.location.href = '/caja?section=pedidos';
+
+        // Rellenar detalle del pedido en el modal
+        if (tbodyDetalle) {
+            tbodyDetalle.innerHTML = '';
+            carrito.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center">${item.cantidad}</td>
+                    <td>${item.nombre}</td>
+                    <td class="text-end">$ ${item.precio.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                    <td class="text-end">$ ${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                `;
+                tbodyDetalle.appendChild(tr);
+            });
+        }
+        if (totalModal) {
+            totalModal.textContent = '$' + totalGlobal.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        // Abrir modal de confirmación
+        if (modalConfirmarVenta) {
+            try {
+                modalPuntoVentaInstance = new bootstrap.Modal(modalConfirmarVenta);
+                modalPuntoVentaInstance.show();
+            } catch (err) {
+                cajaAlert('error', 'Ocurrió un error', 'No se pudo abrir el modal de confirmación');
+            }
+        }
     });
 
     // ========== ENVIAR VENTA A PENDIENTES ==========
@@ -768,7 +792,6 @@ function abrirModalPago(pedidoId, mesa, total, detalle) {
                 cajaAlert('warning', 'Atención', 'El monto recibido es insuficiente');
                 return;
             }
-s
         } else if (metodo === 'MIXTO') {
             const elecInput = document.getElementById('modal-electronico');
             const electronico = elecInput ? (parseFloat(elecInput.value) || 0) : 0;
