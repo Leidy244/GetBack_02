@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +9,6 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<link rel="stylesheet" th:href="@{/css/admin-styles.css}">
 	<link rel="stylesheet" th:href="@{/css/perfilAdmin.css}">
-
 </head>
 
 <body class="admin-panel">
@@ -27,9 +25,9 @@
 			<button class="btn sidebar-toggle d-lg-none" id="sidebarToggle" type="button" aria-label="Abrir menú">
 				<i class="fas fa-bars"></i>
 			</button>
-			<div class="logo-container">
-				<a href="/" class="logo">PANEL ADMIN </a>
-			</div>
+            <div class="logo-container">
+                <a th:href="@{/admin(activeSection='dashboard')}" class="logo">PANEL ADMIN</a>
+            </div>
 			<div class="user-actions">
 				<div class="dropdown user-dropdown">
 					<button class="btn user-profile dropdown-toggle" type="button" id="userDropdown"

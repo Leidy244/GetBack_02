@@ -25,11 +25,25 @@ public class LoginController {
 
 	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	@GetMapping("/login")
-	public String mostrarLogin(Model model) {
-		model.addAttribute("usuario", new Usuario());
-		return "login/index";
-	}
+    @GetMapping("/login")
+    public String mostrarLogin(Model model, HttpSession session) {
+        Object logged = session != null ? session.getAttribute("usuarioLogueado") : null;
+        if (logged instanceof Usuario usuario && usuario.getRol() != null && usuario.getRol().getNombre() != null) {
+            String rol = usuario.getRol().getNombre().toUpperCase();
+            switch (rol) {
+                case "ADMIN":
+                    return "redirect:/admin";
+                case "MESERO":
+                    return "redirect:/configuracion";
+                case "CAJA":
+                    return "redirect:/caja";
+                default:
+                    return "redirect:/";
+            }
+        }
+        model.addAttribute("usuario", new Usuario());
+        return "login/index";
+    }
 
 	@PostMapping("/login")
 	public String procesarLogin(@RequestParam("correo") String correo,

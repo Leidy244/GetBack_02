@@ -273,29 +273,43 @@
 		      renderPager(pages, total);
 		    }
 
-		    function renderPager(pages, total){
-		      if (!pager) return;
-		      pager.innerHTML = '';
-		      if (total <= pageSize) return;
+            function renderPager(pages, total){
+              if (!pager) return;
+              pager.innerHTML = '';
+              if (total <= pageSize) return;
 
-		      const prev = document.createElement('button');
-		      prev.type = 'button'; prev.className = 'btn btn-outline-secondary'; prev.textContent = '«';
-		      prev.disabled = page <= 1; prev.onclick = () => { page--; render(); };
-		      pager.appendChild(prev);
+              const maxButtons = 3;
+              const makeBtn = (label, active, disabled, click) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'btn ' + (active ? 'btn-primary' : 'btn-outline-secondary');
+                b.textContent = label;
+                b.disabled = !!disabled;
+                if (click) b.onclick = click;
+                return b;
+              };
 
-		      for (let i = 1; i <= pages; i++){
-		        const b = document.createElement('button');
-		        b.type = 'button'; b.className = 'btn ' + (i===page ? 'btn-primary' : 'btn-outline-secondary');
-		        b.textContent = i;
-		        b.onclick = () => { page = i; render(); };
-		        pager.appendChild(b);
-		      }
+              pager.appendChild(makeBtn('«', false, page <= 1, () => { page = Math.max(1, page - 1); render(); }));
 
-		      const next = document.createElement('button');
-		      next.type = 'button'; next.className = 'btn btn-outline-secondary'; next.textContent = '»';
-		      next.disabled = page >= pages; next.onclick = () => { page++; render(); };
-		      pager.appendChild(next);
-		    }
+              if (pages <= maxButtons) {
+                for (let i = 1; i <= pages; i++) pager.appendChild(makeBtn(String(i), i === page, false, () => { page = i; render(); }));
+              } else {
+                let start = Math.max(1, page - Math.floor((maxButtons - 1) / 2));
+                let end = Math.min(pages, start + maxButtons - 1);
+                if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+                if (start > 1) {
+                  pager.appendChild(makeBtn('1', false, false, () => { page = 1; render(); }));
+                  pager.appendChild(makeBtn('…', false, true));
+                }
+                for (let i = start; i <= end; i++) pager.appendChild(makeBtn(String(i), i === page, false, () => { page = i; render(); }));
+                if (end < pages) {
+                  pager.appendChild(makeBtn('…', false, true));
+                  pager.appendChild(makeBtn(String(pages), false, false, () => { page = pages; render(); }));
+                }
+              }
+
+              pager.appendChild(makeBtn('»', false, page >= pages, () => { page = Math.min(pages, page + 1); render(); }));
+            }
 
 		    function applyFilter(){
 		      const q = (filterInput?.value || '').toLowerCase().trim();

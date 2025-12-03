@@ -594,6 +594,14 @@ const adminApp = {
 				this.handleNavigation(e);
 			});
 		});
+
+		const headerLogo = document.querySelector('.admin-header .logo');
+		if (headerLogo) {
+			headerLogo.addEventListener('click', (e) => {
+				e.preventDefault();
+				window.location.href = '/admin?activeSection=dashboard';
+			});
+		}
 	},
 
 	highlightActiveNavLink() {
@@ -1248,9 +1256,27 @@ document.addEventListener('DOMContentLoaded', function() {
     modalList.innerHTML = rows;
     if (modalInfo) modalInfo.textContent = `Resultados: ${total} • Página ${modalPage+1} de ${totalPages}`;
     if (modalPager){
+      const maxButtons = 3;
       let html = `<a class="btn btn-outline-secondary${modalPage<=0?' disabled':''}" data-action="prev">«</a>`;
-      for (let p = 0; p < totalPages; p++) {
-        html += `<a class="btn ${p===modalPage?'btn-primary':'btn-outline-secondary'}" data-page="${p}">${p+1}</a>`;
+      if (totalPages <= maxButtons) {
+        for (let p = 0; p < totalPages; p++) {
+          html += `<a class="btn ${p===modalPage?'btn-primary':'btn-outline-secondary'}" data-page="${p}">${p+1}</a>`;
+        }
+      } else {
+        let start = Math.max(0, modalPage - Math.floor((maxButtons-1)/2));
+        let end = Math.min(totalPages-1, start + maxButtons - 1);
+        if (end - start + 1 < maxButtons) start = Math.max(0, end - maxButtons + 1);
+        if (start > 0) {
+          html += `<a class="btn btn-outline-secondary" data-page="0">1</a>`;
+          html += `<span class="btn btn-outline-secondary disabled">…</span>`;
+        }
+        for (let p = start; p <= end; p++) {
+          html += `<a class="btn ${p===modalPage?'btn-primary':'btn-outline-secondary'}" data-page="${p}">${p+1}</a>`;
+        }
+        if (end < totalPages-1) {
+          html += `<span class="btn btn-outline-secondary disabled">…</span>`;
+          html += `<a class="btn btn-outline-secondary" data-page="${totalPages-1}">${totalPages}</a>`;
+        }
       }
       html += `<a class="btn btn-outline-secondary${modalPage>=totalPages-1?' disabled':''}" data-action="next">»</a>`;
       modalPager.innerHTML = html;
@@ -1313,20 +1339,34 @@ document.addEventListener('DOMContentLoaded', function(){
 
     const renderPager = (pages) => {
       pager.innerHTML = '';
-      const prevBtn = document.createElement('button');
-      prevBtn.type = 'button'; prevBtn.className = 'btn btn-outline-secondary'; prevBtn.textContent = '«';
-      prevBtn.disabled = page <= 1; prevBtn.onclick = () => { page--; render(); };
-      pager.appendChild(prevBtn);
-      for (let i=1;i<=pages;i++){
+      const maxButtons = 3;
+      const makeBtn = (label, active, disabled, click) => {
         const b = document.createElement('button');
-        b.type = 'button'; b.className = 'btn ' + (i===page?'btn-primary':'btn-outline-secondary');
-        b.textContent = i; b.onclick = () => { page = i; render(); };
-        pager.appendChild(b);
+        b.type = 'button';
+        b.className = 'btn ' + (active ? 'btn-primary' : 'btn-outline-secondary');
+        b.textContent = label;
+        b.disabled = !!disabled;
+        if (click) b.onclick = click;
+        return b;
+      };
+      pager.appendChild(makeBtn('«', false, page <= 1, () => { page = Math.max(1, page - 1); render(); }));
+      if (pages <= maxButtons) {
+        for (let i = 1; i <= pages; i++) pager.appendChild(makeBtn(String(i), i === page, false, () => { page = i; render(); }));
+      } else {
+        let start = Math.max(1, page - Math.floor((maxButtons - 1) / 2));
+        let end = Math.min(pages, start + maxButtons - 1);
+        if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+        if (start > 1) {
+          pager.appendChild(makeBtn('1', false, false, () => { page = 1; render(); }));
+          pager.appendChild(makeBtn('…', false, true));
+        }
+        for (let i = start; i <= end; i++) pager.appendChild(makeBtn(String(i), i === page, false, () => { page = i; render(); }));
+        if (end < pages) {
+          pager.appendChild(makeBtn('…', false, true));
+          pager.appendChild(makeBtn(String(pages), false, false, () => { page = pages; render(); }));
+        }
       }
-      const nextBtn = document.createElement('button');
-      nextBtn.type = 'button'; nextBtn.className = 'btn btn-outline-secondary'; nextBtn.textContent = '»';
-      nextBtn.disabled = page >= pages; nextBtn.onclick = () => { page++; render(); };
-      pager.appendChild(nextBtn);
+      pager.appendChild(makeBtn('»', false, page >= pages, () => { page = Math.min(pages, page + 1); render(); }));
     };
 
     const render = () => {
@@ -1457,7 +1497,7 @@ document.addEventListener('DOMContentLoaded', function(){
     function renderVentasPagination(totalPages){
         if (!ventasPagination) return;
         ventasPagination.innerHTML = '';
-        const maxButtons = 7;
+        const maxButtons = 3;
         const makeBtn = (label, active, disabled, click) => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -1654,6 +1694,7 @@ document.addEventListener('DOMContentLoaded', function(){
             <style>
               @page { size: 58mm auto; margin: 5mm; }
               body{font-family: 'Courier New', monospace; width: 58mm; margin: 0 auto;}
+              *{font-weight:900 !important}
               h2{margin:0 0 4px 0; font-size: 14px;}
               .muted{color:#666;font-size:10px}
               table{width:100%; border-collapse:collapse;}
@@ -1727,7 +1768,7 @@ document.addEventListener('DOMContentLoaded', function(){
         }
         // 58mm de ancho, fuente monoespaciada
         const doc = new jsPDF({ unit: 'mm', format: [58, 200] });
-        doc.setFont('courier', 'normal');
+        doc.setFont('courier', 'bold');
         doc.setFontSize(11);
         doc.text('GET BACK', 29, 6, { align: 'center' });
         doc.setFontSize(9);
@@ -1794,7 +1835,7 @@ document.addEventListener('DOMContentLoaded', function(){
         btnImprimirTabla.addEventListener('click', () => {
             const tabla = document.querySelector('.card-body .table-responsive').innerHTML;
             const w = window.open('', '_blank');
-            w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Historial de Ventas</title><style>body{font-family:Arial,sans-serif;padding:16px} table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #eee}</style></head><body>${tabla}</body></html>`);
+            w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Historial de Ventas</title><style>body{font-family:Arial,sans-serif;padding:16px;font-weight:900} table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #eee;font-weight:900}</style></head><body>${tabla}</body></html>`);
             w.document.close();
             w.focus();
             w.print();
@@ -1810,7 +1851,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 alert('No se pudo cargar el generador de PDF. Verifique su conexión.');
                 return;
             }
-            const doc = new jsPDF('l', 'pt', 'a4'); // horizontal para más columnas
+            const doc = new jsPDF('l', 'pt', 'a4');
+            doc.setFont('helvetica','bold');
 
             const rows = Array.from(document.querySelectorAll('table.table tbody tr'))
                 .filter(tr => tr.querySelector('td')) // omitir fila de empty-state
@@ -1843,6 +1885,9 @@ document.addEventListener('DOMContentLoaded', function(){
                 ]],
                 body: rows,
                 startY: 70,
+                styles: { fontStyle: 'bold' },
+                headStyles: { fontStyle: 'bold' },
+                bodyStyles: { fontStyle: 'bold' }
             });
 
             doc.save(`historial_ventas_${fecha.getFullYear()}-${fecha.getMonth()+1}-${fecha.getDate()}.pdf`);
