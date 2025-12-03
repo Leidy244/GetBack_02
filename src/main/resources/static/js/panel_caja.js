@@ -641,6 +641,7 @@ class PanelCaja {
                 grupoReferencia.style.display = 'none';
                 grupoCliente.style.display = 'none';
                 grupoRecibido && (grupoRecibido.style.display = 'block');
+                grupoElectronico && (grupoElectronico.style.display = 'none');
                 grupoCambio && (grupoCambio.style.display = 'block');
                 modalRecibido.type = 'number';
                 modalRecibido.readOnly = false;
@@ -1659,9 +1660,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // Manejo del logout
 window.adminApp = {
     logout: function() {
-        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-            // Aquí iría la lógica real de logout
-            window.location.href = '/login';
+        const ejecutar = () => { window.location.href = '/login'; };
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'question',
+                title: '¿Seguro desea cerrar sesión?',
+                showCancelButton: true,
+                confirmButtonText: 'Cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                buttonsStyling: false,
+                customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-secondary' }
+            }).then(r => { if (r.isConfirmed) ejecutar(); });
+            return;
         }
+        if (confirm('¿Seguro desea cerrar sesión?')) ejecutar();
     }
 };

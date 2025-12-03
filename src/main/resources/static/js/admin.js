@@ -760,14 +760,31 @@ const adminApp = {
 		}
 	},
 
-	logout() {
-		if (confirm("¿Está seguro de que desea cerrar sesión?")) {
-			this.showNotification("Cerrando sesión...", "info");
-			setTimeout(() => {
-				window.location.href = "/login";
-			}, 1500);
-		}
-	},
+    logout() {
+        const ejecutar = () => { window.location.href = "/login"; };
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'question',
+                title: '¿Seguro desea cerrar sesión?',
+                showCancelButton: true,
+                confirmButtonText: 'Cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                buttonsStyling: false,
+                customClass: {
+                    actions: 'swal-actions-wide',
+                    confirmButton: 'btn btn-primary me-3',
+                    cancelButton: 'btn btn-secondary ms-3'
+                }
+            }).then(r => {
+                if (r.isConfirmed) {
+                    this.showNotification('Cerrando sesión...', 'info');
+                    setTimeout(ejecutar, 300);
+                }
+            });
+        } else {
+            if (confirm('¿Seguro desea cerrar sesión?')) ejecutar();
+        }
+    },
 
 	hidePreloader() {
 		const preloader = document.getElementById("preloader");
