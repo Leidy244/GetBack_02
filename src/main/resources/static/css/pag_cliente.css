@@ -369,6 +369,9 @@ img {
 	text-align: center;
 	margin-right: 1.5rem;
 	min-width: 60px;
+	flex-shrink: 0;
+	width: fit-content;
+	height: fit-content;
 }
 
 .event-date .day {
