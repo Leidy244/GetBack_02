@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     cards.forEach(c => { (c.classList.contains('agotado') ? agotados : disponibles).push(c); });
                     [...disponibles, ...agotados].forEach(el => grid.appendChild(el));
                 }
-                // No mostrar notificación de stock actualizado en venta rápida
+                
             } catch (e) { console.warn('POS stock update error:', e); }
             setTimeout(() => { document.body.appendChild(form); form.submit(); }, 500);
         };

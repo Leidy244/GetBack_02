@@ -3494,7 +3494,7 @@ body[data-admin-theme="gris"] {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: #dc3545;
+    background: var(--danger-color);
     color: #fff;
     padding: 4px 8px;
     border-radius: 12px;

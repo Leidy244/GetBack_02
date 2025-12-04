@@ -68,7 +68,7 @@
                         <td th:text="${h.producto != null ? h.producto : '—'}"></td>
                         <td>
                             <span th:text="${(h.cantidad != null && h.cantidad < 0) ? 'Salida' : 'Ingreso'}"
-                                  th:classappend="${(h.cantidad != null && h.cantidad < 0) ? ' badge bg-danger' : ' badge bg-success'}"></span>
+                                  th:classappend="${(h.cantidad != null && h.cantidad < 0) ? ' badge-theme badge-theme-danger' : ' badge-theme badge-theme-success'}"></span>
                         </td>
                         <td th:text="${h.cantidad != null ? T(java.lang.Math).abs(h.cantidad) : 0}"></td>
                         <td th:text="${h.proveedor != null && !h.proveedor.isEmpty() ? h.proveedor : '—'}"></td>
