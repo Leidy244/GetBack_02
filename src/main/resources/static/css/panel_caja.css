@@ -3487,3 +3487,26 @@ body[data-admin-theme="gris"] {
 	border: 1px solid var(--border-color);
 	margin-bottom: 1.5rem;
 }
+.producto-img-wrapper {
+    position: relative;
+}
+.producto-agotado-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #dc3545;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.producto-card.agotado {
+    opacity: 0.55;
+    filter: grayscale(30%);
+}
+.producto-card.agotado .btn-agregar {
+    pointer-events: none;
+}

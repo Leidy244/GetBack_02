@@ -34,12 +34,25 @@
 					</div>
 
                     <div class="grid-productos">
-                        <div th:each="menu : ${menus}" class="producto-card" th:data-id="${menu.id}"
-                            th:data-nombre="${menu.nombreProducto}" th:data-precio="${menu.precio}">
-                            <img th:src="@{${menu.imagen}}" alt="Producto">
+                        <div th:each="menu : ${menus}" class="producto-card"
+                             th:data-id="${menu.id}"
+                             th:data-nombre="${menu.nombreProducto}"
+                             th:data-precio="${menu.precio}"
+                             th:data-area="${menu.categoria != null ? menu.categoria.area : null}"
+                             th:data-stock="${menu.categoria != null && menu.categoria.area != null && menu.categoria.area.toUpperCase() == 'BAR' ? (stockBarPorProducto[menu.id] != null ? stockBarPorProducto[menu.id] : 0) : -1}"
+                             th:classappend="${menu.categoria != null && menu.categoria.area != null && menu.categoria.area.toUpperCase() == 'BAR' and (stockBarPorProducto[menu.id] == 0)} ? ' agotado' : ''">
+                            <div class="producto-img-wrapper">
+                                <img th:src="@{${menu.imagen}}" alt="Producto">
+                                <span class="producto-agotado-badge" th:if="${menu.categoria != null && menu.categoria.area != null && menu.categoria.area.toUpperCase() == 'BAR' and (stockBarPorProducto[menu.id] == 0)}">
+                                    <i class="fas fa-ban"></i> Agotado
+                                </span>
+                            </div>
                             <h4 th:text="${menu.nombreProducto}"></h4>
                             <p th:text="${menu.descripcion}"></p>
                             <p th:text="${#strings.concat('$', #numbers.formatDecimal(menu.precio, 0, 'POINT', 0, 'POINT'))}"></p>
+                            <div class="producto-stock" th:if="${menu.categoria != null && menu.categoria.area != null && menu.categoria.area.toUpperCase() == 'BAR'}">
+                                <small th:text="${'Stock: ' + (stockBarPorProducto[menu.id] != null ? stockBarPorProducto[menu.id] : 0)}"></small>
+                            </div>
                             <button class="btn btn-success btn-agregar"><i class="fas fa-cart-plus"></i> Agregar</button>
                         </div>
                     </div>

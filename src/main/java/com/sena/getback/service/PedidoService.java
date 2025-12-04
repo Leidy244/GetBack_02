@@ -624,6 +624,92 @@ public class PedidoService {
         }
 
         pedidoRepository.save(pedido);
+
+        // Consumir inventario y sincronizar stock de BAR al pagar (si no se aplicó ya en POS)
+        try {
+            String cg = pedido.getComentariosGenerales();
+            boolean consumoYaAplicado = (cg != null && cg.toLowerCase().contains("consumo_aplicado"));
+            if (!consumoYaAplicado) {
+            String ordenJson = pedido.getOrden();
+            if (ordenJson != null && !ordenJson.isBlank()) {
+                ObjectMapper mapper = new ObjectMapper();
+                Object rootObj = mapper.readValue(ordenJson, Object.class);
+                java.util.List<?> itemsList = null;
+                if (rootObj instanceof java.util.Map<?,?> root) {
+                    Object itemsObj = root.get("items");
+                    if (itemsObj == null) itemsObj = root.get("Items");
+                    if (itemsObj instanceof java.util.List<?>) {
+                        itemsList = (java.util.List<?>) itemsObj;
+                    } else if (itemsObj instanceof String sItems) {
+                        Object nested = mapper.readValue(sItems, Object.class);
+                        if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                        else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                            Object nestedItems = nestedMap.get("items");
+                            if (nestedItems == null) nestedItems = nestedMap.get("Items");
+                            if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                        }
+                    } else if (itemsObj instanceof java.util.Map<?,?> itemsMap) {
+                        Object nestedItems = itemsMap.get("items");
+                        if (nestedItems == null) nestedItems = itemsMap.get("Items");
+                        if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                    } else {
+                        Object itemsJsonObj = root.get("itemsJson");
+                        if (itemsJsonObj instanceof String sJson) {
+                            Object nested = mapper.readValue(sJson, Object.class);
+                            if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                            else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                                Object nestedItems = nestedMap.get("items");
+                                if (nestedItems == null) nestedItems = nestedMap.get("Items");
+                                if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                            }
+                        }
+                    }
+                } else if (rootObj instanceof java.util.List<?>) {
+                    itemsList = (java.util.List<?>) rootObj;
+                }
+
+                if (itemsList != null && !itemsList.isEmpty()) {
+                    java.util.Map<String, Integer> consumos = new java.util.HashMap<>();
+                    for (Object it : itemsList) {
+                        if (!(it instanceof java.util.Map<?,?> itemMap)) continue;
+                        Object nombreObj = itemMap.get("nombre");
+                        if (nombreObj == null) nombreObj = itemMap.get("productoNombre");
+                        if (nombreObj == null) nombreObj = itemMap.get("producto");
+                        if (nombreObj == null) nombreObj = itemMap.get("nombreProducto");
+                        if (nombreObj == null) {
+                            for (var k : itemMap.keySet()) {
+                                if (!(k instanceof String)) continue;
+                                String ks = (String) k;
+                                if (ks.toLowerCase().contains("nombre")) { nombreObj = itemMap.get(k); break; }
+                                if (ks.toLowerCase().contains("producto")) { nombreObj = itemMap.get(k); break; }
+                            }
+                        }
+                        Object cantObj = itemMap.get("cantidad");
+                        if (cantObj == null) cantObj = itemMap.get("qty");
+                        if (cantObj == null) cantObj = itemMap.get("cantidadPedido");
+                        if (nombreObj == null || cantObj == null) continue;
+                        String nom = String.valueOf(nombreObj);
+                        int cant = (cantObj instanceof Number) ? ((Number)cantObj).intValue() : Integer.parseInt(String.valueOf(cantObj));
+                        if (cant <= 0 || nom == null || nom.isBlank()) continue;
+
+                        // Solo consumir para productos del área BAR
+                        java.util.List<com.sena.getback.model.Menu> menus = menuRepository.findByNombreProductoIgnoreCase(nom.trim());
+                        boolean esBar = menus.stream().anyMatch(m -> m.getCategoria() != null && m.getCategoria().getArea() != null && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"));
+                        if (!esBar) continue;
+                        consumos.merge(nom.trim(), cant, Integer::sum);
+                    }
+                    for (var e : consumos.entrySet()) {
+                        String nombre = e.getKey();
+                        int cantidad = e.getValue();
+                        if (cantidad > 0) {
+                            inventarioService.registrarConsumo(nombre, cantidad);
+                        }
+                    }
+                }
+            }
+            }
+        } catch (Exception ignored) {}
+
         try {
             String mesaNombre = (pedido.getMesa() != null && pedido.getMesa().getNumero() != null)
                     ? pedido.getMesa().getNumero() : (pedido.getMesa() != null ? ("#" + pedido.getMesa().getId()) : "sin mesa");
