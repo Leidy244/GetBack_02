@@ -92,11 +92,19 @@ public class LoginController {
 	    }
 	}
 
-	@GetMapping("/login-error")
-	public String loginError(Model model) {
-		model.addAttribute("error", "Credenciales inválidas.");
-		return "login/index";
-	}
+    @GetMapping("/login-error")
+    public String loginError(Model model) {
+        model.addAttribute("error", "Credenciales inválidas.");
+        return "login/index";
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        if (session != null) {
+            session.invalidate();
+        }
+        return "redirect:/login";
+    }
 
 	@GetMapping("/forgot-password")
 	public String mostrarForgotPassword(Model model) {

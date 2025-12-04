@@ -761,7 +761,13 @@ const adminApp = {
 	},
 
     logout() {
-        const ejecutar = () => { window.location.href = "/login"; };
+        const ejecutar = () => {
+            try {
+                fetch('/logout', { method: 'POST', headers: { 'Accept': 'text/html' } })
+                    .then(() => { window.location.href = '/login'; })
+                    .catch(() => { window.location.href = '/login'; });
+            } catch (_) { window.location.href = '/login'; }
+        };
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'question',
