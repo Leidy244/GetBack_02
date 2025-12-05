@@ -53,6 +53,7 @@
                         <th></th>
                         <th>Fecha remisión</th>
                         <th>Producto</th>
+                        <th>Tipo</th>
                         <th>Cantidad</th>
                         <th>Proveedor</th>
                         <th>Teléfono</th>
@@ -65,7 +66,11 @@
                         <td th:text="${h.remision != null ? h.remision : '—'}"></td>
                         <td th:text="${h.fechaRemision != null ? #temporals.format(h.fechaRemision, 'dd/MM/yyyy') : '—'}"></td>
                         <td th:text="${h.producto != null ? h.producto : '—'}"></td>
-                        <td th:text="${h.cantidad != null ? h.cantidad : 0}"></td>
+                        <td>
+                            <span th:text="${(h.cantidad != null && h.cantidad < 0) ? 'Salida' : 'Ingreso'}"
+                                  th:classappend="${(h.cantidad != null && h.cantidad < 0) ? ' badge-theme badge-theme-danger' : ' badge-theme badge-theme-success'}"></span>
+                        </td>
+                        <td th:text="${h.cantidad != null ? T(java.lang.Math).abs(h.cantidad) : 0}"></td>
                         <td th:text="${h.proveedor != null && !h.proveedor.isEmpty() ? h.proveedor : '—'}"></td>
                         <td th:text="${h.telefonoProveedor != null && !h.telefonoProveedor.isEmpty() ? h.telefonoProveedor : '—'}"></td>
                         <td th:text="${h.fechaIngreso != null ? #temporals.format(h.fechaIngreso, 'dd/MM/yyyy HH:mm') : '—'}"></td>

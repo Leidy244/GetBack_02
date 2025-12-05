@@ -140,71 +140,80 @@
 }
 
 [data-theme="dark"] .table th {
-    background: var(--primary-dark);
-    color: #fff;
-    border-bottom: 1px solid var(--border-color);
+	background: var(--primary-dark);
+	color: #fff;
+	border-bottom: 1px solid var(--border-color);
 }
 
 [data-theme="dark"] .table td {
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-color);
+	color: var(--text-primary);
 }
 
 [data-theme="dark"] .table tr:hover td {
-    background: var(--bg-tertiary);
+	background: var(--bg-tertiary);
 }
 
 /* Ajustes de alta especificidad para tablas Bootstrap en modo oscuro */
-[data-theme="dark"] .table > :not(caption) > * > * {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border-color: var(--border-color);
+[data-theme="dark"] .table> :not(caption)>*>* {
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	border-color: var(--border-color);
 }
-[data-theme="dark"] .table-hover > tbody > tr:hover > * {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
+
+[data-theme="dark"] .table-hover>tbody>tr:hover>* {
+	background-color: var(--bg-tertiary);
+	color: var(--text-primary);
 }
-[data-theme="dark"] .table thead > tr > th {
-    background-color: var(--primary-dark);
-    color: #fff;
+
+[data-theme="dark"] .table thead>tr>th {
+	background-color: var(--primary-dark);
+	color: #fff;
 }
+
 [data-theme="dark"] .gastos-table-wrapper,
 [data-theme="dark"] .table-responsive {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
+	background: var(--bg-primary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-sm);
 }
 
 /* Panel Principal: tarjeta de Gastos en modo oscuro */
 [data-theme="dark"] .gastos-card {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color) !important;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-color) !important;
 }
+
 [data-theme="dark"] .gastos-card .card-body {
-    background: var(--bg-primary);
+	background: var(--bg-primary);
 }
 
 /* Panel Principal: tabla de Últimos gastos en modo oscuro */
 [data-theme="dark"] .gastos-table thead {
-    background: var(--primary-dark);
+	background: var(--primary-dark);
 }
+
 [data-theme="dark"] .gastos-table thead th {
-    color: #fff;
-    border-bottom: 1px solid var(--border-color);
+	color: #fff;
+	border-bottom: 1px solid var(--border-color);
 }
+
 [data-theme="dark"] .gastos-table tbody tr {
-    background: var(--bg-secondary);
+	background: var(--bg-secondary);
 }
+
 [data-theme="dark"] .gastos-table tbody tr:nth-child(even) {
-    background: var(--bg-secondary);
+	background: var(--bg-secondary);
 }
+
 [data-theme="dark"] .gastos-table tbody tr:hover {
-    background: var(--bg-tertiary);
+	background: var(--bg-tertiary);
 }
+
 [data-theme="dark"] .gastos-table td,
 [data-theme="dark"] .gastos-table th {
-    color: var(--text-primary);
+	color: var(--text-primary);
 }
 
 [data-theme="dark"] .form-control,
@@ -356,33 +365,34 @@
 }
 
 [data-theme="dark"] .modal-content .card-body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
+	background: var(--bg-primary);
+	color: var(--text-primary);
 }
+
 [data-theme="dark"] #modalPago .card,
 [data-theme="dark"] #modalPago .card-header,
 [data-theme="dark"] #modalPago .card-body {
-    background: #000000;
-    border-color: #333333;
-    color: #FFFFFF;
+	background: #000000;
+	border-color: #333333;
+	color: #FFFFFF;
 }
 
 [data-theme="dark"] #modalPago .card-header.bg-light {
-    background: #000000 !important;
-    color: #FFFFFF !important;
+	background: #000000 !important;
+	color: #FFFFFF !important;
 }
 
 [data-theme="dark"] #modalPago .alert {
-    background: #000000;
-    border-color: #333333;
-    color: #FFFFFF;
+	background: #000000;
+	border-color: #333333;
+	color: #FFFFFF;
 }
 
 [data-theme="dark"] #modalPago .form-control,
 [data-theme="dark"] #modalPago .form-select {
-    background: #000000;
-    border: 1px solid #333333;
-    color: #FFFFFF;
+	background: #000000;
+	border: 1px solid #333333;
+	color: #FFFFFF;
 }
 
 
@@ -399,9 +409,9 @@
 }
 
 [data-theme="dark"] #modalPago .input-group-text {
-    background: #000000;
-    border: 1px solid #333333;
-    color: #FFFFFF;
+	background: #000000;
+	border: 1px solid #333333;
+	color: #FFFFFF;
 }
 
 /* ===== BOTONES PESTAÑA PAGO EN MODO OSCURO ===== */
@@ -445,10 +455,44 @@
 	z-index: 99;
 	transition: var(--transition);
 	font-size: 1.5rem;
-}
 
-.dark-mode-toggle:hover {
-	transform: scale(1.1) translateY(-5px);
+	.dark-mode-toggle:hover {
+		transform: scale(1.1) translateY(-5px);
+	}
+
+	/* ===== SweetAlert2: separación de botones ===== */
+.swal2-actions {
+    gap: 22px !important;
+    justify-content: center !important;
+}
+.swal-actions-wide {
+    gap: 22px !important;
+}
+.swal2-actions .swal2-confirm,
+.swal2-actions .swal2-cancel {
+    margin: 0 16px !important;
+}
+.swal2-actions .swal2-styled {
+    margin: 0 16px !important;
+}
+.swal2-actions button,
+.swal2-actions .btn {
+    margin: 0 16px !important;
+}
+html .swal2-actions { gap: 24px !important; }
+
+	.swal2-actions button {
+		margin: 0 14px !important;
+	}
+
+	.swal2-actions .swal2-styled {
+		margin: 0 12px !important;
+	}
+
+	.swal2-actions .btn {
+		margin: 0 12px !important;
+	}
+
 	box-shadow: var(--shadow-xl);
 }
 
@@ -677,19 +721,20 @@ body.caja-theme {
 }
 
 .caja-header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--primary-color);
+	margin: 0;
 }
 
 .caja-header h1 a.caja-home-link {
-    color: var(--primary-color);
-    text-decoration: none;
-    cursor: pointer;
+	color: var(--primary-color);
+	text-decoration: none;
+	cursor: pointer;
 }
+
 .caja-header h1 a.caja-home-link:hover {
-    text-decoration: underline;
+	text-decoration: underline;
 }
 
 .user-actions {
@@ -3441,4 +3486,27 @@ body[data-admin-theme="gris"] {
 	padding: 0.75rem 1rem;
 	border: 1px solid var(--border-color);
 	margin-bottom: 1.5rem;
+}
+.producto-img-wrapper {
+    position: relative;
+}
+.producto-agotado-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--danger-color);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.producto-card.agotado {
+    opacity: 0.55;
+    filter: grayscale(30%);
+}
+.producto-card.agotado .btn-agregar {
+    pointer-events: none;
 }

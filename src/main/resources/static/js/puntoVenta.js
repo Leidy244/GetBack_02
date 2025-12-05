@@ -116,9 +116,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const id = card.dataset.id;
             const nombre = card.dataset.nombre;
             const precio = parseFloat(card.dataset.precio);
+            const area = (card.dataset.area || '').toUpperCase();
+            const stock = parseInt(card.dataset.stock);
 
             if (!id || !nombre || isNaN(precio) || precio <= 0) {
                 cajaAlert('error', 'Ocurrió un error', 'Error al agregar el producto');
+                return;
+            }
+
+            if (area === 'BAR' && !isNaN(stock) && stock <= 0) {
+                cajaAlert('warning', 'Agotado', 'Este producto está sin stock');
                 return;
             }
 
@@ -203,6 +210,41 @@ document.addEventListener('DOMContentLoaded', function () {
             const originalText = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando pedido...';
             this.disabled = true;
+            try {
+                carrito.forEach(item => {
+                    const card = document.querySelector(`.producto-card[data-id="${item.id}"]`);
+                    if (!card) return;
+                    const area = (card.dataset.area || '').toUpperCase();
+                    if (area !== 'BAR') return;
+                    const stock = parseInt(card.dataset.stock);
+                    const nuevo = isNaN(stock) ? 0 : Math.max(0, stock - item.cantidad);
+                    card.dataset.stock = String(nuevo);
+                    const stockEl = card.querySelector('.producto-stock small');
+                    if (stockEl) stockEl.textContent = 'Stock: ' + nuevo;
+                    if (nuevo === 0) {
+                        card.classList.add('agotado');
+                        const btn = card.querySelector('.btn-agregar');
+                        if (btn) { btn.disabled = true; btn.classList.add('disabled'); btn.innerHTML = '<i class="fas fa-ban"></i> Agotado'; }
+                        let badge = card.querySelector('.producto-agotado-badge');
+                        if (!badge) {
+                            const badgeEl = document.createElement('span');
+                            badgeEl.className = 'producto-agotado-badge';
+                            badgeEl.innerHTML = '<i class="fas fa-ban"></i> Agotado';
+                            const wrapper = card.querySelector('.producto-img-wrapper') || card;
+                            wrapper.appendChild(badgeEl);
+                        }
+                    }
+                });
+                const grid = document.querySelector('.grid-productos');
+                if (grid) {
+                    const cards = Array.from(grid.querySelectorAll('.producto-card'));
+                    const disponibles = [];
+                    const agotados = [];
+                    cards.forEach(c => { (c.classList.contains('agotado') ? agotados : disponibles).push(c); });
+                    [...disponibles, ...agotados].forEach(el => grid.appendChild(el));
+                }
+                
+            } catch (e) { console.warn('POS stock update error:', e); }
             setTimeout(() => { document.body.appendChild(form); form.submit(); }, 500);
         };
 
@@ -975,3 +1017,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Ejecutar después de que la página cargue
     setTimeout(agregarBotonesRevelarMonto, 100);
 });
+    
+    try {
+        const grid = document.querySelector('.grid-productos');
+        if (grid) {
+            const cards = Array.from(grid.querySelectorAll('.producto-card'));
+            const disponibles = [];
+            const agotados = [];
+
+            cards.forEach(card => {
+                const area = (card.dataset.area || '').toUpperCase();
+                const stock = parseInt(card.dataset.stock);
+                const btn = card.querySelector('.btn-agregar');
+
+                if (area === 'BAR') {
+                    if (!isNaN(stock) && stock <= 0) {
+                        card.classList.add('agotado');
+                        if (btn) {
+                            btn.disabled = true;
+                            btn.classList.add('disabled');
+                            btn.innerHTML = '<i class="fas fa-ban"></i> Agotado';
+                        }
+                        agotados.push(card);
+                        return;
+                    }
+                }
+                disponibles.push(card);
+            });
+
+    const ordered = [...disponibles, ...agotados];
+            ordered.forEach(el => grid.appendChild(el));
+        }
+    } catch (e) { console.warn('POS stock UI error:', e); }

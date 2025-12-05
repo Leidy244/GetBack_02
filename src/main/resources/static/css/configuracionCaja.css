@@ -674,39 +674,40 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 
 /* ===== BOTÓN PARA SUBIR ARCHIVOS ===== */
 .btnArchivo {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    background: var(--info-color);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
     padding: 12px 25px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     display: inline-block;
     text-align: center;
     font-weight: 600;
 }
 
 .btnArchivo:hover {
-    background: linear-gradient(135deg, #3a9df8 0%, #00d9e6 100%);
-    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    background: var(--primary-color);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
 /* ===== BOTÓN GUARDAR FOTO ===== */
 .btnGuardarFoto {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    background: var(--primary-gradient);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
 }
 
 .btnGuardarFoto:hover {
-    background: linear-gradient(135deg, #0da271 0%, #047852 100%);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
 .btnGuardarFoto:disabled {
-    background: #9ca3af;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -714,14 +715,14 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 
 /* ===== BOTÓN CANCELAR FOTO ===== */
 .btnCancelarFoto {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    background: var(--danger-color);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
 }
 
 .btnCancelarFoto:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    filter: brightness(0.9);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
@@ -729,10 +730,10 @@ html[data-theme="dark"][data-admin-contrast="2"] {
 .nombre-archivo {
     margin-left: 15px;
     padding: 8px 12px;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     border-radius: 6px;
-    border: 1px solid #e9ecef;
-    color: #6c757d;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
     font-size: 14px;
     font-style: italic;
     min-width: 200px;
@@ -757,13 +758,13 @@ html[data-theme="dark"] .nombre-archivo {
 }
 
 html[data-theme="dark"] .btnGuardarFoto {
-    background: linear-gradient(135deg, #0da271 0%, #047852 100%);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    background: var(--primary-gradient);
+    box-shadow: var(--shadow-sm);
 }
 
 html[data-theme="dark"] .btnCancelarFoto {
-    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    background: var(--danger-color);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ===== CONTENEDOR DE ACCIONES DE CUENTA ===== */

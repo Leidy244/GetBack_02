@@ -13,6 +13,7 @@ import com.sena.getback.service.MenuService;
 import com.sena.getback.service.MesaService;
 import com.sena.getback.service.CategoriaService;
 import com.sena.getback.service.PedidoService;
+import com.sena.getback.service.InventarioService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -60,15 +61,17 @@ public class CajaController {
     private final EstadoRepository estadoRepository;
     private final GastoRepository gastoRepository;
     private final CajaCierreRepository cajaCierreRepository;
+    private final InventarioService inventarioService;
 
 	// Pedidos marcados como "completados" visualmente en el inicio de caja (pero
 	// aún PENDIENTES de pago)
 	private final Set<Integer> pedidosCompletadosInicioCaja = ConcurrentHashMap.newKeySet();
 
-	public CajaController(MenuService menuService, CategoriaService categoriaService,
-			FacturaRepository facturaRepository, PedidoRepository pedidoRepository, UsuarioRepository usuarioRepository,
-			PedidoService pedidoService, ClienteFrecuenteRepository clienteFrecuenteRepository, MesaService mesaService,
-            EstadoRepository estadoRepository, GastoRepository gastoRepository, CajaCierreRepository cajaCierreRepository) {
+    public CajaController(MenuService menuService, CategoriaService categoriaService,
+            FacturaRepository facturaRepository, PedidoRepository pedidoRepository, UsuarioRepository usuarioRepository,
+            PedidoService pedidoService, ClienteFrecuenteRepository clienteFrecuenteRepository, MesaService mesaService,
+            EstadoRepository estadoRepository, GastoRepository gastoRepository, CajaCierreRepository cajaCierreRepository,
+            InventarioService inventarioService) {
 
 		this.menuService = menuService;
 		this.categoriaService = categoriaService;
@@ -81,6 +84,7 @@ public class CajaController {
         this.estadoRepository = estadoRepository;
         this.gastoRepository = gastoRepository;
         this.cajaCierreRepository = cajaCierreRepository;
+        this.inventarioService = inventarioService;
 	}
 
 	@GetMapping
@@ -176,18 +180,38 @@ public class CajaController {
 	    }
 	    model.addAttribute("cajaAbierta", cajaAbierta);
 
-	    if ("punto-venta".equals(activeSection)) {
-	        model.addAttribute("categorias", categoriaService.findAll());
+    if ("punto-venta".equals(activeSection)) {
+        model.addAttribute("categorias", categoriaService.findAll());
 
-	        if (categoria != null && !categoria.isEmpty()) {
-	            model.addAttribute("menus", menuService.findByCategoriaNombre(categoria));
-	        } else {
-	            model.addAttribute("menus", menuService.findAll());
-	        }
+        java.util.List<Menu> menusList = (categoria != null && !categoria.isEmpty())
+                ? menuService.findByCategoriaNombre(categoria)
+                : menuService.findAll();
 
-	        model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
-	        // Las mesas ya están cargadas arriba ✅
-	    }
+        java.util.Map<Long, Integer> stockBarPorProducto = new java.util.HashMap<>();
+        for (Menu m : menusList) {
+            String area = (m.getCategoria() != null) ? m.getCategoria().getArea() : null;
+            boolean esBar = area != null && area.trim().equalsIgnoreCase("BAR");
+            if (esBar) {
+                stockBarPorProducto.put(m.getId(), m.getStock() != null ? m.getStock() : 0);
+            }
+        }
+
+        java.util.List<Menu> barAgotados = new java.util.ArrayList<>();
+        java.util.List<Menu> otros = new java.util.ArrayList<>();
+        for (Menu m : menusList) {
+            String area = (m.getCategoria() != null) ? m.getCategoria().getArea() : null;
+            boolean esBar = area != null && area.trim().equalsIgnoreCase("BAR");
+            int stock = esBar ? (m.getStock() != null ? m.getStock() : 0) : -1;
+            if (esBar && stock == 0) barAgotados.add(m); else otros.add(m);
+        }
+        menusList = new java.util.ArrayList<>(otros);
+        menusList.addAll(barAgotados);
+
+        model.addAttribute("menus", menusList);
+        model.addAttribute("stockBarPorProducto", stockBarPorProducto);
+        model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
+        // Las mesas ya están cargadas arriba ✅
+    }
 
         if ("pagos".equals(activeSection)) {
             List<com.sena.getback.model.Pedido> completados = pedidoService.obtenerPedidosCompletados();
@@ -867,12 +891,12 @@ public class CajaController {
 	    }
 	}
 	
-	@PostMapping("/crear-pedido-pendiente-form")
-	public String crearPedidoPendienteForm(@RequestParam String items,
-	                                      @RequestParam Double total,
-	                                      @RequestParam(required = false) Integer mesaId,
-	                                      HttpSession session,
-	                                      RedirectAttributes ra) {
+    @PostMapping("/crear-pedido-pendiente-form")
+    public String crearPedidoPendienteForm(@RequestParam String items,
+                                          @RequestParam Double total,
+                                          @RequestParam(required = false) Integer mesaId,
+                                          HttpSession session,
+                                          RedirectAttributes ra) {
 	    try {
 	        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 	        if (usuario == null) {
@@ -888,7 +912,7 @@ public class CajaController {
 	        // 1. Crear el Pedido
 	        Pedido pedido = new Pedido();
 	        pedido.setTotal(total);
-	        pedido.setComentariosGenerales("Pedido desde punto de venta");
+            pedido.setComentariosGenerales("Pedido desde punto de venta | consumo_aplicado");
 	        pedido.setFechaCreacion(LocalDateTime.now());
 	        pedido.setUsuario(usuario);
 
@@ -943,6 +967,53 @@ public class CajaController {
         }
 
         pedido.setOrden(items);
+
+        // Descontar stock de productos BAR al crear pedido desde venta rápida
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Object rootObj = mapper.readValue(items, Object.class);
+            java.util.List<?> itemsList = null;
+            if (rootObj instanceof java.util.List<?>) {
+                itemsList = (java.util.List<?>) rootObj;
+            } else if (rootObj instanceof java.util.Map<?,?> root) {
+                Object itemsObj = root.get("items");
+                if (itemsObj == null) itemsObj = root.get("Items");
+                if (itemsObj instanceof java.util.List<?>) {
+                    itemsList = (java.util.List<?>) itemsObj;
+                } else if (itemsObj instanceof String sItems) {
+                    Object nested = mapper.readValue(sItems, Object.class);
+                    if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                }
+            }
+            if (itemsList != null) {
+                java.util.Map<String, Integer> consumos = new java.util.HashMap<>();
+                for (Object it : itemsList) {
+                    if (!(it instanceof java.util.Map<?,?> itemMap)) continue;
+                    Object nombreObj = itemMap.get("nombre");
+                    if (nombreObj == null) nombreObj = itemMap.get("productoNombre");
+                    if (nombreObj == null) nombreObj = itemMap.get("producto");
+                    if (nombreObj == null) nombreObj = itemMap.get("nombreProducto");
+                    Object cantObj = itemMap.get("cantidad");
+                    if (cantObj == null) cantObj = itemMap.get("qty");
+                    if (cantObj == null) cantObj = itemMap.get("cantidadPedido");
+                    if (nombreObj == null || cantObj == null) continue;
+                    String nom = String.valueOf(nombreObj).trim();
+                    int cant = (cantObj instanceof Number) ? ((Number)cantObj).intValue() : Integer.parseInt(String.valueOf(cantObj));
+                    if (cant <= 0 || nom.isBlank()) continue;
+                    java.util.List<Menu> menusByName = menuService.findByNombreExact(nom) != null
+                            ? java.util.List.of(menuService.findByNombreExact(nom))
+                            : java.util.List.of();
+                    boolean esBar = menusByName.stream().anyMatch(m -> m.getCategoria() != null && m.getCategoria().getArea() != null && m.getCategoria().getArea().trim().equalsIgnoreCase("Bar"));
+                    if (!esBar) continue;
+                    consumos.merge(nom, cant, Integer::sum);
+                }
+                for (var e : consumos.entrySet()) {
+                    String nombre = e.getKey();
+                    int cantidad = e.getValue();
+                    if (cantidad > 0) inventarioService.registrarConsumo(nombre, cantidad);
+                }
+            }
+        } catch (Exception ignored) {}
 
 	        // 6. Guardar pedido
 	        pedido = pedidoRepository.save(pedido);
