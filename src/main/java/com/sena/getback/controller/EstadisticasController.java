@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -36,25 +37,19 @@ public class EstadisticasController {
     private UsuarioRepository usuarioRepository;
 
     @GetMapping
-    public String vistaEstadisticas() {
-        // Simplemente devolver la plantilla de estadísticas del mesero
+    public String vistaEstadisticas(HttpSession session) {
         return "mesero/estadisticas";
     }
 
     @GetMapping("/datos-meseros")
     @ResponseBody
-    public Map<String, Object> datosMeseros() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public Map<String, Object> datosMeseros(HttpSession session) {
         Integer usuarioId = null;
-
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-
-        if (!isAdmin && authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
-            String correo = userDetails.getUsername();
-            Usuario usuario = usuarioRepository.findByCorreo(correo).orElse(null);
-            if (usuario != null && usuario.getId() != null) {
-                usuarioId = usuario.getId().intValue();
+        Object u = session != null ? session.getAttribute("usuarioLogueado") : null;
+        if (u instanceof Usuario usr && usr.getId() != null && usr.getRol() != null && usr.getRol().getNombre() != null) {
+            boolean esAdmin = "ADMIN".equalsIgnoreCase(usr.getRol().getNombre());
+            if (!esAdmin) {
+                usuarioId = usr.getId().intValue();
             }
         }
 
@@ -67,19 +62,13 @@ public class EstadisticasController {
 
     @GetMapping(value = "/grafico-meseros", produces = MediaType.IMAGE_PNG_VALUE)
     @ResponseBody
-    public ResponseEntity<byte[]> generarGraficoMeseros() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<byte[]> generarGraficoMeseros(HttpSession session) {
         Integer usuarioId = null;
-
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-
-        if (!isAdmin && authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
-            String correo = userDetails.getUsername();
-            Usuario usuario = usuarioRepository.findByCorreo(correo).orElse(null);
-            if (usuario != null && usuario.getId() != null) {
-                // Filtrar por el id del mesero logueado
-                usuarioId = usuario.getId().intValue();
+        Object u = session != null ? session.getAttribute("usuarioLogueado") : null;
+        if (u instanceof Usuario usr && usr.getId() != null && usr.getRol() != null && usr.getRol().getNombre() != null) {
+            boolean esAdmin = "ADMIN".equalsIgnoreCase(usr.getRol().getNombre());
+            if (!esAdmin) {
+                usuarioId = usr.getId().intValue();
             }
         }
         
