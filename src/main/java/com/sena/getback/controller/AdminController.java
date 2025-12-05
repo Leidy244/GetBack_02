@@ -349,11 +349,32 @@ public class AdminController {
 				model.addAttribute("evento", new Evento());
 			}
 
-			// CLIENTES FRECUENTES
-			if ("clientes".equals(section)) {
-				model.addAttribute("clientes", clienteFrecuenteRepository.findAll());
-				model.addAttribute("nuevoCliente", new ClienteFrecuente());
-			}
+            // CLIENTES FRECUENTES
+            if ("clientes".equals(section)) {
+                java.util.List<ClienteFrecuente> clientes = clienteFrecuenteRepository.findAll();
+                model.addAttribute("clientes", clientes);
+                model.addAttribute("nuevoCliente", new ClienteFrecuente());
+
+                java.util.Map<Long, java.util.List<MovimientoCredito>> movimientosPorCliente = new java.util.HashMap<>();
+                for (ClienteFrecuente c : clientes) {
+                    try {
+                        java.util.List<MovimientoCredito> movs = movimientoCreditoRepository.findByClienteOrderByFechaDesc(c);
+                        movimientosPorCliente.put(c.getId(), movs);
+                    } catch (Exception ignored) {}
+                }
+                model.addAttribute("movimientosPorCliente", movimientosPorCliente);
+
+                double saldoThreshold = 20000.0;
+                java.util.List<ClienteFrecuente> clientesSaldoBajo = new java.util.ArrayList<>();
+                for (ClienteFrecuente c : clientes) {
+                    Double s = c.getSaldo();
+                    if (s != null && s <= saldoThreshold) {
+                        clientesSaldoBajo.add(c);
+                    }
+                }
+                model.addAttribute("saldoThreshold", saldoThreshold);
+                model.addAttribute("clientesSaldoBajo", clientesSaldoBajo);
+            }
 
 			// USUARIOS
 			if ("users".equals(section)) {

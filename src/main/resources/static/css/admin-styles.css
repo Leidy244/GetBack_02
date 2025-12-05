@@ -1619,14 +1619,58 @@ body {
 }
 
 .modal-body {
-	padding: 2rem;
-	background: var(--bg-primary);
+    padding: 2rem;
+    background: var(--bg-primary);
 }
 
 .modal-footer {
-	border-top: 1px solid var(--border-color);
-	padding: 1.5rem 2rem;
-	background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+    background: var(--bg-secondary);
+}
+
+/* ===== Dark mode fixes for modals and tables (admin) ===== */
+[data-theme="dark"] .modal-content {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .modal-header {
+    background: var(--primary-gradient);
+}
+
+[data-theme="dark"] .modal-body {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .modal-header .btn-close {
+    filter: invert(1) grayscale(100%);
+}
+
+[data-theme="dark"] .modal-content .table {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-content .table thead {
+    background-color: #222;
+}
+
+[data-theme="dark"] .modal-content .table thead th {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-content .table-striped tbody tr {
+    background-color: #1e1e1e;
+}
+
+[data-theme="dark"] .modal-content .table-striped tbody tr:hover {
+    background-color: #2a2a2a;
 }
 
 /* ===== BOTÓN MODO OSCURO FLOTANTE ===== */
@@ -4391,6 +4435,61 @@ body.dark-mode .btn-primary {
 @media print {
   * { font-weight: 900 !important; }
 }
+<<<<<<< HEAD
+[data-theme="dark"] .modal-content .table-striped tbody tr:not(.table-success):not(.table-danger) {
+    background-color: #1e1e1e;
+}
+
+[data-theme="dark"] .modal-content .table-success {
+    background-color: rgba(40, 167, 69, 0.18);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-content .table-danger {
+    background-color: rgba(220, 53, 69, 0.18);
+    color: var(--text-primary);
+}
+[data-theme="dark"] .modal-content .table.compact {
+    font-size: 0.8rem;
+}
+
+.modal-content .table.compact {
+    font-size: 0.8rem;
+}
+
+.modal-content .table.compact th,
+.modal-content .table.compact td {
+    padding: 0.25rem 0.5rem;
+}
+
+.modal-content .table.compact thead th {
+    font-size: 0.75rem;
+}
+
+.modal-scroll-table {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+[data-theme="dark"] .modal-scroll-table {
+    background: var(--bg-primary);
+}
+.ventas-table.compact {
+    font-size: 0.85rem;
+}
+
+.ventas-table.compact th,
+.ventas-table.compact td {
+    padding: 0.4rem 0.5rem;
+}
+
+.ventas-table.compact thead th {
+    font-size: 0.8rem;
+}
+
+[data-theme="dark"] .ventas-table.compact {
+    font-size: 0.85rem;
+=======
 /* ===== SweetAlert2: separación global de botones ===== */
 .swal2-actions {
   gap: 22px !important;
@@ -4402,4 +4501,5 @@ body.dark-mode .btn-primary {
 .swal2-actions .swal2-styled,
 .swal2-actions .btn {
   margin: 0 12px !important;
+>>>>>>> 191c8cb3756fa0b72cc2c59cd5804b83200ba645
 }

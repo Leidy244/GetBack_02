@@ -148,6 +148,32 @@ public class InventarioController {
         model.addAttribute("bajoStock", bajoStockDisplay);
         model.addAttribute("bajoStockCanon", bajoStockCanon);
         model.addAttribute("stockThreshold", stockThreshold);
+
+        // Alerta: productos sin rotación (sin movimientos) por más de X días
+        int rotacionThresholdDias = 30;
+        java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
+        java.util.Map<String, java.time.LocalDateTime> ultimaFechaCanon = new java.util.HashMap<>();
+        ingresosAll.forEach(inv -> {
+            String prod = inv.getProducto();
+            java.time.LocalDateTime fi = inv.getFechaIngreso();
+            if (prod != null && fi != null) {
+                String canon = prod.trim().toLowerCase();
+                java.time.LocalDateTime prev = ultimaFechaCanon.get(canon);
+                if (prev == null || fi.isAfter(prev)) {
+                    ultimaFechaCanon.put(canon, fi);
+                }
+            }
+        });
+        java.util.Map<String, Integer> sinRotacionDisplay = new java.util.LinkedHashMap<>();
+        ultimaFechaCanon.forEach((canon, last) -> {
+            long dias = java.time.Duration.between(last, ahora).toDays();
+            if (dias >= rotacionThresholdDias && menuCanon.contains(canon)) {
+                String display = canonToDisplay.getOrDefault(canon, canon);
+                sinRotacionDisplay.put(display, (int) dias);
+            }
+        });
+        model.addAttribute("sinRotacion", sinRotacionDisplay);
+        model.addAttribute("rotacionThresholdDias", rotacionThresholdDias);
         model.addAttribute("activeSection", "inventario");
         model.addAttribute("title", "Gestión de Inventario");
         return "admin";
