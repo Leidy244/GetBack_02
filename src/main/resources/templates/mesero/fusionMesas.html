@@ -39,7 +39,7 @@
         <button class="menu-toggle" id="menu-toggle" aria-label="Menú">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="user-dropdown" sec:authorize="hasAuthority('ADMIN')">
+        <div class="user-dropdown" th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'ADMIN'}">
           <button class="user-profile" id="userDropdown" type="button">
             <i class="fas fa-user-circle"></i>
             <span>Mesero</span>
@@ -50,8 +50,10 @@
             <li><a class="dropdown-item" th:href="@{/caja}"><i class="fas fa-cash-register"></i> Panel Cajero</a></li>
             <li class="dropdown-divider"></li>
             <li>
-              <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
-            </li>
+              <button class="logout-btn" onclick="if(window.meseroApp&&window.meseroApp.logout){window.meseroApp.logout()}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+           
+			 
+			   </li>
           </ul>
         </div>
       </div>
@@ -249,12 +251,13 @@
     const logoutBtn = document.querySelector('.logout-btn');
 
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', function () {
-        if (confirm('¿Seguro que deseas cerrar sesión?')) {
-          window.location.href = '/login';
-
-          // Si usas Spring Security con /logout, cambia la línea anterior a:
-          // window.location.href = '/logout';
+      logoutBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (window.meseroApp && typeof window.meseroApp.logout === 'function') {
+          window.meseroApp.logout();
+        } else {
+          fetch('/logout', { method: 'POST' })
+            .finally(() => { window.location.href = '/login'; });
         }
       });
     }
@@ -562,21 +565,20 @@
     }
 
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', function () {
-        if (confirm('¿Seguro que deseas cerrar sesión?')) {
-          window.location.href = '/login';
-          // Si usas Spring Security con /logout, cambia la línea anterior a:
-          // window.location.href = '/logout';
+      logoutBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (window.meseroApp && typeof window.meseroApp.logout === 'function') {
+          window.meseroApp.logout();
         }
       });
     }
   });
 
-  // (Bloque DOMContentLoaded principal se definió más arriba y maneja
-  // tema, filtros, dropdown y logout. Aquí ya no es necesario duplicarlo.)
 
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:src="@{/js/ConfigMesero.js}" defer></script>
 <script th:src="@{/js/fusionMesas.js}" defer></script>
 </body>
 </html>

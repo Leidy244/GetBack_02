@@ -2,15 +2,11 @@ package com.sena.getback.controller.api;
 
 import com.sena.getback.model.Pedido;
 import com.sena.getback.service.PedidoService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
