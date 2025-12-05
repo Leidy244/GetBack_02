@@ -16,7 +16,7 @@
                     Lista de clientes frecuentes
                     <span class="badge bg-primary" th:text="${clientes != null ? clientes.size() : 0}"></span>
                 </h4>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 clientes-header-actions">
                     <button type="button" class="btn btn-primary rounded-pill shadow-sm px-3"
                             data-bs-toggle="modal" data-bs-target="#nuevoClienteFrecuenteModal">
                         <i class="fas fa-user-plus me-2"></i>Nuevo cliente frecuente
@@ -86,13 +86,13 @@
                     </td>
                     
 
-					<td>
-					    <div class="d-inline-flex gap-2 justify-content-center">
-                        <button type="button" class="btn btn-info btn-sm rounded-pill px-3"
-                                data-bs-toggle="modal"
-                                th:data-bs-target="${'#historialClienteFrecuenteModal' + c.id}">
-                            <i class="fas fa-eye"></i> Historial
-                        </button>
+                    <td>
+                        <div class="d-inline-flex gap-2 justify-content-center clientes-actions">
+                            <button type="button" class="btn btn-info btn-sm rounded-pill px-3"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="${'#historialClienteFrecuenteModal' + c.id}">
+                                <i class="fas fa-eye"></i> Historial
+                            </button>
 					        <!-- Editar -->
 					        <button type="button" class="btn btn-warning btn-sm rounded-pill px-3"
 					                data-bs-toggle="modal"
@@ -368,25 +368,39 @@
             }
         })();
 		
-		//alerta de confirmar al eliminar 
 		(function () {
-		        function run() {
-		            document.querySelectorAll('.form-eliminar-cliente').forEach(function (form) {
-		                form.addEventListener('submit', function (e) {
-		                    const nombre = form.getAttribute('data-cliente-nombre') || 'este cliente';
-		                    const ok = confirm('¿Seguro que deseas eliminar al cliente ' + nombre + '?');
-		                    if (!ok) {
-		                        e.preventDefault();
+		    function run() {
+		        document.querySelectorAll('.form-eliminar-cliente').forEach(function (form) {
+		            form.addEventListener('submit', function (e) {
+		                e.preventDefault();
+		                const nombre = form.getAttribute('data-cliente-nombre') || 'este cliente';
+		                if (typeof Swal !== 'undefined') {
+		                    Swal.fire({
+		                        icon: 'warning',
+		                        title: '¿Eliminar cliente?',
+		                        text: '¿Seguro que deseas eliminar a ' + nombre + '?',
+		                        showCancelButton: true,
+		                        confirmButtonText: 'Eliminar',
+		                        cancelButtonText: 'Cancelar',
+		                        buttonsStyling: false,
+		                        customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-secondary' }
+		                    }).then(function (r) {
+		                        if (r.isConfirmed) form.submit();
+		                    });
+		                } else {
+		                    if (confirm('¿Seguro que deseas eliminar al cliente ' + nombre + '?')) {
+		                        form.submit();
 		                    }
-		                });
+		                }
 		            });
-		        }
-		        if (document.readyState === 'loading') {
-		            document.addEventListener('DOMContentLoaded', run);
-		        } else {
-		            run();
-		        }
-		    })();
+		        });
+		    }
+		    if (document.readyState === 'loading') {
+		        document.addEventListener('DOMContentLoaded', run);
+		    } else {
+		        run();
+		    }
+		})();
 		
     </script>
 </section>

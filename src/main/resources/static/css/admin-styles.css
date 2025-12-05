@@ -4334,7 +4334,14 @@ body.dark-mode .btn-primary {
 }
 
 .btn-view-all i {
-	font-size: 1rem;
+    font-size: 1rem;
+}
+
+/* ===== Espaciado vertical adicional en Clientes Frecuentes ===== */
+.clientes-header-actions .btn,
+.clientes-actions .btn {
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
 }
 
 .btn-view-all .btn-view-all-text {
