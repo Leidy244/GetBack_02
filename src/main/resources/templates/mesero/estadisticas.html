@@ -40,7 +40,7 @@
                 <i class="fa-solid fa-gear"></i>
                 <span>Configuración</span>
             </a>
-            <a th:href="@{/login}" class="nav-btn" onclick="return confirm('¿Seguro que deseas cerrar sesión?')">
+            <a href="#" class="nav-btn" id="logoutMesero">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 <span>Cerrar sesión</span>
             </a>
@@ -129,6 +129,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script th:src="@{/js/ConfigMesero.js}" defer></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
