@@ -392,20 +392,15 @@ nav {
     right: 12px;
     background: linear-gradient(135deg, var(--primary), var(--accent));
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    animation: pulseBadge 2s ease-in-out infinite;
 }
-.mesa-ready-badge i {
-    font-size: 1.25rem;
-    animation: bellRing 1.2s ease-in-out infinite;
-    transform-origin: top center;
-}
+.mesa-ready-badge i { font-size: 0.9rem; }
 
 .btn-pedido-recogido {
     background: linear-gradient(135deg, var(--success), #2ea31a);
@@ -1058,22 +1053,6 @@ nav {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
-}
-
-@keyframes bellRing {
-    0% { transform: rotate(0deg); }
-    15% { transform: rotate(10deg); }
-    30% { transform: rotate(-10deg); }
-    45% { transform: rotate(6deg); }
-    60% { transform: rotate(-6deg); }
-    75% { transform: rotate(3deg); }
-    100% { transform: rotate(0deg); }
-}
-
-@keyframes pulseBadge {
-    0% { box-shadow: 0 0 0 0 rgba(123, 47, 247, 0.45); }
-    50% { box-shadow: 0 0 0 10px rgba(123, 47, 247, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(123, 47, 247, 0); }
 }
 
 /* ===== RESPONSIVE ===== */

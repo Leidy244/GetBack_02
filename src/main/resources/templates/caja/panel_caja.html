@@ -41,8 +41,8 @@
 			<div class="logo-container">
 				<h1><a href="/caja?section=inicio-caja" class="caja-home-link">PANEL CAJERO</a></h1>
 			</div>
-            <div class="user-actions" th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'ADMIN'}">
-                <div class="dropdown user-dropdown">
+			<div class="user-actions">
+				<div class="dropdown user-dropdown">
 					<button class="btn user-profile dropdown-toggle" type="button" id="userDropdown"
 						data-bs-toggle="dropdown" aria-expanded="false">
 						<div class="user-avatar">
