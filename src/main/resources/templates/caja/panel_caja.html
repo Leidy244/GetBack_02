@@ -41,7 +41,7 @@
 			<div class="logo-container">
 				<h1><a href="/caja?section=inicio-caja" class="caja-home-link">PANEL CAJERO</a></h1>
 			</div>
-            <div class="user-actions" th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'ADMIN'}">
+            <div class="user-actions" th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and (session.usuarioLogueado.rol.nombre == 'ADMIN' or session.usuarioLogueado.rol.nombre == 'CAJERO' or session.usuarioLogueado.rol.nombre == 'MESERO')}">
                 <div class="dropdown user-dropdown">
 					<button class="btn user-profile dropdown-toggle" type="button" id="userDropdown"
 						data-bs-toggle="dropdown" aria-expanded="false">
@@ -55,15 +55,17 @@
 						<span th:if="${session.usuarioLogueado == null}">Cajero</span>
 						<i class="fas fa-chevron-down dropdown-arrow"></i>
 					</button>
-					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-						<li>
-							<a class="dropdown-item" th:href="@{/admin}">
-								<i class="fas fa-home"></i> Panel admin
-							</a>
-						</li>
-						<li><a class="dropdown-item" th:href="@{/mesero}">
-								<i class="fas fa-cash-register"></i> Mesero
-							</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'ADMIN'}">
+                            <a class="dropdown-item" th:href="@{/admin}">
+                                <i class="fas fa-cog"></i> Panel Admin
+                            </a>
+                        </li>
+                        <li th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and (session.usuarioLogueado.rol.nombre == 'ADMIN' or session.usuarioLogueado.rol.nombre == 'CAJERO' or session.usuarioLogueado.rol.nombre == 'MESERO')}">
+                            <a class="dropdown-item" th:href="@{/mesero}">
+                                <i class="fas fa-utensils"></i> Panel Mesero
+                            </a>
+                        </li>
 						<li>
 							<hr class="dropdown-divider">
 						</li>
