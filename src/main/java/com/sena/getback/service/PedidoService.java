@@ -146,22 +146,38 @@ public class PedidoService {
 
         estadoRepository.findById(1).ifPresent(pedido::setEstado);
 
+        Pedido saved = pedidoRepository.save(pedido);
+
         // 2) Registrar consumo real de inventario por los productos del pedido
+        // Se realiza DESPUÉS de guardar para asegurar que el pedido existe en BD
         try {
             Map<String, Integer> requeridos = extraerCantidadesPorProducto(itemsJson);
             for (Map.Entry<String, Integer> entry : requeridos.entrySet()) {
                 String nombre = entry.getKey();
                 int cantidad = entry.getValue();
                 if (cantidad > 0) {
-                    // Descuenta inventario; el stock del menú se sincroniza automáticamente desde InventarioService
-                    inventarioService.registrarConsumo(nombre, cantidad);
+                    // Validar si es producto de BAR antes de descontar (similar a CajaController)
+                    java.util.List<com.sena.getback.model.Menu> menus = menuRepository.findByNombreProductoIgnoreCase(nombre);
+                    boolean esBar = menus != null && menus.stream().anyMatch(m -> 
+                        m.getCategoria() != null && 
+                        m.getCategoria().getArea() != null && 
+                        "BAR".equalsIgnoreCase(m.getCategoria().getArea().trim())
+                    );
+                    
+                    if (esBar) {
+                        // Descuenta inventario; el stock del menú se sincroniza automáticamente desde InventarioService
+                        inventarioService.registrarConsumo(nombre, cantidad);
+                        System.out.println("✅ Consumo registrado para: " + nombre + " (Cant: " + cantidad + ")");
+                    } else {
+                        System.out.println("ℹ️ No se descuenta stock (no es BAR o no existe): " + nombre);
+                    }
                 }
             }
         } catch (Exception e) {
             System.err.println("Error al registrar consumo de inventario para el pedido: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        Pedido saved = pedidoRepository.save(pedido);
         try {
             String mesaNombre = (saved.getMesa() != null && saved.getMesa().getNumero() != null)
                     ? saved.getMesa().getNumero() : (saved.getMesa() != null ? ("#" + saved.getMesa().getId()) : "sin mesa");
@@ -203,7 +219,7 @@ public class PedidoService {
                 Object cantidadObj = itemMap.get("cantidad");
                 if (nombreObj == null || cantidadObj == null) continue;
 
-                String nombre = String.valueOf(nombreObj);
+                String nombre = String.valueOf(nombreObj).trim();
                 int cant = (cantidadObj instanceof Number)
                         ? ((Number) cantidadObj).intValue()
                         : Integer.parseInt(String.valueOf(cantidadObj));
@@ -243,21 +259,51 @@ public class PedidoService {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> root = mapper.readValue(itemsJson, Map.class);
-        Object itemsObj = root.get("items");
-        if (!(itemsObj instanceof List<?> itemsList)) {
+        Object rootObj = mapper.readValue(itemsJson, Object.class);
+        java.util.List<?> itemsList = null;
+
+        if (rootObj instanceof java.util.List<?>) {
+            itemsList = (java.util.List<?>) rootObj;
+        } else if (rootObj instanceof java.util.Map<?,?> root) {
+            Object itemsObj = root.get("items");
+            if (itemsObj == null) itemsObj = root.get("Items");
+            
+            if (itemsObj instanceof java.util.List<?>) {
+                itemsList = (java.util.List<?>) itemsObj;
+            } else if (itemsObj instanceof String sItems) {
+                try {
+                    Object nested = mapper.readValue(sItems, Object.class);
+                    if (nested instanceof java.util.List<?>) itemsList = (java.util.List<?>) nested;
+                    else if (nested instanceof java.util.Map<?,?> nestedMap) {
+                         Object nestedItems = nestedMap.get("items");
+                         if (nestedItems instanceof java.util.List<?>) itemsList = (java.util.List<?>) nestedItems;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (itemsList == null) {
             return requeridos;
         }
 
         for (Object o : itemsList) {
             if (!(o instanceof Map<?, ?> itemMap)) continue;
-            Object nombreObj = itemMap.get("productoNombre");
+            Object nombreObj = itemMap.get("nombre");
+            if (nombreObj == null) nombreObj = itemMap.get("productoNombre");
+            if (nombreObj == null) nombreObj = itemMap.get("producto");
+            if (nombreObj == null) nombreObj = itemMap.get("nombreProducto");
+            
             Object cantidadObj = itemMap.get("cantidad");
+            if (cantidadObj == null) cantidadObj = itemMap.get("qty");
+            if (cantidadObj == null) cantidadObj = itemMap.get("cantidadPedido");
+
             if (nombreObj == null || cantidadObj == null) continue;
-            String nombre = String.valueOf(nombreObj);
+
+            String nombre = String.valueOf(nombreObj).trim();
             int cant = (cantidadObj instanceof Number)
                     ? ((Number) cantidadObj).intValue()
                     : Integer.parseInt(String.valueOf(cantidadObj));
+            
             if (cant <= 0) continue;
             requeridos.merge(nombre, cant, Integer::sum);
         }
