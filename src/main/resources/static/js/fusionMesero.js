@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = orderModal?.querySelector('.close-modal');
     const cancelBtn = orderModal?.querySelector('.btn-cancel');
     const confirmBtn = orderModal?.querySelector('.btn-confirm');
-    const orderBtn = document.querySelector('.btn-order');
+    const orderBtns = document.querySelectorAll('.btn-order');
 
     // Quantity controls and order total
     const quantityControls = document.querySelectorAll('.quantity-control');
@@ -62,10 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    if (orderBtn && orderModal) {
-        orderBtn.addEventListener('click', () => {
-            orderModal.style.display = 'flex';
-            updateOrderSummary();
+    if (orderModal && orderBtns && orderBtns.length) {
+        orderBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                orderModal.style.display = 'flex';
+                updateOrderSummary();
+            });
         });
     }
 

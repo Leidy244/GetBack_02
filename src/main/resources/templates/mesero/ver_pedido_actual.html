@@ -8,11 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" th:href="@{/css/ver_pedido_actual.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1><img th:src="@{/imgs/logo-get-back-cafe-bar.png}" width="100" alt="Logo Get Back"> Resumen del Pedido</h1>
+            <h1><img th:src="@{/images/Logo_principal.png}" width="100" alt="Logo Get Back"> Resumen del Pedido</h1>
             <div class="mesa-info">
                 <span class="mesa-numero">Mesa #<span th:text="${mesa != null and mesa.numero != null} ? ${mesa.numero} : ${mesaId}">0</span></span>
                 <span class="mesa-personas" th:if="${mesa != null and mesa.capacidad != null}" th:text="${mesa.capacidad} + ' personas'">0 personas</span>
@@ -119,9 +121,20 @@
         }
 
         function cancelarPedido() {
-            if(confirm('¿Estás seguro de cancelar este pedido?')) {
-                // Cancelar pedido y limpiar borrador en el backend
-                window.location.href = '/pedidos/cancelar';
+            const ejecutar = () => { window.location.href = '/pedidos/cancelar'; };
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'question',
+                    title: '¿Seguro desea cancelar este pedido?',
+                    text: 'Se eliminará el borrador y volverás al menú.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Cancelar pedido',
+                    cancelButtonText: 'Volver',
+                    confirmButtonColor: '#7b2ff7',
+                    cancelButtonColor: '#6c757d'
+                }).then(r => { if (r.isConfirmed) { try { mostrarToast('Cancelando pedido...'); } catch(_){} ejecutar(); } });
+            } else {
+                if (confirm('¿Seguro desea cancelar este pedido?')) ejecutar();
             }
         }
 

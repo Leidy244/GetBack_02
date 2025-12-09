@@ -42,11 +42,12 @@
         <div class="user-dropdown" th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and (session.usuarioLogueado.rol.nombre == 'ADMIN' or session.usuarioLogueado.rol.nombre == 'MESERO' or session.usuarioLogueado.rol.nombre == 'CAJERO')}">
           <button class="user-profile" id="userDropdown" type="button">
             <i class="fas fa-user-circle"></i>
-            <span>Mesero</span>
+            <span th:text="${session.usuarioLogueado != null && session.usuarioLogueado.nombre != null ? session.usuarioLogueado.nombre : (session.usuarioLogueado != null && session.usuarioLogueado.rol != null ? session.usuarioLogueado.rol.nombre : 'Usuario')}">Usuario</span>
             <i class="dropdown-arrow fas fa-chevron-down"></i>
           </button>
           <ul class="dropdown-menu">
             <li th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'ADMIN'}"><a class="dropdown-item" th:href="@{/admin}"><i class="fas fa-cog"></i> Administrador</a></li>
+				
             <li th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null and (session.usuarioLogueado.rol.nombre == 'ADMIN' or session.usuarioLogueado.rol.nombre == 'MESERO')}"><a class="dropdown-item" th:href="@{/caja}"><i class="fas fa-cash-register"></i> Panel Cajero</a></li>
             <li class="dropdown-divider"></li>
             <li>

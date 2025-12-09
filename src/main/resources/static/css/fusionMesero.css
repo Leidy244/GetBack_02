@@ -80,6 +80,11 @@ body {
     min-height: 100vh;
 }
 
+/* Reservar espacio para la barra inferior fija y evitar recortes del contenido */
+header + .container {
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+}
+
 body.no-scroll {
     overflow: hidden;
 }
@@ -105,6 +110,7 @@ header {
     align-items: center;
     width: 320px;
     max-width: 100%;
+    flex: 0 0 320px;
 }
 
 #search-input {
@@ -149,6 +155,8 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 0 1.25rem;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .logo {
@@ -239,6 +247,7 @@ nav {
     display: flex;
     list-style: none;
     gap: 1.25rem;
+    flex-wrap: wrap;
 }
 
 .nav-links a {
@@ -1322,6 +1331,7 @@ nav {
     width: 100%;
     background-color: var(--surface);
     padding: 0.9375rem 1.25rem;
+    padding-bottom: calc(0.9375rem + env(safe-area-inset-bottom));
     box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.4);
     z-index: 1000;
     color: var(--text-primary);
@@ -1425,6 +1435,9 @@ nav {
     .container {
         padding: 1rem;
     }
+    header + .container {
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    }
 
     .menu-grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -1460,6 +1473,9 @@ nav {
 @media (max-width: 768px) {
     .container {
         padding: 0.5rem;
+    }
+    header + .container {
+        padding-bottom: calc(130px + env(safe-area-inset-bottom));
     }
 
     .menu-grid {
@@ -1599,6 +1615,10 @@ nav {
         right: 0;
         z-index: 1000;
     }
+    header + .container {
+        padding-bottom: calc(140px + env(safe-area-inset-bottom));
+    }
+}
 
     .nav-btn {
         padding: 0.5rem;
@@ -1642,6 +1662,24 @@ nav {
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
+}
+
+/* ===== Desktop: mantener barra inferior visible ===== */
+@media (min-width: 993px) {
+    .bottom-nav {
+        display: flex;
+    }
+    .desktop-floating-order {
+        display: none;
+    }
+    header + .container {
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    }
+}
+
+/* Por defecto ocultar el botón flotante desktop en móviles */
+.desktop-floating-order {
+    display: none;
 }
 
 .floating-back-btn:hover {

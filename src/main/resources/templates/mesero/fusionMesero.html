@@ -48,9 +48,9 @@
 					<input type="text" id="search-input" placeholder="Buscar producto...">
 					<i class="fas fa-search"></i>
 				</div>
-			</nav>
-		</div>
-	</header>
+    </nav>
+  </div>
+</header>
 
 	<div class="container">
 		<!-- Mensaje cuando no hay productos -->
@@ -152,9 +152,15 @@
 				<span>Enviar Pedido</span>
 			</button>
 		</div>
-	</nav>
+  </nav>
 
-	<script th:inline="javascript">
+  <!-- Botón flotante para escritorio -->
+  <button class="btn-order floating-order-btn desktop-floating-order" id="btn-send-order-desktop" type="button">
+    <i class="fas fa-paper-plane"></i>
+    <span>Enviar Pedido</span>
+  </button>
+
+  <script th:inline="javascript">
 		/*<![CDATA[*/
 		var draftItemsJson = /*[[${draftItemsJson}]]*/ null;
 		var draftTotal = /*[[${draftTotal}]]*/ null;
