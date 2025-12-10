@@ -50,7 +50,7 @@ const mesasData = {
     ]
 };
 
-// Elementos del DOM (script legacy para prototipo de mesas)
+// Elementos comunes
 const menuToggle = document.getElementById('menu-toggle');
 const navLinks = document.getElementById('nav-links');
 const welcomeToast = document.getElementById('welcome-toast');
@@ -59,25 +59,27 @@ const backToTopBtn = document.getElementById('back-to-top');
 const mesasContainer = document.getElementById('mesas-container');
 const zonaTitulo = document.getElementById('zona-titulo');
 
+// Toggle de menú hamburguesa para mostrar Áreas, disponible siempre
+if (menuToggle && navLinks) {
+  menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+  });
+  // Cerrar menú al seleccionar un área
+  document.querySelectorAll('.nav-links a').forEach(item => {
+    item.addEventListener('click', () => {
+      navLinks.classList.remove('active');
+    });
+  });
+}
+
 // Si no existe el contenedor legacy de mesas, no ejecutamos el resto de este script
 if (!mesasContainer || !zonaTitulo) {
-    // Este JS sólo se usaba en el diseño antiguo; en la nueva vista las mesas
-    // se renderizan desde el servidor, así que es seguro salir aquí.
-    console.debug('fusionMesas.js: sin #mesas-container, se omite lógica legacy.');
+    console.debug('fusionMesas.js: sin contenedor legacy, se omiten funciones de renderización.');
 } else {
 
 let zonaActual = 'tarima'; // Establecer la zona inicial
 
-// Funcionalidad del Menú de navegación
-menuToggle.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-});
-
-document.querySelectorAll('.nav-links a').forEach(item => {
-    item.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-    });
-});
+// (El toggle de navegación se maneja arriba y no depende de contenedores legacy)
 
 // Funcionalidad del Toast de bienvenida
 function closeToast() {
