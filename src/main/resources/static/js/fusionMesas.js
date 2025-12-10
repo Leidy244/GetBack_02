@@ -58,17 +58,41 @@ const closeToastBtn = document.querySelector('.close-toast');
 const backToTopBtn = document.getElementById('back-to-top');
 const mesasContainer = document.getElementById('mesas-container');
 const zonaTitulo = document.getElementById('zona-titulo');
+const navOverlay = document.getElementById('nav-overlay');
 
 // Toggle de menú hamburguesa para mostrar Áreas, disponible siempre
 if (menuToggle && navLinks) {
   menuToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
+    if (navOverlay) navOverlay.classList.toggle('active');
+    document.body.classList.toggle('no-scroll');
+    menuToggle.classList.toggle('hidden');
   });
   // Cerrar menú al seleccionar un área
   document.querySelectorAll('.nav-links a').forEach(item => {
     item.addEventListener('click', () => {
       navLinks.classList.remove('active');
+      if (navOverlay) navOverlay.classList.remove('active');
+      document.body.classList.remove('no-scroll');
+      menuToggle.classList.remove('hidden');
     });
+  });
+  // Cerrar al tocar fuera
+  if (navOverlay) {
+    navOverlay.addEventListener('click', () => {
+      navLinks.classList.remove('active');
+      navOverlay.classList.remove('active');
+      document.body.classList.remove('no-scroll');
+      menuToggle.classList.remove('hidden');
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+      navLinks.classList.remove('active');
+      if (navOverlay) navOverlay.classList.remove('active');
+      document.body.classList.remove('no-scroll');
+      menuToggle.classList.remove('hidden');
+    }
   });
 }
 
