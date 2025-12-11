@@ -9,20 +9,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile navigation toggle
     const menuToggle = document.getElementById('menu-toggle');
+    const categoriesToggle = document.getElementById('categories-toggle');
     const navLinks = document.getElementById('nav-links');
     const navOverlay = document.getElementById('nav-overlay');
+    const drawerClose = document.getElementById('drawer-close');
 
-    if (menuToggle && navLinks && navOverlay) {
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            navOverlay.classList.toggle('active');
-            document.body.classList.toggle('no-scroll');
-        });
+    function openCategories() {
+        navLinks.classList.add('active');
+        navOverlay.classList.add('active');
+        document.body.classList.add('categories-open');
+        if (menuToggle) menuToggle.classList.add('hidden');
+        if (categoriesToggle) categoriesToggle.classList.add('hidden');
+    }
 
-        navOverlay.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            navOverlay.classList.remove('active');
-            document.body.classList.remove('no-scroll');
+    function closeCategories() {
+        navLinks.classList.remove('active');
+        navOverlay.classList.remove('active');
+        document.body.classList.remove('categories-open');
+        if (menuToggle) menuToggle.classList.remove('hidden');
+        if (categoriesToggle) categoriesToggle.classList.remove('hidden');
+    }
+
+    if (navLinks && navOverlay) {
+        if (menuToggle) menuToggle.addEventListener('click', openCategories);
+        if (categoriesToggle) categoriesToggle.addEventListener('click', openCategories);
+        if (drawerClose) drawerClose.addEventListener('click', closeCategories);
+        navOverlay.addEventListener('click', closeCategories);
+        document.addEventListener('click', (e) => {
+            if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !menuToggle?.contains(e.target) && !categoriesToggle?.contains(e.target)) {
+                closeCategories();
+            }
         });
     }
 
@@ -337,6 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const categoriaId = btn.getAttribute('data-categoria');
             filterProductsByCategory(categoriaId);
+
+            // Cerrar el panel de categorías en modo responsivo al seleccionar
+            if (document.body.classList.contains('categories-open') || navLinks.classList.contains('active')) {
+                closeCategories();
+            }
         });
     });
 

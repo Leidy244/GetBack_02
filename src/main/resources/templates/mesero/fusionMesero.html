@@ -12,7 +12,7 @@
 </head>
 
 <body>
-	<div class="nav-overlay" id="nav-overlay"></div>
+  <div class="nav-overlay" id="nav-overlay"></div>
 
 	<header>
 		<div class="container">
@@ -34,23 +34,39 @@
 							<span>Volver a Mesas</span>
 						</a>
 					</div>
-				</div>
+                </div>
 
-				<ul class="nav-links" id="nav-links">
-					<li><a href="#" class="filter-btn active" data-categoria="todas">Todos</a></li>
-					<li th:each="categoria : ${categorias}">
-						<a href="#" class="filter-btn" th:data-categoria="${categoria.id}"
-							th:text="${categoria.nombre}">Categoría</a>
-					</li>
-				</ul>
+                <div class="nav-controls" aria-label="Controles de navegación">
+                    <button class="menu-toggle" id="categories-toggle" aria-label="Categorías">
+                      <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+
+                <ul class="nav-links" id="nav-links">
+                    <li class="drawer-header">
+                        <span class="drawer-title">Categorías</span>
+                        <button class="drawer-close" id="drawer-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+                    </li>
+                    <li>
+                        <a href="#" class="filter-btn active" data-categoria="todas">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Todos</span>
+                        </a>
+                    </li>
+                    <li th:each="categoria : ${categorias}">
+                        <a href="#" class="filter-btn" th:data-categoria="${categoria.id}">
+                            <span th:text="${categoria.nombre}">Categoría</span>
+                        </a>
+                    </li>
+                </ul>
 
 				<div class="search-container">
 					<input type="text" id="search-input" placeholder="Buscar producto...">
 					<i class="fas fa-search"></i>
 				</div>
-    </nav>
-  </div>
-</header>
+			</nav>
+		</div>
+	</header>
 
 	<div class="container">
 		<!-- Mensaje cuando no hay productos -->
